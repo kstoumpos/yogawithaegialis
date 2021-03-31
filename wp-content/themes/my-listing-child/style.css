@@ -1,0 +1,518 @@
+/*
+Theme Name: My Listing Child
+Theme URI: http://mylisting.27collective.net/my-city/
+Template: my-listing
+Author: 27collective
+Author URI: http://27collective.net/
+Description: MyListing - Directory &amp; Listing WordPress Theme
+Tags: one-column,two-columns,three-columns,left-sidebar,right-sidebar,grid-layout,custom-menu,custom-logo,featured-images,footer-widgets,full-width-template,sticky-post,theme-options,threaded-comments,translation-ready
+Version: 2.6.4.1611765932
+Updated: 2021-01-27 16:45:32
+
+*/
+
+.instructors {
+    text-align: center;
+}
+
+.bio-container {
+    display: block;
+}
+
+.morecontent {
+    display: none;
+}
+
+.elementor-text-editor ul {
+    margin-left: 35px;
+    margin-bottom: 0;
+}
+
+.elementor-text-editor ul li {
+    list-style-position: outside;
+}
+
+.elementor-widget-image.instructors-img {
+    margin-bottom: 0;
+}
+
+.elementor-widget.elementor-widget-heading {
+    margin-bottom: 10px;
+}
+
+.questions-answered .elementor-tab-title {
+    border: solid 1px #000 !important;
+}
+
+.questions-answered .elementor-tab-content {
+    margin-top: 15px;
+}
+
+/* Changing bottom_border in type fields like "Retreat Title" and "Tagline" */
+#submit-job-form .field>input, #submit-job-form .field>textarea {
+    border-bottom-color: #000000;
+    border-bottom-width: 2px!important;
+    padding: 10px 0;
+    margin-bottom: 10px;
+}
+
+/* Changing the title font-size in retreat listings, examples "Accommodation & Venue" - "Retreat organizer". */
+.title-style-1 h5 {
+    font-size: 19px;
+}
+
+/* Adding 1px border to the FAQ element */
+.aegfaq .elementor-tab-title {
+    border: 1px solid!important;
+}
+
+.chatnowbtn {
+    border: 4px solid #ffffff;
+    border-radius: 0;
+    padding: 12px 35px;
+    color: #ffffff;
+    display: inline-block;
+    text-align: center;
+    font-size: 19px;
+}
+
+.chatnowbtn:hover {
+    color: #ffffff;
+}
+
+.chatnowbtn:visited {
+    color: #ffffff;
+}
+
+.chatarea {
+    text-align:center;
+}
+
+/*Footer 5 Columns*/
+@media only screen and (min-width: 1200px) {
+    .footer .col-md-4 {
+        width: 20%;
+        clear: none !important;
+    }
+}
+
+/* Footer background color*/
+.footer {
+    background: #202125;
+}
+
+.c_widget .menu>li>a {
+    color: #fff;
+}
+
+.c_widget_title h5 {
+    color: #fff;
+}
+
+#more {
+    display: none;
+}
+
+.gform_title {
+    display: none;
+}
+
+.elementor-slideshow__footer, .elementor-gallery-item__title {
+    visibility: hidden;
+}
+
+.elementor-testimonial__content {
+    background-color: #FAFAFB;
+}
+
+#elementor-tab-title-2051, #elementor-tab-title-2052, #elementor-tab-title-2053,#elementor-tab-title-2054,#elementor-tab-title-2055,
+#elementor-tab-title-2055, #elementor-tab-title-2056, #elementor-tab-title-2057, #elementor-tab-title-2058, #elementor-tab-title-2059, #elementor-tab-title-2482,
+#elementor-tab-title-2481, #elementor-tab-title-2483, #elementor-tab-title-2371, #elementor-tab-title-2372, #elementor-tab-title-2373, #elementor-tab-title-2374,
+#elementor-tab-title-2375, #elementor-tab-title-2376, #elementor-tab-title-2377, #elementor-tab-title-4261, #elementor-tab-title-4262, #elementor-tab-title-4263,
+#elementor-tab-title-4264 {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #1a1a1a;
+}
+
+#elementor-tab-content-2051, #elementor-tab-content-2052, #elementor-tab-content-2053,#elementor-tab-content-2054,#elementor-tab-content-2055,
+#elementor-tab-content-2055, #elementor-tab-content-2056, #elementor-tab-content-2057, #elementor-tab-content-2058, #elementor-tab-content-2059, #elementor-tab-content-2482,
+#elementor-tab-content-2481, #elementor-tab-content-2483, #elementor-tab-content-2371, #elementor-tab-content-2372, #elementor-tab-content-2373, #elementor-tab-content-2374,
+#elementor-tab-content-2375, #elementor-tab-content-2376, #elementor-tab-content-2377, #elementor-tab-content-4261, #elementor-tab-content-4262, #elementor-tab-content-4263,
+#elementor-tab-content-4264 {
+    margin-top: 1em;
+}
+
+body .gform_wrapper .top_label div.ginput_container {
+    margin-right: 20px;
+}
+
+@media screen and (min-width: 768px) {
+    #gform_submit_button_8 {
+        min-width: 150px;
+    }
+}
+
+#input_8_46 {
+    padding: 11px;
+}
+
+#notBordered1, #notBordered2 {
+    border-radius: 0 !important;
+}
+
+.accomodation {
+    min-height: 400px !important;
+}
+
+#c27-site-wrapper > div.elementor.elementor-2779 > div > div > section.elementor-section.elementor-top-section.elementor-element.elementor-element-f60831d.elementor-section-full_width.elementor-section-height-default.elementor-section-height-default > div > div > div > div > div > section > div > div > div.elementor-column.elementor-col-50.elementor-inner-column.elementor-element.elementor-element-961728e > div > div > div.elementor-element.elementor-element-1c4bb41.elementor-widget.elementor-widget-gallery > div > div > div:nth-child(-n+3) {
+    width: 85%;
+}
+
+/*@media (max-width: 1024px) {*/
+/*    .elementor-2779 .elementor-element.elementor-element-1c4bb41 {*/
+/*        width: 65% !important;*/
+/*    }*/
+/*}*/
+
+@media (max-width: 1025px) {
+    .podsIntroText {
+        text-align: center !important;
+    }
+	
+	.imageFit > div > div > img {
+		width: -webkit-fill-available;
+	}
+}
+
+*@media (max-width: 767px) {
+
+    .eael-gravity-form .gform_wrapper ul.gform_fields li.gfield {
+    padding-right: 0;
+    }
+    /*width less than 480*/
+
+    #gallery-2 {
+        display: flex;
+    }
+
+}
+
+.footer {
+    background: #202125 !important;
+}
+
+.c_widget .menu>li>a, .c_widget_title h5 {
+    color: white !important;
+    font-weight: 200 !important;
+    line-height: 2 !important;
+}
+
+/*footer images in mobile*/
+@media (max-width: 380px) {
+    .c_widget_title, .menu-footer-information-container, .menu-my-account-footer-container {
+        text-align: center !important;
+    }
+    .wp-image-1945, #gallery-2, body > footer > div > div:nth-child(1) > div:nth-child(5) > img {
+        max-width: 80% !important;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #gallery-1 > figure:nth-child(2) > div > img {
+        max-width: 80% !important;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .wp-image-1945 {
+        margin-bottom: -15px;
+    }
+}
+
+#input_13_17, #input_13_18 {
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
+.elementor-element-8186b5d > div {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://yogawithaegialis.com/wp-content/uploads/2021/03/40-copy1.jpg") !important;
+    background-size: cover !important;
+}
+
+.elementor-element-59400b7 > div {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://yogawithaegialis.com/wp-content/uploads/2021/01/LalonIdorSpa-2-scaled.jpg') !important;
+    background-size: cover !important;
+}
+
+#gallery-1 > figure:nth-child(1) > div > img:nth-child(-n+3) {
+    height: 200px !important;
+}
+
+@media (max-width: 769px) {
+    #gallery-1 > figure:nth-child(1) > div > img:nth-child(-n+3) {
+        height: 158px !important;
+    }
+	
+	.elementor-2194 .elementor-element.elementor-element-efd64d6 {
+		padding: 0;
+	}
+}
+
+#c27-site-wrapper > div.elementor.elementor-4396 > div > div > section.elementor-section.elementor-top-section.elementor-element.elementor-element-3f87e14.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default > div > div > div > div > div > section > div > div > div.elementor-column.elementor-col-50.elementor-inner-column.elementor-element.elementor-element-0f81328 > div > div > div > div > div > a {
+	padding: 18px 25px;
+}
+
+.c27-main-header .logo img {
+    height: 60px !important;
+}
+
+.facilitiesImg {
+	max-height: 400px !important;
+	max-width: 400px !important;
+}
+
+#menu-my-account-footer, #menu-footer-information {
+	display: block;
+}
+
+#menu-my-account-footer  > li > a, #menu-footer-information > li > a {
+	line-height: 25px !important;
+	color: white;
+}
+
+.elementor-element-c4185c1 > div > h5, .elementor-element-4a5bbd3 > div > h5 {
+	color: white;
+}
+
+@media (max-width: 380px) {
+	.elementor-element-c4185c1 > div > h5, .elementor-element-4a5bbd3 > div > h5 {
+		text-align: center;
+	}
+}
+
+.copyright > p {
+	color: white;
+}
+
+@media (max-width: 767px) {
+	.elementor-element-1f974a0 {
+		width: 35% !important;
+		margin-left: 15%;
+	}
+	.elementor-element-c4ca550 {
+		margin-left: -14% !important;
+	}
+}
+
+@media (max-width: 415px) {
+	.elementor-element-7f1a26f {
+		width: 100% !important;
+	}
+	.elementor-element-c4ca550 {
+		margin-left: -14% !important;
+	}
+	.elementor-4703 .elementor-element.elementor-element-ccf595e > .elementor-widget-container {
+    padding: 0px 0px 0px 0px !important;
+	}
+}
+
+@media (max-width: 380px) {
+	.copyright p {
+		font-size: 14px !important;
+	}
+	.elementor-4714 .elementor-element.elementor-element-7f1a26f {
+	    width: 100% !important;
+	}
+		.elementor-element-1f974a0 {
+		margin-left: 10% !important;
+	}
+}
+
+#firstSection {
+	max-height: 450px !important;
+}
+
+#gform_next_button_2_29, #gform_next_button_3_29 {
+	width: 140px;
+}
+
+.elementor-widget-reviews .swiper-slide {
+	height: fit-content;
+}
+
+#elementor-tab-title-3231, #elementor-tab-title-3232, #elementor-tab-title-3233,#elementor-tab-title-3234,#elementor-tab-title-3235,
+#elementor-tab-title-3236, #elementor-tab-title-3237, #elementor-tab-title-2261, #elementor-tab-title-2262, #elementor-tab-title-2263, #elementor-tab-title-1671,
+#elementor-tab-title-1672, #elementor-tab-title-2021, #elementor-tab-title-2022, #elementor-tab-title-2331, #elementor-tab-title-2332, #elementor-tab-title-2333,
+#elementor-tab-title-2334, #elementor-tab-title-2335, #elementor-tab-title-2336, #elementor-tab-title-2337 {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #1a1a1a;
+}
+
+#elementor-tab-content-3231, #elementor-tab-content-3232, #elementor-tab-content-3233,#elementor-tab-content-3234,#elementor-tab-content-3235,
+#elementor-tab-content-3236, #elementor-tab-content-3237, #elementor-tab-content-2261, #elementor-tab-content-2262, #elementor-tab-content-2263, #elementor-tab-content-1671,
+#elementor-tab-content-1672, #elementor-tab-content-2021, #elementor-tab-content-2022, #elementor-tab-content-2331, #elementor-tab-content-2332, #elementor-tab-content-2333,
+#elementor-tab-content-2334, #elementor-tab-content-2335, #elementor-tab-content-2336, #elementor-tab-content-2337 {
+    margin-top: 1em;
+}
+
+.mailpoet_form_shortcode {
+	display: -webkit-inline-box;
+}
+
+#mailpoet_form_1 .mailpoet_paragraph {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.mailpoet_text {
+	color: white !important;
+}
+
+.mailpoet_text::placeholder {
+    color: white;
+    opacity: 100;
+}
+
+.mailpoet_paragraph {
+    border-bottom: 1px solid #FFF;
+    border-left: 1px solid  #FFF;
+}
+
+.mailpoet_paragraph.last {
+	width: 25%;
+	border-bottom: 0px !important;
+	border-left: 0px !important;
+}
+
+.mailpoet_submit {
+	min-height: 37px;
+	min-width: 100px;
+	border: solid 1px !important;
+	background-color: transparent !important;
+	border-color: white !important;
+}
+
+.mailpoet_submit::value {
+    color: white !important;
+}
+
+#toplevel_page_case27-tools > a > div.wp-menu-image.dashicons-before > img {
+	max-width: 20px !important;
+}
+
+.dashicons-before > img {
+	max-width: 20px !important;
+}
+
+#mailpoet_form_1 {
+    width: 60% !important;
+}
+
+@media (max-width: 769px) {
+#newsletterForm {
+        margin-right: 71% !important;
+	}
+}
+
+@media (max-width: 415px) {
+	.mailpoet_form_shortcode {
+		display: block;
+	}
+		#newsletterForm {
+        margin-right: 0% !important;
+	}
+	#mailpoet_form_1 {
+		margin-left: 11%;
+		width: 70% !important;
+	}
+	#mailpoet_form_1 .mailpoet_paragraph {
+		margin-left: 0px;
+		margin-right: 0px;
+		width: 100%;
+	}
+	#mailpoet_form_1 form.mailpoet_form {
+		padding: 0px 0px 20px 0px !important;
+		width: -webkit-fill-available;
+	}
+}
+
+@media (max-width: 380px) {
+	.mailpoet_form_shortcode {
+		display: block;
+	}
+	#newsletterForm {
+        margin-right: 0% !important;
+	}
+	#mailpoet_form_1 {
+		margin-left: 11%;
+	}
+	#mailpoet_form_1 .mailpoet_paragraph {
+		margin-left: 10px;
+		margin-right: 10px;
+		width: 100%;
+	}
+}
+
+.yogaCat > div > div > a > img {
+    min-width: 85px;
+}
+
+/*teacher listing page*/
+
+/*#c27-single-listing > section {*/
+/*    margin-top: -20% !important;*/
+/*}*/
+
+.profile-cover-image {
+    background-position: top !important;
+}
+
+.element .pf-body {
+    padding-top: 0;
+}
+
+.lf-item-info-2 h4 {
+    margin-top: -3px;
+}
+
+/*#c27-explore-listings > section > div > div.explore-classic-content.col-md-8 > div.row.results-view.grid.fc-type-2-results > div > div > div > a > div.overlay {*/
+/*    opacity: 0 !important;*/
+/*}*/
+
+.title-style-1 > h5 {
+    font-size: 17px !important;
+}
+
+/*@media (max-width: 769px) {*/
+/*    .profile-cover .overlay {*/
+/*        opacity: 0 !important;*/
+/*    }*/
+/*}*/
+
+.profile-header {
+    display: none;
+}
+
+.lf-item-info-2 h4 {
+    margin-top: -4px;
+}
+
+@media (max-width: 769px) {
+    #c27-single-listing > section {
+        padding-bottom: 100% !important;
+    }
+}
+
+/*teacher listing page*/
+
+#message-htmlpart1 > div > a {
+    color: transparent;
+}
+
+.title-style-1 h5 {
+    padding-bottom: 15px;
+}
