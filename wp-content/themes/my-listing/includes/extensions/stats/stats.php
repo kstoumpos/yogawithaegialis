@@ -26,6 +26,8 @@ class Stats {
 
 		// Display stats in admin dashboard.
 		add_action( 'wp_dashboard_setup', [ $this, 'admin_dashboard_stats' ] );
+
+		add_action( 'transition_post_status', [ $this, 'refresh_cache_on_listing_status_update' ], 40, 3 );
 	}
 
 	public function get_user_stats( $user_id ) {
@@ -200,5 +202,11 @@ class Stats {
 			wp_enqueue_script( 'mylisting-dashboard' );
 			wp_enqueue_style( 'mylisting-admin-dashboard' );
 		} );
+	}
+
+	public function refresh_cache_on_listing_status_update( $new_status, $old_status, $post ) {
+		if ( $post && $post->post_type === 'job_listing' && $post->post_author ) {
+			delete_user_option( $post->post_author, '_mylisting_stats_cache' );
+		}
 	}
 }

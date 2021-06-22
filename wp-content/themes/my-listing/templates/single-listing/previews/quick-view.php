@@ -33,13 +33,13 @@ if ( $listing->get_priority() >= 2 ) {
 } ?>
 
 <?php
-if ( has_action( sprintf( 'mylisting/quick-view-template:%s', $options['template'] ) ) ) {
-    do_action( sprintf( 'mylisting/quick-view-template:%s', $options['template'] ), $listing, $listing->type );
-} elseif ( $_quick_view_template = locate_template( sprintf( 'templates/single-listing/quick-view/%s.php', $options['template'] ) ) ) {
+if ( has_action( sprintf( 'mylisting/quick-view-template:%s', $quick_view_template ) ) ) {
+    do_action( sprintf( 'mylisting/quick-view-template:%s', $quick_view_template ), $listing, $listing->type );
+} elseif ( $_quick_view_template = locate_template( sprintf( 'templates/single-listing/quick-view/%s.php', $quick_view_template ) ) ) {
     require $_quick_view_template;
 } else { ?>
 
-<div class="listing-quick-view-container listing-preview <?php echo esc_attr( "quick-view-{$quick_view_template} quick-view type-{$listing->type->get_slug()} tpl-{$options['template']}" ) ?>">
+<div class="listing-quick-view-container listing-preview <?php echo esc_attr( "quick-view-{$quick_view_template} quick-view type-{$listing->type->get_slug()} tpl-{$quick_view_template}" ) ?>">
 	<div class="mc-left">
 		<div class="lf-item-container">
 			<div class="lf-item">

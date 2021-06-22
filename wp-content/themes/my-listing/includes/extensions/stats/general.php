@@ -45,6 +45,7 @@ class General {
 				AND post_author = %d
 		", $status, $user_id );
 
+		$sql = apply_filters( 'mylisting/stats/query-listing-count/sql', $sql, $user_id, $status );
 		$query = $wpdb->get_row( $sql, OBJECT );
 
 		return is_object( $query ) && ! empty( $query->count ) ? (int) $query->count : 0;

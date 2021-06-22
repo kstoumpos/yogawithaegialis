@@ -154,10 +154,12 @@ class Related_Listing_Field extends Base_Field {
 		$ids = array_map( 'absint', (array) $rows );
 
 		if ( empty( $ids ) ) {
-			return $is_multiple ? [] : false;
+			$items = $is_multiple ? [] : false;
+		} else {
+			$items = $is_multiple ? $ids : array_shift( $ids );
 		}
 
-		return $is_multiple ? $ids : array_shift( $ids );
+		return apply_filters( 'mylisting/related-listing-field/get-related-items', $items, $this );
 	}
 
 	public function field_props() {

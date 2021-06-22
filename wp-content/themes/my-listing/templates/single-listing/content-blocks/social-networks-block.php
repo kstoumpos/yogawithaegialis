@@ -20,6 +20,7 @@ $links = array_map( function( $network ) {
 		'link' => $network['link'],
 		'color' => $network['color'],
 		'text_color' => '#fff',
+		'target' => '_blank',
 	];
 }, $networks );
 ?>

@@ -18,7 +18,7 @@ abstract class Base_Notification {
 			// send email
 			if ( $this->should_send_email() ) {
 				$this->send_email();
-				mlog()->note( 'Notification email sent: '.c27()->class2file( static::class ) );
+				mlog()->note( 'Notification email sent: '.$this->get_key() );
 			}
 		} catch ( \Exception $e ) {
 			mlog()->warn( 'Email failed: '.$e->getMessage() );
@@ -57,13 +57,25 @@ abstract class Base_Notification {
 	abstract public function get_mailto();
 
 	/**
+	 * Generate a unique key for notification based on classname.
+	 *
+	 * @since 2.6.7
+	 */
+	public function get_key() {
+		return c27()->class2file( static::class );
+	}
+
+	/**
 	 * Validate and send the notification email.
 	 *
 	 * @since 2.1
 	 */
 	public function send_email() {
 		$args = [
-			'to' => $this->get_mailto(),
+			'to' => apply_filters(
+				sprintf( 'mylisting/emails/%s:mailto', $this->get_key() ),
+				$this->get_mailto()
+			),
 			'subject' => sprintf( '[%s] %s', get_bloginfo('name'), $this->get_subject() ),
 			'message' => $this->get_email_template(),
 			'headers' => [
@@ -85,7 +97,7 @@ abstract class Base_Notification {
 	 */
 	public function get_email_template() {
 		// determine which template file to use
-		$template_file = locate_template( sprintf( 'templates/emails/%s.php', c27()->class2file( static::class ) ) );
+		$template_file = locate_template( sprintf( 'templates/emails/%s.php', $this->get_key() ) );
 		if ( ! $template_file ) {
 			$template_file = locate_template( 'templates/emails/default.php' );
 		}
@@ -114,7 +126,7 @@ abstract class Base_Notification {
 	 */
 	public function should_send_email() {
 		$options = get_option( 'mylisting_notifications', [] );
-		$notification = c27()->class2file( static::class );
+		$notification = $this->get_key();
 		$should_send = true;
 
 		if ( isset( $options[ $notification ], $options[ $notification ]['send_email'] ) && $options[ $notification ]['send_email'] === 'disabled' ) {

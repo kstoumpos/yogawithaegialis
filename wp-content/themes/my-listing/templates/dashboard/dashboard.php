@@ -47,6 +47,7 @@ $stats = mylisting()->stats()->get_user_stats( get_current_user_id() );
 		'value' => number_format_i18n( absint( $stats->get( 'listings.published' ) ) ),
 		'description' => _x( 'Published Listings', 'Dashboard stats', 'my-listing' ),
 		'background' => mylisting()->get( 'stats.color1' ),
+		'classes' => 'stat-card-published-listings',
 	] );
 
 	// Pending listing count (pending_approval + pending_payment).
@@ -55,6 +56,7 @@ $stats = mylisting()->stats()->get_user_stats( get_current_user_id() );
 		'value' => number_format_i18n( absint( $stats->get( 'listings.pending' ) ) ),
 		'description' => _x( 'Pending Listings', 'Dashboard stats', 'my-listing' ),
 		'background' => mylisting()->get( 'stats.color2' ),
+		'classes' => 'stat-card-pending-listings',
 	] );
 
 	// Promoted listing count.
@@ -63,6 +65,7 @@ $stats = mylisting()->stats()->get_user_stats( get_current_user_id() );
 		'value' => number_format_i18n( absint( $stats->get( 'promotions.count' ) ) ),
 		'description' => _x( 'Active Promotions', 'Dashboard stats', 'my-listing' ),
 		'background' => mylisting()->get( 'stats.color3' ),
+		'classes' => 'stat-card-active-promotions',
 	] );
 
 	// Recent views card.
@@ -71,6 +74,7 @@ $stats = mylisting()->stats()->get_user_stats( get_current_user_id() );
 		'value' => number_format_i18n( absint( $stats->get( 'visits.views.lastweek' ) ) ),
 		'description' => _x( 'Visits this week', 'Dashboard stats', 'my-listing' ),
 		'background' => mylisting()->get( 'stats.color4' ),
+		'classes' => 'stat-card-visits',
 	] );
 	?>
 </div>

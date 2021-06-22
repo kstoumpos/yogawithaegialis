@@ -167,7 +167,7 @@ class Claim_Listing_Form extends \MyListing\Src\Forms\Base_Form {
 			return;
 		}
 
-		$tree = \MyListing\Src\Paid_Listings\Util::get_package_tree_for_listing_type( $listing->type );
+		$tree = \MyListing\Src\Paid_Listings\Util::get_package_tree_for_listing_type( $listing->type, 'claim-listing' );
 		$tree = array_filter( $tree, function( $item ) {
 			return $item['product']->use_for_claims();
 		} );

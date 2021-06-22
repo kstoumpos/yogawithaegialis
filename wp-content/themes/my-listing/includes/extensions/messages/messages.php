@@ -685,7 +685,41 @@ class Messages {
             1);
         }
 
+        $blacklist_words = $this->ml_blacklist_check( $message );
+        if ( $blacklist_words ) {
+            throw new Exception(
+                esc_html__('Disallowed words are used.', 'my-listing'),
+            1);
+        }
+
         $this->message = substr( wp_kses_post( $_POST['message'] ), 0, $this->max_char_limit );
+    }
+
+    public function ml_blacklist_check( $value ) {
+        $value  = preg_replace( '/\s/', '', $value );
+        $mod_keys = trim( get_option( 'disallowed_keys' ) );
+
+        if ( '' === $mod_keys ) {
+            return false; // If moderation keys are empty.
+        }
+
+        $words = explode( "\n", $mod_keys );
+        foreach ( (array) $words as $word ) {
+            $word = trim( $word );
+
+            if ( empty( $word )
+            or 256 < strlen( $word ) ) {
+                continue;
+            }
+
+            $pattern = sprintf( '/\b%s\b/iu', preg_quote( $word, '#' ) );
+
+            if ( preg_match( $pattern, $value ) ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function _is_self_messaging() {

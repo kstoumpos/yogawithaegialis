@@ -16,6 +16,7 @@ if ( $field['type'] !== 'term-select' ) {
 		name="<?php echo esc_attr( isset( $field['name'] ) ? $field['name'] : $key ) ?>[]"
 		id="<?php echo esc_attr( isset( $field['name'] ) ? $field['name'] : $key ) ?>"
 		multiple="multiple"
+		<?php if ( ! empty( $field['create_tag'] ) ) echo 'data-create-tags="true"'; ?>
 		<?php if ( ! empty( $field['required'] ) ) echo 'required="required"'; ?>
 		<?php if ( ! empty( $field['placeholder'] ) ) echo 'placeholder="' . esc_attr( $field['placeholder'] ) . '"'; ?>
 		data-mylisting-ajax="true"

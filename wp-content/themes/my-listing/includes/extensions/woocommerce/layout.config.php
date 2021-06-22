@@ -43,6 +43,7 @@ return [
             'end' => 'case27_woocommerce_after_thankyou_template',
             'title' => '',
             'icon' => 'icon-shopping-basket-1',
+            'title' => _x( 'Order received', 'Dashboard page title', 'my-listing' ),
 		],
 
 		'myaccount/form-lost-password.php' => [
@@ -178,6 +179,15 @@ return [
 	        'icon' => 'mi note_add',
             'columns' => 'col-md-8 col-md-offset-2',
             'classes' => 'i-section',
+		],
+
+		'myaccount/form-add-payment-method.php' => [
+		    'start'   => 'mylisting/woocommerce/templates/myaccount/form-add-payment-method.php/before',
+		    'end'     => 'mylisting/woocommerce/templates/myaccount/form-add-payment-method.php/after',
+		    'title'   => _x( 'Add payment method', 'Dashboard page title', 'my-listing' ),
+		    'icon'    => 'mi payment',
+		    'columns' => 'col-md-8 col-md-offset-2',
+		    'classes' => 'i-section',
 		],
 	],
 

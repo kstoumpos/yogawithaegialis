@@ -65,12 +65,14 @@ $links = $author->get_social_links();
 				        	</li>
 			        	<?php endif ?>
 
-						<li id="cta-549f5e" class="lmb-calltoaction">
-						    <a href="#" class="cts-open-chat" data-user-id="<?php echo absint( $author->get_id() ) ?>">
-						    	<i class="icon-chat-bubble-square-add"></i>
-						    	<span><?php echo esc_html( _x( 'Direct message', 'Author page', 'my-listing' ) ) ?></span>
-						    </a>
-						</li>
+						<?php if ( c27()->get_setting( 'messages_enabled', true ) !== false ): ?>
+							<li id="cta-549f5e" class="lmb-calltoaction">
+							    <a href="#" class="cts-open-chat" data-user-id="<?php echo absint( $author->get_id() ) ?>">
+							    	<i class="icon-chat-bubble-square-add"></i>
+							    	<span><?php echo esc_html( _x( 'Direct message', 'Author page', 'my-listing' ) ) ?></span>
+							    </a>
+							</li>
+						<?php endif ?>
 					</ul>
 				</div>
 			</div>
@@ -142,6 +144,7 @@ $links = $author->get_social_links();
 											'link' => $network['link'],
 											'color' => $network['color'],
 											'text_color' => '#fff',
+											'target' => '_blank',
 										];
 									}, $links ) ] ) ?>
 	        		        </div>

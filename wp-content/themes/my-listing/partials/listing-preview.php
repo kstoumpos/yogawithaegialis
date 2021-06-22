@@ -88,13 +88,13 @@ $wrapper_classes[] = $tagline ? 'has-tagline' : 'no-tagline';
 $wrapper_classes[] = ! empty( $options['info_fields'] ) ? 'has-info-fields' : 'no-info-fields';
 
 if ( $listing->get_priority() >= 2 ) {
-    $wrapper_classes[] = 'level-promoted';
+    $wrapper_classes[] = $priority_class = 'level-promoted';
     $promotion_tooltip = _x( 'Promoted', 'Listing Preview Card: Promoted Tooltip Title', 'my-listing' );
 } elseif ( $listing->get_priority() === 1 ) {
-    $wrapper_classes[] = 'level-featured';
+    $wrapper_classes[] = $priority_class = 'level-featured';
     $promotion_tooltip = _x( 'Featured', 'Listing Preview Card: Promoted Tooltip Title', 'my-listing' );
 } else {
-    $wrapper_classes[] = 'level-normal';
+    $wrapper_classes[] = $priority_class = 'level-normal';
     $promotion_tooltip = '';
 }
 

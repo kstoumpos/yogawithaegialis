@@ -37,7 +37,7 @@ function import_recurring_dates( $field, $field_value, $log ) {
 				$date['end'] ?? '',
 				$date['until'] ?? ''
 			) );
-			return;
+			continue;
 		}
 
 		$dates[] = [

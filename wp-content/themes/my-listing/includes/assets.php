@@ -370,6 +370,7 @@ class Assets {
 			'l10n' => [
 				'selectOption' => _x( 'Select an option', 'Dropdown placeholder', 'my-listing' ),
 				'errorLoading' => _x( 'The results could not be loaded.', 'Dropdown could not load results', 'my-listing' ),
+				'removeAllItems' => _x( 'Remove all items', 'Dropdown could not load results', 'my-listing' ),
 				'loadingMore'  => _x( 'Loading more results…', 'Dropdown loading more results', 'my-listing' ),
 				'noResults'    => _x( 'No results found', 'Dropdown no results found', 'my-listing' ),
 				'searching'    => _x( 'Searching…', 'Dropdown searching', 'my-listing' ),

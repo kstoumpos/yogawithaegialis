@@ -159,6 +159,14 @@ class Helpers {
 		return '';
 	}
 
+	public function get_site_logo_alt_text() {
+		if ($logo_obj = c27()->get_setting('general_site_logo')) {
+			return $logo_obj['alt'];
+		}
+
+		return '';
+	}
+
 	public function upload_file( $file, $allowed_mime_types = [] ) {
 		include_once( ABSPATH . 'wp-admin/includes/file.php' );
 		include_once( ABSPATH . 'wp-admin/includes/media.php' );

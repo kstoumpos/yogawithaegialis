@@ -36,6 +36,7 @@ class Comments_List_Endpoint {
 				'number' => $per_page,
 				'order' => get_option( 'comment_order' ) === 'DESC' ? 'DESC' : 'ASC',
 				'hierarchical' => 'flat',
+				'status' => 'approve',
 			] );
 
 			if ( ! comments_open( $post_id ) || empty( $comments ) ) {

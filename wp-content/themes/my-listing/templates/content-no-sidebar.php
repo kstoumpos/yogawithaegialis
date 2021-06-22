@@ -30,8 +30,7 @@ get_header(); the_post(); ?>
 	</div>
 </section>
 
-<?php if ( ! post_password_required() && ( comments_open() || get_comments_number() ) ) :
-	$GLOBALS['case27_reviews_allow_rating'] = false; ?>
+<?php if ( ! post_password_required() && ( comments_open() || get_comments_number() ) ): ?>
 	<section class="i-section">
 		<div class="container">
 			<div class="row section-title">

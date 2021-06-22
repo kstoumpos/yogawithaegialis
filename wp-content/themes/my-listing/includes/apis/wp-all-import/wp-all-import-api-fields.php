@@ -103,21 +103,15 @@ function render_field( $field, $values ) {
 	}
 
 	if ( $field->get_type() === 'file' ) {
-		$render_as = in_array( $field->get_key(), ['job_logo', 'job_cover', 'job_gallery'], true ) ? 'image' : 'file';
-		\PMXI_API::add_field( $render_as,  $field->get_label(), [
-			'field_name' => $field_name,
-			'field_value' => $field_value,
-			'field_key' => $field->get_key(),
-			'addon_prefix' => 'mylisting-addon',
-			'download_image' => ! empty( $values['download_image'][ $field->get_key() ] )
-				? $values['download_image'][ $field->get_key() ]
-				: 'yes',
-		] );
-
-		if ( $field->get_prop('multiple') ) {
-			printf( '<p>Separate multiple values with %s</p>', $delimiter_markup );
+		if ( is_string( $field_value ) ) {
+			$field_value = [ 'value' => $field_value ];
 		}
-		return;
+
+		if ( ! is_array( $field_value ) ) {
+			$field_value = [];
+		}
+
+		return require locate_template('templates/admin/wp-all-import/wp-all-import-ui-file.php');
 	}
 
 	if ( $field->get_type() === 'select-product' ) {

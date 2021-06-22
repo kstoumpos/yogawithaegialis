@@ -21,7 +21,9 @@ class Term_List_Endpoint {
 	 * @since 2.0
 	 */
 	public function handle() {
-		mylisting_check_ajax_referrer();
+		if ( apply_filters( 'mylisting/ajax-get-request-security-check', false ) === true ) {
+			check_ajax_referer( 'c27_ajax_nonce', 'security' );
+		}
 
 		try {
 			// Validate taxonomy.

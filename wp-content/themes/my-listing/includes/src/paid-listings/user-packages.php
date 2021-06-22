@@ -54,6 +54,10 @@ class User_Packages {
 
 		// Increase package count when listing is untrashed and status is set to pending approval.
 		add_action( 'trash_to_pending', [ $this, 'trash_to_pending' ] );
+
+		if ( is_admin() ) {
+			add_action( 'request', [ $this, 'add_keyword_search' ] );
+		}
 	}
 
 	/**
@@ -462,4 +466,46 @@ class User_Packages {
 
 		$listing->get_package()->increase_count();
 	}
+
+	/**
+	 * Search packages by keyword.
+	 *
+	 * @since 2.6.5
+	 */
+	public function add_keyword_search( $vars ) {
+		$screen = get_current_screen();
+		if ( ! ( $screen && $screen->id === 'edit-case27_user_package' ) || empty( $vars['s'] ) ) {
+			return $vars;
+		}
+
+		add_filter( 'posts_join', function( $join ) {
+			global $wpdb;
+			$join .= " LEFT JOIN {$wpdb->users} AS user ON ( {$wpdb->posts}.post_author = user.ID ) ";
+			return $join;
+		} );
+
+		add_filter( 'posts_search', function( $search ) use ( $vars ) {
+			global $wpdb;
+			$keyword = sanitize_text_field( $vars['s'] );
+			$keyword_query = $wpdb->prepare( "
+				OR (
+					user.user_login LIKE %s OR
+					user.user_nicename LIKE %s OR
+					user.user_email LIKE %s OR
+					user.display_name LIKE %s
+				)
+			", '%'.$keyword.'%', '%'.$keyword.'%', '%'.$keyword.'%', '%'.$keyword.'%' );
+
+			$search = str_replace(
+				"OR ({$wpdb->posts}.post_excerpt",
+				"{$keyword_query} OR ({$wpdb->posts}.post_excerpt",
+				$search
+			);
+
+			return $search;
+		} );
+
+		return $vars;
+	}
+
 }

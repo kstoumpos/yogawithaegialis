@@ -472,7 +472,7 @@ class Listing_Type_Config {
 		if ( $searchform === 'advanced' && ! in_array( 'order', array_column( $filterdata, 'type' ) ) ) {
 			$filterdata[] = [
 				'type' => 'order',
-				'label' => 'Order by',
+				'label' => __( 'Order by', 'my-listing' ),
 			];
 		}
 

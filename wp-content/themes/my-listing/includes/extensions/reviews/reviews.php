@@ -280,10 +280,8 @@ class Reviews {
 	 * @return string
 	 */
 	public static function get_ratings_field( $comment = false, $post_id = false ) {
-		global $case27_reviews_allow_rating;
-
-		// Bail if rating not allowed.
-		if ( ! isset( $case27_reviews_allow_rating ) || ! $case27_reviews_allow_rating ) {
+		// bail if rating is not allowed
+		if ( ! \MyListing\is_rating_enabled( $post_id ? $post_id : get_the_ID() ) ) {
 			return '';
 		}
 
@@ -573,6 +571,14 @@ class Reviews {
 		$post = get_post( $_POST['listing_id'] );
 		if ( ! $post || 'job_listing' !== $post->post_type ) {
 			return wp_die( '<p>' . __( 'Invalid request.', 'my-listing') . '</p>', __( 'Comment Submission Failure.', 'my-listing' ), array( 'back_link' => true ) );
+		}
+
+		if ( empty( $_REQUEST['_update_review_nonce'] ) || ! wp_verify_nonce( $_REQUEST['_update_review_nonce'], 'update_review' ) ) {
+			return wp_die(
+				'<p>' . __( 'Invalid request.', 'my-listing') . '</p>',
+				__( 'Comment Submission Failure.', 'my-listing' ),
+				[ 'back_link' => true ]
+			);
 		}
 
 		$listing_id = $post->ID;

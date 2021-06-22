@@ -30,8 +30,41 @@ class Wp_Editor_Field extends Base_Field {
 
 	public function validate() {
 		$value = $this->get_posted_value();
+		$this->validateBlackListWords();
 		$this->validateMinLength( true );
 		$this->validateMaxLength( true );
+	}
+
+	public function validateBlackListWords() {
+		$value = $this->get_posted_value();
+		$message = $this->ml_blacklist_check( $value );
+		if ( $message ) {
+    		throw new \Exception( esc_html__( 'Disallowed words are used.', 'my-listing' ) );
+		}
+	}
+
+	function ml_blacklist_check( $value ) {
+		$mod_keys = trim( get_option( 'disallowed_keys' ) );
+	    if ( '' === $mod_keys ) {
+	        return false; // If moderation keys are empty.
+	    }
+
+		$words = explode( "\n", $mod_keys );
+		foreach ( (array) $words as $word ) {
+			$word = trim( $word );
+
+			if ( empty( $word )
+			or 256 < strlen( $word ) ) {
+				continue;
+			}
+
+			$pattern = sprintf( '/\b%s\b/iu', preg_quote( $word, '#' ) );
+			if ( preg_match( $pattern, $value ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public function field_props() {

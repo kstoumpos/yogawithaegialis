@@ -9,10 +9,15 @@ if ( ! defined('ABSPATH') ) {
 class Quick_Search extends Query {
 	use \MyListing\Src\Traits\Instantiatable;
 
-	public $action = 'mylisting_quick_search';
+	public function __construct() {
+		add_action( 'mylisting_ajax_mylisting_quick_search', [ $this, 'handle' ] );
+		add_action( 'mylisting_ajax_nopriv_mylisting_quick_search', [ $this, 'handle' ] );
+	}
 
     public function handle() {
-		mylisting_check_ajax_referrer();
+		if ( apply_filters( 'mylisting/ajax-get-request-security-check', false ) === true ) {
+			check_ajax_referer( 'c27_ajax_nonce', 'security' );
+		}
 
 		$search_term = sanitize_text_field( ! empty( $_GET['s'] ) ? $_GET['s'] : '' );
 		$sections = [];

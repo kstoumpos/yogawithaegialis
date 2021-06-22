@@ -19,6 +19,7 @@ class Notifications {
 		'\MyListing\Src\Notifications\Message_Received_User_Notification',
 		'\MyListing\Src\Notifications\Listing_Reported_Admin_Notification',
 		'\MyListing\Src\Notifications\Review_Submitted_User_Notification',
+		'\MyListing\Src\Notifications\Promotion_Expired_User_Notification',
 	];
 
 	public static function boot() {

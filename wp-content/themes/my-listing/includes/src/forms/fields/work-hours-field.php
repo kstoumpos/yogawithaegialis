@@ -22,14 +22,7 @@ class Work_Hours_Field extends Base_Field {
 	}
 
 	public function string_value( $modifier = null ) {
-		$schedule = $this->listing->get_schedule();
-		if ( $schedule->get_status() === 'not-available' ) {
-			return '';
-		}
-
-		return $schedule->get_open_now()
-			? _x( 'OPEN', 'Work hours status', 'my-listing' )
-			: _x( 'CLOSED', 'Work hours status', 'my-listing' );
+		return $this->listing->get_schedule()->get_label_for_preview_card();
 	}
 
 	public function get_editor_options() {

@@ -187,7 +187,7 @@ $listing_logo = $listing->get_logo( 'medium' );
 	    		<div class="col-md-12">
 					<div class="woocommerce-message" role="alert">
 						<?php echo esc_html( __( 'Your review has been submitted.', 'my-listing' ) ) ?>
-						<a href="#" class="button wc-forward hide-notification">Close</a>
+						<a href="#" class="button wc-forward hide-notification"><?php _e( 'Close', 'my-listing' ) ?></a>
 					</div>
 				</div>
 	    	</div>
@@ -332,7 +332,6 @@ $listing_logo = $listing->get_logo( 'medium' );
 
                 <?php if ($menu_item['page'] == 'comments'): ?>
                     <div>
-                        <?php $GLOBALS['case27_reviews_allow_rating'] = $listing->type->is_rating_enabled() ?>
                         <?php comments_template() ?>
                     </div>
                 <?php endif ?>

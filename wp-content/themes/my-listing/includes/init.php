@@ -5,6 +5,7 @@ mylisting()->boot(
 	MyListing\Controllers\User_Roles_Controller::class,
 	MyListing\Controllers\Account_Details_Form_Controller::class,
 	MyListing\Controllers\Register_Form_Controller::class,
+	MyListing\Controllers\Dashboard_Listings_Controller::class,
 	MyListing\Controllers\Promotions\Promotions_Controller::class,
 	MyListing\Controllers\Promotions\Promotions_Admin_Controller::class,
 	MyListing\Controllers\Promotions\Promotions_Dashboard_Controller::class,
@@ -21,7 +22,6 @@ mylisting()->boot(
 	MyListing\Src\Endpoints\Endpoints::class,
 	MyListing\Src\Explore::class,
 	MyListing\Src\Queries\Query::class,
-	MyListing\Filters::class,
 	MyListing\Assets::class,
 	MyListing\Ext\Buddypress\Buddypress::class,
 	MyListing\Src\Admin\Admin::class,
@@ -46,6 +46,7 @@ mylisting()->register( [
 	'typography' => MyListing\Ext\Typography\Typography::instance(),
 	'sharer' => MyListing\Ext\Sharer\Sharer::instance(),
 	'stats' => MyListing\Ext\Stats\Stats::instance(),
+	'icalendar' => MyListing\Ext\ical\iCalendar::instance(),
 ] );
 
 MyListing\Ext\WooCommerce\WooCommerce::instance();
@@ -111,6 +112,9 @@ add_action( 'after_setup_theme', function() {
 	add_theme_support( 'header-footer-elementor' );
 });
 
+add_action( 'after_switch_theme', function() {
+	flush_rewrite_rules();
+} );
 
 /*
  * Register theme sidebars.
@@ -165,4 +169,241 @@ add_action( 'mylisting/get-footer', function() {
             <i class="mi keyboard_arrow_up"></i>
         </a>
     <?php endif;
+
+    printf(
+    	'<style type="text/css">%s</style>',
+    	$GLOBALS['case27_custom_styles']
+    );
+
+    if ( c27()->get_setting('custom_code') ) {
+        echo c27()->get_setting('custom_code');
+    }
 }, 1 );
+
+add_filter( 'comment_form_defaults', function( $fields ) {
+    $fields['must_log_in'] = '<p class="must-log-in">' . sprintf(
+        __( 'You must be <a href="%s">logged in</a> to post a comment.', 'my-listing' ),
+        esc_url( \MyListing\get_login_url() )
+    ) . '</p>';
+
+    return $fields;
+} );
+
+add_filter( 'comment_reply_link', function( $link, $args, $comment, $post ) {
+    if ( class_exists( 'WooCommerce' ) && get_option( 'comment_registration' ) && ! is_user_logged_in() ) {
+        $link = sprintf( '<a rel="nofollow" class="comment-reply-login" href="%s">%s</a>',
+            esc_url( \MyListing\get_login_url() ),
+            $args['login_text']
+        );
+    }
+
+    return $link;
+}, 30, 4 );
+
+/**
+ * Include attachment guid in `wp.media.frames.file_frame`. Necessary
+ * to add CDN and media offloading support for listing file fields.
+ *
+ * @since 2.4.5
+ */
+add_filter( 'wp_prepare_attachment_for_js', function( $response, $attachment, $meta ) {
+    $response['guid'] = get_the_guid( $attachment->ID );
+    $response['encoded_guid'] = 'b64:'.base64_encode( $response['guid'] );
+    return $response;
+}, 100, 3 );
+
+/**
+ * Add a way to link to the user profile from a WordPress menu item.
+ *
+ * @since 3.0
+ */
+add_filter( 'wp_nav_menu_objects', function( $menu_items ) {
+	$username = is_user_logged_in() ? wp_get_current_user()->user_login : '';
+	foreach ( $menu_items as $menu_item ) {
+		$menu_item->url = str_replace( '#username#', $username, $menu_item->url );
+	}
+
+	return $menu_items;
+} );
+
+/**
+ * Register theme required plugins using TGM Plugin Activation library.
+ *
+ * @since 1.0
+ */
+add_action( 'tgmpa_register', function() {
+    $plugins = [
+        [
+            'name' => __( 'Elementor', 'my-listing' ),
+            'slug' => 'elementor',
+
+            // If false, the plugin is only 'recommended' instead of required.
+            'required' => true,
+
+            // If true, plugin is activated upon theme activation and cannot be deactivated until theme switch.
+            'force_activation' => true,
+        ],
+        [
+            'name' => __( 'WooCommerce', 'my-listing' ),
+            'slug' => 'woocommerce',
+            'required' => true,
+            'force_activation' => true,
+        ],
+        [
+            'name' => __( 'Contact Form 7', 'my-listing' ),
+            'slug' => 'contact-form-7',
+            'required' => false,
+            'force_activation' => false,
+        ],
+    ];
+
+    // Array of configuration settings.
+    $config = [
+        'id' => 'case27',
+        'default_path' => c27()->template_path('includes/plugins/'),
+        'dismissable' => true,
+        'is_automatic' => true,
+    ];
+
+    tgmpa( $plugins, $config );
+} );
+
+add_action( 'pre_get_posts', function( $query ) {
+    if ( ! is_author() || ! $query->is_main_query() || is_admin() ) {
+        return;
+    }
+
+    $query->set( 'post_type', 'job_listing' );
+} );
+
+add_filter( 'query_vars', function( $vars ) {
+	$vars[] = 'listing_type';
+	return $vars;
+} );
+
+add_filter( 'get_the_archive_title', function( $title ) {
+    if ( ! class_exists('WooCommerce') ) {
+    	return $title;
+    }
+
+    if ( is_woocommerce() ) {
+        $title = woocommerce_page_title( false );
+    } elseif ( is_cart() || is_checkout() || is_account_page() || is_page() ) {
+        $title = get_the_title();
+    } elseif ( is_home() ) {
+        $title = apply_filters( 'the_title', get_the_title( get_option( 'page_for_posts' ) ), get_option( 'page_for_posts' ) );
+    }
+
+    return $title;
+} );
+
+add_filter( 'case27_featured_service_content', function( $content ) {
+    if ( ! trim( $content ) ) {
+        return $content;
+    }
+
+    $dom = new \DOMDocument;
+    $dom->loadHTML( mb_convert_encoding( $content, 'HTML-ENTITIES', 'UTF-8' ) );
+
+    foreach ( ['h1', 'h2', 'h3'] as $tagSelector) {
+        foreach ( $dom->getElementsByTagName( $tagSelector ) as $tag ) {
+            $tag->setAttribute( 'class', $tag->getAttribute( 'class' ) . ' case27-primary-text' );
+        }
+    }
+
+    return $dom->saveHTML();
+} );
+
+add_filter( 'option_category_base', function( $base ) {
+    if ( ! $base || $base == 'category' ) {
+        return 'post-category';
+    }
+
+    return $base;
+} );
+
+add_filter( 'option_tag_base', function( $base ) {
+    if ( ! $base || $base == 'tag' ) {
+        return 'post-tag';
+    }
+
+    return $base;
+} );
+
+add_filter( 'pre_option_job_category_base', function( $base ) {
+    if ( ! $base || $base == 'listing-category' || $base == 'job-category' ) {
+        return 'category';
+    }
+
+    return $base;
+} );
+
+add_filter( 'body_class', function( $classes ) {
+    $classes[] = 'my-listing';
+
+    if ( is_singular( 'job_listing' ) ) {
+        global $post;
+        $listing = \MyListing\Src\Listing::get( $post );
+
+        if ( $post->_case27_listing_type ) {
+            $classes[] = 'single-listing';
+            $classes[] = "type-{$post->_case27_listing_type}";
+        }
+
+        if ( $post->_package_id ) {
+            $classes[] = "package-{$post->_package_id}";
+        }
+
+        if ( $listing->is_verified() ) {
+            $classes[] = 'c27-verified';
+        }
+
+        if ( $listing->type ) {
+            $layout = $listing->type->get_layout();
+            $classes[] = esc_attr( sprintf( 'cover-style-%s', $layout['cover']['type'] ) );
+        }
+    }
+
+    return $classes;
+} );
+
+add_filter( 'admin_menu', function() {
+    $user = wp_get_current_user();
+    if ( ! in_array( 'administrator', $user->roles ) ) {
+        remove_menu_page( 'ai1wm_export' );
+        remove_submenu_page( 'ai1wm_export', 'ai1wm_import' );
+        remove_submenu_page( 'ai1wm_export', 'ai1wm_backups' );
+    }
+} );
+
+/**
+ * Fix menu items not being marked active when
+ * using a custom WooCommerce user menu.
+ *
+ * @since 2.6.7
+ */
+add_filter( 'nav_menu_css_class', function( $classes, $menu_item, $args ) {
+	if ( $args->theme_location !== 'mylisting-user-menu' ) {
+		return $classes;
+	}
+
+	$current_endpoint = untrailingslashit( parse_url( $_SERVER['REQUEST_URI'] )['path'] );
+	$endpoint = untrailingslashit( parse_url( $menu_item->url )['path'] );
+
+	if ( $current_endpoint === $endpoint ) {
+		$classes[] = 'current-menu-item';
+	}
+
+	return $classes;
+}, 50, 3 );
+
+/**
+ * FIX: "_user_package_id" not present as a custom field
+ * when performing a new export using WP All Export.
+ *
+ * @since 2.6.7
+ */
+add_filter( 'wp_all_export_available_data', function( $data ) {
+	$data['existing_meta_keys'][] = '_user_package_id';
+	return $data;
+} );

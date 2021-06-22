@@ -108,8 +108,8 @@ class Work_Hours {
 			}
 
 			if ( $day['status'] == 'by-appointment-only' ) {
-				$this->status = 'closed';
-				$this->message = __( 'Closed', 'my-listing' );
+				$this->status = 'appointment-only';
+				$this->message = __( 'By appointment only', 'my-listing' );
 				return false;
 			}
 		}
@@ -217,6 +217,23 @@ class Work_Hours {
 		return $this->message;
 	}
 
+	public function get_label_for_preview_card() {
+		$status = $this->get_status();
+		if ( $status === 'not-available' ) {
+			return '';
+		}
+
+		if ( in_array( $status, [ 'open', 'closing', 'open-all-day' ], true ) ) {
+			return _x( 'OPEN', 'Preview Card: Work hours status', 'my-listing' );
+		}
+
+		if ( $status === 'appointment-only' ) {
+			return _x( 'BY APPOINTMENT ONLY', 'Preview Card: Work hours status', 'my-listing' );
+		}
+
+		return _x( 'CLOSED', 'Preview Card: Work hours status', 'my-listing' );
+	}
+
 	public function get_active_day() {
 		return $this->active_day;
 	}
@@ -300,7 +317,14 @@ class Work_Hours {
 			return __( 'Today\'s work schedule is not available', 'my-listing' );
 		}
 
-		return sprintf( __( 'Open hours today:', 'my-listing' ) . ' <span>%s - %s</span>', $this->format_time( $ranges[0]['from'] ), $this->format_time( $ranges[0]['to'] ) );
+		$formatted_ranges = array_map( function( $range ) {
+			return $this->format_time( $range['from'] ).' - '.$this->format_time( $range['to'] );
+		}, $ranges );
+
+		return sprintf(
+			__( 'Open hours today:', 'my-listing' ) . ' <span>%s</span>',
+			join( ', ', $formatted_ranges )
+		);
 	}
 
 	public function get_schedule() {

@@ -11,10 +11,9 @@ if ( ! defined('ABSPATH') ) {
 
 <div class="listing-details item-count-<?php echo count( $items ) ?>">
 	<ul>
-
 		<?php foreach ( $items as $item ): ?>
 			<li>
-				<a href="<?php echo esc_url( $item['link'] ) ?>">
+				<a href="<?php echo esc_url( $item['link'] ) ?>" <?php echo isset( $item['target'] ) && $item['target'] === '_blank' ? 'target="_blank"' : '' ?>>
 					<span class="cat-icon" style="background-color: <?php echo esc_attr( $item['color'] ) ?>;">
                         <?php echo $item['icon'] ?>
 					</span>
@@ -22,6 +21,5 @@ if ( ! defined('ABSPATH') ) {
 				</a>
 			</li>
 		<?php endforeach ?>
-
 	</ul>
 </div>

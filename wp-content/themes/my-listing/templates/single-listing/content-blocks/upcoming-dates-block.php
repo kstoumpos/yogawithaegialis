@@ -22,8 +22,8 @@ if ( empty( $dates ) ) {
 			</div>
 		</div>
 		<div class="pf-body">
-			<ul class="event-dates-timeline">
-				<?php foreach ( $dates as $date ): ?>
+			<ul class="event-dates-timeline" data-field="<?php echo esc_attr( $block->get_prop( 'show_field' ) ) ?>" data-count="<?php echo absint( $block->get_prop('count') ) ?>" data-past-count="<?php echo absint( $block->get_prop('past_count') ) ?>">
+				<?php foreach ( $dates as $index => $date ) : ?>
 					<li class="upcoming-event-date <?php echo $date['is_over'] ? 'event-ended' : '' ?>">
 						<i class="fa fa-calendar-alt"></i>
 						<span>
@@ -37,7 +37,14 @@ if ( empty( $dates ) ) {
 							</a>
 						<?php endif ?>
 
-						<?php if ( $date['is_over'] ): ?>
+						<?php if ( $block->get_prop( 'show_add_to_ical' ) && ! $date['is_over'] ): ?>
+							<a class="add-to-i-cal" href="javascript:void(0)" data-event-id="<?php echo absint( $index ) ?>">
+								<i class="fas fa-calendar-alt"></i>
+								<?php _e( 'Add to iCalendar', 'my-listing' ) ?>
+							</a>
+						<?php endif; ?>
+
+						<?php if ( $date['is_over'] ) : ?>
 							<a class="add-to-google-cal" href="javascript:void(0)">
 								<i class="fa fa-check"></i>
 	    						<?php echo \MyListing\Src\Recurring_Dates\display_instance( $date,'status' ) ?>

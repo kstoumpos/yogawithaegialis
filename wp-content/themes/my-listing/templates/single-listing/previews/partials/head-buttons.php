@@ -7,7 +7,7 @@
 if ( ! defined('ABSPATH') ) {
     exit;
 } ?>
-<div class="lf-head">
+<div class="lf-head <?php echo esc_attr( $priority_class ) ?>">
     <?php if ( $listing->get_priority() >= 1 ): ?>
         <div class="lf-head-btn ad-badge" data-toggle="tooltip" data-placement="bottom"
             data-original-title="<?php echo esc_attr( $promotion_tooltip ) ?>">

@@ -219,6 +219,6 @@ function buy_product( $product_id, $listing_id ) {
 }
 
 function get_package_edit_link( $package_id ) {
-	$base_url = wc_get_account_endpoint_url( 'promotions' );
+	$base_url = wc_get_account_endpoint_url( \MyListing\promotions_endpoint_slug() );
 	return add_query_arg( 'package', absint( $package_id ), $base_url );
 }

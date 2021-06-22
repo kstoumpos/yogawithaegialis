@@ -16,6 +16,7 @@ class Upcoming_Dates_Block extends Base_Block {
 		$this->props['count'] = 5;
 		$this->props['past_count'] = 0;
 		$this->props['show_add_to_gcal'] = true;
+		$this->props['show_add_to_ical'] = true;
 		$this->allowed_fields = [ 'recurring-date', 'date' ];
 	}
 
@@ -36,6 +37,13 @@ class Upcoming_Dates_Block extends Base_Block {
 			<label>
 				<input type="checkbox" class="form-checkbox" v-model="block.show_add_to_gcal">
 				Show "Add to Google Calendar" button?
+			</label>
+		</div>
+		<div class="form-group">
+			<div class="mb5"></div>
+			<label>
+				<input type="checkbox" class="form-checkbox" v-model="block.show_add_to_ical">
+				Show "Add to iCalendar" button?
 			</label>
 		</div>
 		<?php

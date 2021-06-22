@@ -48,9 +48,8 @@ if ( ! defined('ABSPATH') ) {
 	</div>
 
 	<?php do_action( 'woocommerce_login_form_end' ); ?>
-    <?php echo do_shortcode('[TheChamp-Login]') ?>
 
-    <div class="forgot-password">
+	<div class="forgot-password">
 		<a href="<?php echo esc_url( wp_lostpassword_url() ) ?>">
 			<i class="mi lock"></i>
 			<?php _e( 'Forgot password?', 'my-listing' ) ?>

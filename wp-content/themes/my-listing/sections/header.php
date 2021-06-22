@@ -71,12 +71,14 @@ if ($data['scroll_border_color']) {
 				<?php if ( $data['logo'] ): ?>
 					<?php if ( $data['scroll_logo'] ): ?>
 						<a href="<?php echo esc_url( home_url('/') ) ?>" class="scroll-logo">
-							<img src="<?php echo esc_url( $data['scroll_logo'] ) ?>">
+							<img src="<?php echo esc_url( $data['scroll_logo'] ) ?>"
+								alt="<?php echo esc_attr( c27()->get_site_logo_alt_text() ) ?>">
 						</a>
 					<?php endif ?>
 
 					<a href="<?php echo esc_url( home_url('/') ) ?>" class="static-logo">
-						<img src="<?php echo esc_url( $data['logo'] ) ?>">
+						<img src="<?php echo esc_url( $data['logo'] ) ?>"
+							alt="<?php echo esc_attr( c27()->get_site_logo_alt_text() ) ?>">
 					</a>
 				<?php else: ?>
 					<a href="<?php echo esc_url( home_url('/') ) ?>" class="header-logo-text">

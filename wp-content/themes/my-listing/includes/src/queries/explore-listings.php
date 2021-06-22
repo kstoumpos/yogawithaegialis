@@ -20,7 +20,9 @@ class Explore_Listings extends Query {
 	 * @since 1.0.0
 	 */
 	public function handle() {
-		check_ajax_referer( 'c27_ajax_nonce', 'security' );
+		if ( apply_filters( 'mylisting/ajax-get-request-security-check', false ) === true ) {
+			check_ajax_referer( 'c27_ajax_nonce', 'security' );
+		}
 
 		$result = $this->run( $_GET );
 

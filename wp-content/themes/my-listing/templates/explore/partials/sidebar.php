@@ -108,7 +108,7 @@ if ( empty( $explore->types ) || ! $explore->active_listing_type ) {
 							:style="currentTax.activeTerm.background ? 'background-image: url(\''+currentTax.activeTerm.background+'\');' : ''"
 						></div>
 						<span class="cat-icon" :style="'background-color:'+currentTax.activeTerm.color" v-html="currentTax.activeTerm.single_icon"></span>
-						<h1 class="category-name">{{ currentTax.activeTerm.name }}</h1>
+						<div v-html="currentTermName"></div>
 						<p class="category-description" v-html="currentTax.activeTerm.description"></p>
 
 						<?php foreach ( $explore->types as $type ): ?>

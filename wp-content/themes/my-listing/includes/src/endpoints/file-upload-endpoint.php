@@ -23,11 +23,11 @@ class File_Upload_Endpoint {
 	 * @since 2.1
 	 */
 	public function handle_upload() {
-		// mylisting_check_ajax_referrer();
+		mylisting_check_ajax_referrer();
 
 		$files = [];
 		$file_uploader = \MyListing\Utils\File_Uploader::instance();
-// print_r( $file_uploader );exit();
+
 		if ( ! empty( $_FILES ) ) {
 			foreach ( $_FILES as $file_key => $file ) {
 				$files_to_upload = $file_uploader->prepare( $file_key );

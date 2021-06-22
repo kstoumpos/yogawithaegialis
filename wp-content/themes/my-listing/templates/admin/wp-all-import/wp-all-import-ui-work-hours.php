@@ -45,37 +45,37 @@ if ( ! defined('ABSPATH') ) {
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[mon_from]"
-						value="<?php echo $field_value['mon_from'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['mon_from'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[tue_from]"
-						value="<?php echo $field_value['tue_from'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['tue_from'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[wed_from]"
-						value="<?php echo $field_value['wed_from'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['wed_from'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[thu_from]"
-						value="<?php echo $field_value['thu_from'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['thu_from'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[fri_from]"
-						value="<?php echo $field_value['fri_from'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['fri_from'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[sat_from]"
-						value="<?php echo $field_value['sat_from'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['sat_from'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[sun_from]"
-						value="<?php echo $field_value['sun_from'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['sun_from'] ?? '' ) ?>">
 				</td>
 			</tr>
 			<tr>
@@ -83,37 +83,37 @@ if ( ! defined('ABSPATH') ) {
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[mon_to]"
-						value="<?php echo $field_value['mon_to'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['mon_to'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[tue_to]"
-						value="<?php echo $field_value['tue_to'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['tue_to'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[wed_to]"
-						value="<?php echo $field_value['wed_to'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['wed_to'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[thu_to]"
-						value="<?php echo $field_value['thu_to'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['thu_to'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[fri_to]"
-						value="<?php echo $field_value['fri_to'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['fri_to'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[sat_to]"
-						value="<?php echo $field_value['sat_to'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['sat_to'] ?? '' ) ?>">
 				</td>
 				<td>
 					<input
 						type="text" class="block" name="<?php echo $field_name ?>[sun_to]"
-						value="<?php echo $field_value['sun_to'] ?? '' ?>">
+						value="<?php echo esc_attr( $field_value['sun_to'] ?? '' ) ?>">
 				</td>
 			</tr>
 		</tbody>
@@ -125,7 +125,7 @@ if ( ! defined('ABSPATH') ) {
 			Leave blank to use site timezone.
 			<a href="https://www.php.net/manual/en/timezones.php" target="_blank">List of supported timezones</a>
 		</p>
-		<input type="text" name="<?php echo $field_name ?>[timezone]" value="<?php echo $field_value['timezone'] ?? '' ?>">
+		<input type="text" name="<?php echo $field_name ?>[timezone]" value="<?php echo esc_attr( $field_value['timezone'] ?? '' ) ?>">
 	</div>
 </div>
 
@@ -134,5 +134,5 @@ if ( ! defined('ABSPATH') ) {
 		Enter serialized data. If you have exported work hours from another
 		MyListing site, you can enter the serialized export field here.
 	</p>
-	<input type="text" name="<?php echo $field_name ?>[serialized]" value="<?php echo $field_value['serialized'] ?? '' ?>" class="block">
+	<input type="text" name="<?php echo $field_name ?>[serialized]" value="<?php echo esc_attr( $field_value['serialized'] ?? '' ) ?>" class="block">
 </div>

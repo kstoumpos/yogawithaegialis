@@ -192,7 +192,7 @@ class Permalinks {
             return $post_link;
         }
 
-        if ( ! ( $listing = \MyListing\Src\Listing::get( $post ) ) || ! $listing->type ) {
+        if ( ! ( $listing = \MyListing\Src\Listing::get( $post ) ) ) {
             return $post_link;
         }
 
@@ -212,7 +212,9 @@ class Permalinks {
             switch ( $structure_tag ) {
 
                 case '%listing_type%' :
-                    $tag_value = sanitize_title_with_dashes( $listing->type->get_permalink_name() );
+                    $tag_value = sanitize_title_with_dashes(
+                    	$listing->type ? $listing->type->get_permalink_name() : $this->strings['missing_type']
+                    );
                 break;
 
                 case '%listing_region%' :

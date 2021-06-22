@@ -66,15 +66,12 @@ if ( ! defined('ABSPATH') ) {
 	<?php endif ?>
 
 	<div class="form-group">
-        <?php wp_nonce_field( 'woocommerce-register', 'woocommerce-register-nonce' ); ?>
+		<?php wp_nonce_field( 'woocommerce-register', 'woocommerce-register-nonce' ); ?>
 		<button type="submit" class="buttons button-2 full-width" name="register" value="Register">
 			<i class="mi person user-area-icon"></i>
 			<?php _e( 'Sign Up', 'my-listing' ) ?>
-            <?php do_shortcode('[nextend_social_login provider="facebook" style="icon"]'); ?>
 		</button>
 	</div>
 
 	<?php do_action( 'woocommerce_register_form_end' ); ?>
-    <?php //echo do_shortcode('[TheChamp-Login]') ?>
-
 </form>

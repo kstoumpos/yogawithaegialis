@@ -31,7 +31,7 @@ class Wp_All_Import_Controller extends Base_Controller {
 		$this->filter( 'pmxi_options_options', '@save_selected_listing_type_to_import_settings', 50 );
 		$this->filter( 'pmxi_save_options', '@save_selected_listing_type_to_import_settings', 50 );
 		$this->filter( 'pmxi_options_options', '@load_addon_settings', 70 );
-		$this->filter( 'wp_all_import_is_images_section_enabled', '__return_false' );
+		$this->filter( 'wp_all_import_is_images_section_enabled', '@is_images_section_enabled', 50, 2 );
 	}
 
 	protected function register_addon( $addons ) {
@@ -123,13 +123,21 @@ class Wp_All_Import_Controller extends Base_Controller {
 	}
 
 	protected function load_addon_settings( $options ) {
-		if ( $type = \MyListing\Src\Listing_Type::get_by_name( $options['listing_type'] ) ) {
+		if ( isset( $options['listing_type'] ) && $type = \MyListing\Src\Listing_Type::get_by_name( $options['listing_type'] ) ) {
 			if ( ! isset( $options['mylisting-addon'] ) ) {
 				$options['mylisting-addon'] = [];
 			}
 		}
 
 		return $options;
+	}
+
+	protected function is_images_section_enabled( $is_enabled, $post_type ) {
+		if ( $post_type === 'job_listing' ) {
+			return false;
+		}
+
+		return $is_enabled;
 	}
 
 	/**

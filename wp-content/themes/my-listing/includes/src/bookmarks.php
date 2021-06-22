@@ -79,7 +79,7 @@ class Bookmarks {
 		if ( $action === 'remove_bookmark' && $listing_id ) {
 			self::remove( $listing_id, get_current_user_id() );
 			wc_add_notice( __( 'Listing removed from your bookmarks.', 'my-listing' ), 'success' );
-			wp_safe_redirect( wc_get_endpoint_url( 'my-bookmarks' ) );
+			wp_safe_redirect( wc_get_endpoint_url( \MyListing\bookmarks_endpoint_slug() ) );
 			exit;
 		}
 	}

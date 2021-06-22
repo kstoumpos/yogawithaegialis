@@ -20,14 +20,12 @@ foreach ( $items as $key => $item ) {
 ?>
 
 <ul class="outlined-list details-list social-nav item-count-<?php echo count( $items ) ?>">
-
 	<?php foreach ( $items as $item ): ?>
 		<li class="<?php echo esc_attr( $item['id'] ) ?>">
-			<a href="<?php echo esc_url( $item['link'] ) ?>">
+			<a href="<?php echo esc_url( $item['link'] ) ?>" <?php echo isset( $item['target'] ) && $item['target'] === '_blank' ? 'target="_blank"' : '' ?>>
 	            <?php echo $item['icon'] ?>
 				<span><?php echo esc_html( $item['name'] ) ?></span>
 			</a>
 		</li>
 	<?php endforeach ?>
-
 </ul>

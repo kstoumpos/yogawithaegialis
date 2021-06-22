@@ -84,6 +84,8 @@ function get_terms( $args ) {
 		'cache_time' => 0,
 	], $args );
 
+	$args = apply_filters( 'mylisting/get-terms/args', $args );
+
 	// validate taxonomy
 	if ( empty( $args['taxonomy'] || ! taxonomy_exists( $args['taxonomy'] ) ) ) {
 		return [];
@@ -128,6 +130,8 @@ function get_terms( $args ) {
 		];
 	}
 
+	$query_args = apply_filters( 'mylisting/get-terms/query-args', $query_args, $args );
+
 	// try to retrieve from cache
 	if ( $args['cache_time'] > 0 ) {
 		$cache_version = \MyListing\get_taxonomy_versions( $args['taxonomy'] );
@@ -151,6 +155,7 @@ function get_terms( $args ) {
     // set to 0, as all terms are required for hierarchical ordering to be possible
 	if ( $args['hierarchical'] === true ) {
 		$items = [];
+		$term_tree = \MyListing\get_term_tree( $terms );
 		\MyListing\iterate_terms_recursively( function( $term, $depth ) use ( &$items, $args ) {
 	    	$term->_depth = $depth;
 	    	$key = $term->{$args['return_key']};
@@ -159,7 +164,7 @@ function get_terms( $args ) {
 	    		: str_repeat( '&mdash; ', $depth - 1 ) . $term->name;
 
 	       	$items[ $key ] = $value;
-	    }, \MyListing\get_term_tree( $terms ) );
+	    }, ! empty( $term_tree ) ? $term_tree : $terms );
 
 	// otherwise, return in matched order
 	} else {

@@ -12,7 +12,7 @@
 			<div class="row">
 
 				<div class="col-md-6 col-sm-4 col-xs-12">
-					<h1><?php echo $data['title'] ? esc_html( $data['title'] ) : the_title() ?></h1>
+					<h1><?php echo $data['title'] ? $data['title'] : the_title() ?></h1>
 				</div>
 
 				<?php if ($data['show_breadcrumbs']): ?>

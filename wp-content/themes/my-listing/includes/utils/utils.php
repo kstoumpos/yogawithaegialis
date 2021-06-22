@@ -418,6 +418,10 @@ function my_listings_endpoint_slug() {
 	return _x( 'my-listings', 'URL endpoint for the "My Listings" page in user dashboard', 'my-listing' );
 }
 
+function promotions_endpoint_slug() {
+	return _x( 'promotions', 'URL endpoint for the "Promotions" page in user dashboard', 'my-listing' );
+}
+
 function get_basic_form_config_for_types( $types ) {
 	if ( is_string( $types ) ) {
 		$types = (array) explode( ',', $types );
@@ -474,4 +478,13 @@ function get_directions_link( $location ) {
 	}
 
 	return sprintf( 'http://maps.google.com/maps?daddr=%s', urlencode( $query ) );
+}
+
+function is_rating_enabled( $listing_id ) {
+	$listing = \MyListing\Src\Listing::get( $listing_id );
+	if ( ! ( $listing && $listing->type ) ) {
+		return false;
+	}
+
+	return $listing->type->is_rating_enabled();
 }

@@ -81,7 +81,7 @@ class Promotions_Dashboard_Controller extends \MyListing\Controllers\Base_Contro
 
         return wp_send_json( [
             'status'  => 'success',
-            'redirect' => add_query_arg( 't', time(), wc_get_account_endpoint_url('promotions') ),
+            'redirect' => add_query_arg( 't', time(), wc_get_account_endpoint_url( \MyListing\promotions_endpoint_slug() ) ),
         ] );
 	}
 
@@ -118,7 +118,7 @@ class Promotions_Dashboard_Controller extends \MyListing\Controllers\Base_Contro
 	}
 
 	protected function setup_dashboard_endpoint() {
-		$slug = _x( 'promotions', 'URL endpoint for the "Promotions" page in user dashboard', 'my-listing' );
+		$slug = \MyListing\promotions_endpoint_slug();
 		$slug = apply_filters( 'mylisting/promotions/url-endpoint', $slug );
 		\MyListing\add_dashboard_page( [
 			'endpoint' => $slug,

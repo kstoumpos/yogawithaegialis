@@ -85,7 +85,12 @@ class Listing_Type {
 	 * @since 2.0
 	 */
 	public static function get_by_name( $postname ) {
-		$type_obj = get_page_by_path( $postname, OBJECT, 'case27_listing_type' );
+		$type_obj = apply_filters(
+			'mylisting/listing-types/get-by-name',
+			get_page_by_path( $postname, OBJECT, 'case27_listing_type' ),
+			$postname
+		);
+
 		if ( ! $type_obj ) {
 			return false;
 		}

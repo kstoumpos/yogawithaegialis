@@ -33,12 +33,12 @@ function get_preview_card( $listing_id ) {
 	// check if preview card cache exists
 	$dir = trailingslashit( wp_upload_dir()['basedir'] ).'preview-cards/'.\MyListing\nearest_thousands( $listing_id );
 	$filepath = trailingslashit( $dir ).$listing_id.'.html';
-	if ( file_exists( $filepath ) ) {
-		return apply_filters( 'mylisting/get-preview-card-cache', file_get_contents( $filepath ), $listing_id );
+
+	if ( ! file_exists( $filepath ) ) {
+		\MyListing\cache_preview_card( $listing_id );
 	}
 
-	// cache not available, re-generate
-	return \MyListing\cache_preview_card( $listing_id );
+	return apply_filters( 'mylisting/get-preview-card-cache', file_get_contents( $filepath ), $listing_id );
 }
 
 /**
@@ -172,9 +172,7 @@ function prepare_cache_for_retrieval( $html, $listing_id ) {
 
 			$replacements['<var #open-now-visible></var>'] = $visible;
 			$replacements['<var #open-now-status></var>'] = 'listing-status-'.$status;
-			$replacements['<var #open-now></var>'] = $schedule->get_open_now()
-				? _x( 'OPEN', 'Work hours status', 'my-listing' )
-				: _x( 'CLOSED', 'Work hours status', 'my-listing' );
+			$replacements['<var #open-now></var>'] = $schedule->get_label_for_preview_card();
 		}
 
 		if ( $var === 'upcoming' ) {

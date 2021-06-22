@@ -58,6 +58,14 @@ function importer( $import, $data ) {
 
 		if ( $field->get_type() === 'file' ) {
 			$download_image = $addon['download_image'][ $field->get_key() ] === 'yes' ? 'yes' : false;
+			if ( is_string( $field_value ) ) {
+				$field_value = [ 'value' => $field_value ];
+			}
+
+			if ( ! is_array( $field_value ) ) {
+				$field_value = [];
+			}
+
 			import_files( $field, $field_value, $log, $import, $download_image, $delimiter );
 			continue;
 		}

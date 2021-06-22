@@ -34,7 +34,6 @@ class Walker extends \Walker_Comment {
 			$other_classes .= ' reply ';
 			$is_reply = true;
 		}
-
 		?>
 
 		<li <?php comment_class( $parent_class . $other_classes ); ?> id="comment-<?php comment_ID() ?>">
@@ -50,10 +49,10 @@ class Walker extends \Walker_Comment {
 					<h5 class="case27-secondary-text"><?php echo get_comment_author_link() ?></h5>
 					<span class="comment-date"><?php comment_date() ?> <?php _e( 'at', 'my-listing' ) ?> <?php comment_time() ?> <?php edit_comment_link( esc_html__('&middot; Edit', 'my-listing') ); ?></span>
 
-					<?php if (!$is_reply && ($review_rating = \MyListing\Ext\Reviews\Reviews::get_rating(get_comment_ID())) && ! empty( $GLOBALS['case27_reviews_allow_rating'] ) ): ?>
+					<?php if ( ! $is_reply && ( $review_rating = \MyListing\Ext\Reviews\Reviews::get_rating( get_comment_ID() ) ) && \MyListing\is_rating_enabled( $comment->comment_post_ID ) ): ?>
 						<?php mylisting_locate_template( 'partials/star-ratings.php', [
                             'rating' => $review_rating,
-                            'max-rating' => \MyListing\Ext\Reviews\Reviews::max_rating( get_the_ID() ),
+                            'max-rating' => \MyListing\Ext\Reviews\Reviews::max_rating( $comment->comment_post_ID ),
                             'class' => 'listing-rating listing-review-rating',
                         ] ) ?>
 					<?php endif ?>

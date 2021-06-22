@@ -69,7 +69,7 @@ if ( is_singular('post') ) {
 						<div class="pf-head">
 							<div class="title-style-1">
 								<i class="mi chat_bubble_outline"></i>
-								<?php if (is_singular('job_listing') && $GLOBALS['case27_reviews_allow_rating']): ?>
+								<?php if ( is_singular('job_listing') && \MyListing\is_rating_enabled( get_the_ID() ) ): ?>
 									<h5><?php _e( 'Add a review', 'my-listing' ) ?></h5>
 								<?php else: ?>
 									<h5><?php _e( 'Add a comment', 'my-listing' ) ?></h5>
@@ -96,7 +96,7 @@ if ( is_singular('post') ) {
 							<?php ob_start(); ?>
 							<div class="form-group">
 								<label><?php _e( 'Email', 'my-listing' ) ?></label>
-								<input name="email" type="text" value="<?php echo esc_attr( $commenter['comment_author_email'] ) ?>" required="required" placeholder="<?php echo esc_html__('Your Email', 'my-listing') ?>">
+								<input name="email" type="email" value="<?php echo esc_attr( $commenter['comment_author_email'] ) ?>" required="required" placeholder="<?php echo esc_html__('Your Email', 'my-listing') ?>">
 							</div>
 							<?php $email_field = ob_get_clean(); ?>
 
@@ -119,7 +119,7 @@ if ( is_singular('post') ) {
 							<!-- Submit Field -->
 							<?php ob_start(); ?>
 							<button name="submit" type="submit" class="buttons button-2 full-width">
-								<?php if (is_singular('job_listing') && $GLOBALS['case27_reviews_allow_rating']): ?>
+								<?php if ( is_singular('job_listing') && \MyListing\is_rating_enabled( get_the_ID() ) ): ?>
 									<?php echo esc_html__('Submit review', 'my-listing') ?>
 								<?php else: ?>
 									<?php echo esc_html__('Submit comment', 'my-listing') ?>
@@ -170,7 +170,8 @@ if ( is_singular('post') ) {
 											</div>
 											<input type="hidden" name="action" value="update_review">
 											<input type="hidden" name="listing_id" value="<?php echo esc_attr( get_the_ID() ) ?>">
-											<?php if ($GLOBALS['case27_reviews_allow_rating']): ?>
+											<?php wp_nonce_field('update_review', '_update_review_nonce') ?>
+											<?php if ( \MyListing\is_rating_enabled( get_the_ID() ) ): ?>
 												<button type="submit" class="buttons button-2 full-width"><?php echo esc_html__('Update review', 'my-listing') ?></button>
 											<?php else: ?>
 												<button type="submit" class="buttons button-2 full-width"><?php echo esc_html__('Update comment', 'my-listing') ?></button>

@@ -59,7 +59,7 @@ class Switch_Package {
 		}
 
 		$form = \MyListing\Src\Forms\Add_Listing_Form::instance();
-		$tree = \MyListing\Src\Paid_Listings\Util::get_package_tree_for_listing_type( $type );
+		$tree = \MyListing\Src\Paid_Listings\Util::get_package_tree_for_listing_type( $type, 'switch-package' );
 		$action = ! empty( $_GET['action'] ) ? $_GET['action'] : '';
 		$listing_id = ! empty( $_GET['job_id'] ) ? absint( $_GET['job_id'] ) : $form->get_job_id();
 		$listing = \MyListing\Src\Listing::get( $listing_id );
@@ -194,6 +194,10 @@ class Switch_Package {
 
 		// Paid packages disabled for listing type.
 		if ( $listing->type->settings['packages']['enabled'] === false ) {
+			return;
+		}
+
+		if ( apply_filters( 'mylisting/display-switch-action', true, $listing ) === false ) {
 			return;
 		}
 

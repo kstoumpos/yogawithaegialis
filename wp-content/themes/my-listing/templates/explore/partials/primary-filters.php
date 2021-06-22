@@ -13,7 +13,7 @@ if ( ! defined('ABSPATH') ) {
 		<div v-if="currentTax" class="primary-category">
 			<span class="cat-icon" :style="'background-color:'+(currentTax.activeTerm?currentTax.activeTerm.color:'#fff')"
 				v-html="currentTax.activeTerm.single_icon"></span>
-			<h1 class="category-name">{{ currentTax.activeTerm?currentTax.activeTerm.name:'&nbsp;' }}</h1>
+			<div v-html="currentTermName"></div>
 		</div>
 		<template v-else>
 			<?php if ( $filter = $type->get_primary_filter() ): ?>
@@ -21,7 +21,7 @@ if ( ! defined('ABSPATH') ) {
 					'filter' => $filter,
 					'model' => sprintf( 'types["%s"].filters.search_keywords', $type->get_slug() ),
 					'location' => 'primary-filter',
-					'onchange' => 'getListings( \'wp-search-filter\', true )',
+					'onchange' => sprintf( 'getListings( \'primary-filter:%s\', true )', $filter->get_type() ),
 				] ) ?>
 			<?php endif ?>
 		</template>

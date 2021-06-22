@@ -23,6 +23,7 @@ if ( ! empty( $social_links ) ) {
 			'link' => $network['link'],
 			'color' => $network['color'],
 			'text_color' => '#fff',
+			'target' => '_blank',
 		];
 	}, $social_links );
 }

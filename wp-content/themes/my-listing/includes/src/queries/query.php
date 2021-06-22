@@ -345,7 +345,7 @@ class Query {
 	 */
 	public function events_field_orderby( $orderby, $query ) {
 	    if ( empty( $query->query_vars['recurring_dates'] ) ) {
-	        return $join;
+	        return $orderby;
 	    }
 
 	    foreach ( (array) $query->query_vars['recurring_dates'] as $field_key => $date ) {

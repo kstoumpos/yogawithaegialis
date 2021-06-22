@@ -49,14 +49,12 @@ $can_post = is_user_logged_in() || ! mylisting_get_setting( 'submission_requires
 						</div></div></div>
 						<div class="form-section-wrapper" id="form-section-<?php echo esc_attr( ! empty( $key ) ? $key : \MyListing\Utils\Random_Id::generate(7) ) ?>">
 							<div class="element form-section">
-							<?php if ( ( $icon = $field->get_prop('icon') ) && ( $label = $field->get_label() ) ): ?>
 								<div class="pf-head round-icon">
 									<div class="title-style-1">
-										<i class="<?php echo esc_attr( $icon ) ?>"></i>
-										<h5><?php echo esc_html( $label ) ?></h5>
+										<i class="<?php echo esc_attr( $field->get_prop('icon') ?: 'icon-pencil-2' ) ?>"></i>
+										<h5><?php echo esc_html( $field->get_label() ) ?></h5>
 									</div>
 								</div>
-							<?php endif ?>
 							<div class="pf-body">
 							<?php else:
 								$classes = [];
@@ -67,8 +65,16 @@ $can_post = is_user_logged_in() || ! mylisting_get_setting( 'submission_requires
 								<div class="fieldset-<?php echo esc_attr( $key ) ?> <?php echo esc_attr( 'field-type-'.$field->get_type() ) ?> form-group <?php echo join( ' ', array_map( 'esc_attr', $classes ) ) ?>">
 									<div class="field-head">
 										<label for="<?php echo esc_attr( $key ) ?>">
-											<?php echo $field->get_label() ?>
-											<?php echo $field->is_required() ? '' : ' <small>' . _x( '(optional)', 'Add listing form', 'my-listing' ) . '</small>' ?>
+											<?php
+												echo $field->get_label();
+												echo apply_filters(
+													'mylisting/submission/required-field-label',
+													! $field->is_required()
+														? ' <small>'._x( '(optional)', 'Add listing form', 'my-listing' ).'</small>'
+														: '',
+													$field
+												);
+											?>
 										</label>
 										<?php if ( ! empty( $field->get_description() ) ): ?>
 											<small class="description"><?php echo $field->get_description() ?></small>

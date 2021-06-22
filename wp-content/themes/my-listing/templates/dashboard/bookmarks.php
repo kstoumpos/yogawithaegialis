@@ -2,7 +2,7 @@
 
 $_page = isset( $_GET['_page'] ) ? (int) $_GET['_page'] : 1;
 $bookmark_ids = MyListing\Src\Bookmarks::get_by_user( get_current_user_id() );
-$endpoint_url = wc_get_endpoint_url( 'my-bookmarks' );
+$endpoint_url = wc_get_endpoint_url( \MyListing\bookmarks_endpoint_slug() );
 
 if ( ! $bookmark_ids ) {
 	$bookmark_ids = [0];

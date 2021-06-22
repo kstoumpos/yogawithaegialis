@@ -23,7 +23,38 @@ class Term_Select_Field extends Base_Field {
 			return ! empty( $value[0] ) && $value[0] > 0 ? absint( $value[0] ) : '';
 		}
 
-		if ( $template === 'multiselect' || $template === 'checklist' ) {
+		if ( $template === 'multiselect' && $this->props['create_tag'] ) {
+			$new_terms = [];
+			foreach ( $value as $term ) {
+				if ( intval( $term ) ) {
+					$new_terms[] = $term;
+					continue;
+				}
+
+				$term = sanitize_text_field( preg_replace('/[^A-Za-z ]/', '', $term) );
+				$term_exists = term_exists( $term, $this->props['taxonomy'] );
+				if ( $term_exists !== 0 && $term_exists !== null ) {
+					$term_obj = get_term_by( 'name', $term, $this->props['taxonomy'] );
+					$new_terms[] = $term_obj->term_id;
+					continue;
+				}
+
+				$new_item = wp_insert_term( $term, $this->props['taxonomy'] );
+				if ( is_wp_error( $new_item ) ) {
+					unset( $value[ $term ] );
+					continue;
+				}
+
+				$term_obj = get_term_by( 'id', $new_item['term_id'], $this->props['taxonomy'] );
+				$new_terms[] = $term_obj->term_id;
+			}
+
+			return array_map( 'absint', $new_terms );
+		} elseif  ( $template === 'multiselect' ) {
+			return array_map( 'absint', $value );
+		}
+
+		if ( $template === 'checklist' ) {
 			return array_map( 'absint', $value );
 		}
 	}
@@ -91,6 +122,7 @@ class Term_Select_Field extends Base_Field {
 		$this->props['type'] = 'term-select';
 		$this->props['taxonomy'] = '';
 		$this->props['terms-template'] = 'multiselect';
+		$this->props['create_tag'] = false;
 	}
 
 	public function get_editor_options() {
@@ -99,9 +131,22 @@ class Term_Select_Field extends Base_Field {
 		$this->getPlaceholderField();
 		$this->getDescriptionField();
 		$this->getTermsTemplateField();
+		$this->getCreateTagsField();
 		$this->getRequiredField();
 		$this->getShowInSubmitFormField();
 		$this->getShowInAdminField();
+	}
+
+	public function getCreateTagsField() { ?>
+
+		<div class="form-group" v-show="field['terms-template'] == 'multiselect'">
+			<label>Allow users to add terms?</label>
+			<label class="form-switch mb0">
+				<input type="checkbox" v-model="field.create_tag">
+				<span class="switch-slider"></span>
+			</label>
+		</div>
+		<?php
 	}
 
 	public function getTermsTemplateField() { ?>

@@ -98,7 +98,7 @@ class Add_Listing {
 		}
 
 		$form = \MyListing\Src\Forms\Add_Listing_Form::instance();
-		$tree = \MyListing\Src\Paid_Listings\Util::get_package_tree_for_listing_type( $type );
+		$tree = \MyListing\Src\Paid_Listings\Util::get_package_tree_for_listing_type( $type, 'add-listing' );
 
 		$listing_id = ! empty( $_GET['job_id'] ) ? absint( $_GET['job_id'] ) : $form->get_job_id();
 		?>
@@ -187,17 +187,35 @@ class Add_Listing {
 
 			$listing = \MyListing\Src\Listing::get( $listing_id );
 			$package = get_post( $_COOKIE['chosen_package_id'] );
-			if ( ! ( $listing && $listing->editable_by_current_user() && $package && in_array( $package->post_type, [ 'product', 'case27_user_package' ] ) ) ) {
+			if ( ! ( $listing && $listing->type && $listing->editable_by_current_user() && $package && in_array( $package->post_type, [ 'product', 'case27_user_package' ] ) ) ) {
 				throw new \Exception( _x( 'Invalid request.', 'Listing submission', 'my-listing' ) );
 			}
 
+			if ( empty( $_REQUEST['listing_package'] ) || absint( $_REQUEST['listing_package'] ) !== absint( $package->ID ) ) {
+				throw new \Exception( _x( 'Invalid package.', 'Listing submission', 'my-listing' ) );
+			}
+
+			$allowed_product_ids = array_map( 'absint', array_column(
+				$listing->type->get_packages(),
+				'package'
+			) );
+
 			// use available package
 			if ( $package->post_type === 'case27_user_package' ) {
-				do_action( 'mylisting/payments/submission/use-available-package', $listing, \MyListing\Src\Package::get( $package ) );
+				$pkg = \MyListing\Src\Package::get( $package );
+				if ( ! empty( $allowed_product_ids ) && ! in_array( absint( $pkg->get_product_id() ), $allowed_product_ids, true ) ) {
+					throw new \Exception( _x( 'Invalid package.', 'Listing submission', 'my-listing' ) );
+				}
+
+				do_action( 'mylisting/payments/submission/use-available-package', $listing, $pkg );
 			}
 
 			// buy new product
 			if ( $package->post_type === 'product' ) {
+				if ( ! empty( $allowed_product_ids ) && ! in_array( absint( $package->ID ), $allowed_product_ids, true ) ) {
+					throw new \Exception( _x( 'Invalid package.', 'Listing submission', 'my-listing' ) );
+				}
+
 				$product = wc_get_product( $package->ID );
 				if ( ! ( $product && $product->is_type( [ 'job_package', 'job_package_subscription' ] ) ) ) {
 					throw new \Exception( _x( 'Invalid product.', 'Listing submission', 'my-listing' ) );

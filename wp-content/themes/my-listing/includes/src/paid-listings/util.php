@@ -3,7 +3,11 @@
 namespace MyListing\Src\Paid_Listings;
 
 class Util {
-	public static function get_package_tree_for_listing_type( $type ) {
+
+	/**
+	 * @param string $context add-listing|switch-package|claim-listing
+	 */
+	public static function get_package_tree_for_listing_type( $type, $context = 'add-listing' ) {
 		$package_ids = array_column( $type->get_packages(), 'package' );
 		$tree = [];
 
@@ -62,14 +66,14 @@ class Util {
 			$tree[ $product->get_id() ] = $item;
 		}
 
-		return $tree;
+		return apply_filters( 'mylisting/get_package_tree_for_listing_type', $tree, $type, $context );
 	}
 
-	public static function get_current_user_packages( $product_ids = [], $format = 'object' ) {
+	public static function get_current_user_packages( $product_ids = [], $format = 'object', $status = 'publish' ) {
 		// Get packages.
 		$package_ids = get_posts( [
 			'post_type'        => 'case27_user_package',
-			'post_status'      => 'publish',
+			'post_status'      => $status,
 			'posts_per_page'   => -1,
 			'suppress_filters' => false,
 			'fields'           => 'ids',
