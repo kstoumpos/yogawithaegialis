@@ -19,6 +19,7 @@ use MailPoetVendor\Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity()
  * @ORM\Table(name="subscribers")
+ * @ORM\HasLifecycleCallbacks
  */
 class SubscriberEntity {
   // statuses
@@ -128,10 +129,21 @@ class SubscriberEntity {
    */
   private $linkToken;
 
+  /**
+   * @ORM\Column(type="float", nullable=true)
+   * @var float|null
+   */
+  private $engagementScore;
 
   /**
-   * @ORM\OneToMany(targetEntity="MailPoet\Entities\SubscriberSegmentEntity", mappedBy="subscriber")
-   * @var iterable<SubscriberSegmentEntity>&Collection
+   * @ORM\Column(type="datetimetz", nullable=true)
+   * @var DateTimeInterface|null
+   */
+  private $engagementScoreUpdatedAt;
+
+  /**
+   * @ORM\OneToMany(targetEntity="MailPoet\Entities\SubscriberSegmentEntity", mappedBy="subscriber", orphanRemoval=true)
+   * @var Collection<int, SubscriberSegmentEntity>
    */
   private $subscriberSegments;
 
@@ -387,7 +399,7 @@ class SubscriberEntity {
   }
 
   /**
-   * @return Collection
+   * @return Collection<int, SubscriberSegmentEntity>
    */
   public function getSubscriberSegments() {
     return $this->subscriberSegments;
@@ -398,6 +410,44 @@ class SubscriberEntity {
       return $subscriberSegment->getSegment();
     })->filter(function ($segment) {
       return $segment !== null;
+    });
+  }
+
+  /**
+   * @return float|null
+   */
+  public function getEngagementScore(): ?float {
+    return $this->engagementScore;
+  }
+
+  /**
+   * @param float|null $engagementScore
+   */
+  public function setEngagementScore(?float $engagementScore): void {
+    $this->engagementScore = $engagementScore;
+  }
+
+  /**
+   * @return DateTimeInterface|null
+   */
+  public function getEngagementScoreUpdatedAt(): ?DateTimeInterface {
+    return $this->engagementScoreUpdatedAt;
+  }
+
+  /**
+   * @param DateTimeInterface|null $engagementScoreUpdatedAt
+   */
+  public function setEngagementScoreUpdatedAt(?DateTimeInterface $engagementScoreUpdatedAt): void {
+    $this->engagementScoreUpdatedAt = $engagementScoreUpdatedAt;
+  }
+
+  /** @ORM\PreFlush */
+  public function cleanupSubscriberSegments(): void {
+    // Delete old orphan SubscriberSegments to avoid errors on update
+    $this->subscriberSegments->map(function (SubscriberSegmentEntity $subscriberSegment) {
+      if ($subscriberSegment->getSegment() === null) {
+        $this->subscriberSegments->removeElement($subscriberSegment);
+      }
     });
   }
 }

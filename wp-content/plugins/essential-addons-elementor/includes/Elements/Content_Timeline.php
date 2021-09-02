@@ -5,7 +5,7 @@ namespace Essential_Addons_Elementor\Pro\Elements;
 use \Elementor\Controls_Manager;
 use \Elementor\Group_Control_Background;
 use Elementor\Repeater;
-use \Elementor\Scheme_Typography;
+use \Elementor\Core\Schemes\Typography;
 use \Elementor\Group_Control_Border;
 use \Elementor\Group_Control_Box_Shadow;
 use \Elementor\Group_Control_Typography;
@@ -162,6 +162,20 @@ class Content_Timeline extends Widget_Base
 			]
 		);
 
+        $repeater->add_control(
+			'eael_custom_icon_image',
+			[
+				'label' => __( 'Choose Image', 'essential-addons-elementor' ),
+				'type' => \Elementor\Controls_Manager::MEDIA,
+				'default' => [
+					'url' => \Elementor\Utils::get_placeholder_image_src(),
+				],
+                'condition' => [
+					'eael_show_custom_image_or_icon' => 'img',
+				],
+			]
+		);
+
 		$repeater->add_control(
 			'eael_custom_icon_image_size',
 			[
@@ -273,6 +287,127 @@ class Content_Timeline extends Widget_Base
 		do_action('eael/controls/query', $this);
 
 		do_action('eael/controls/layout', $this);
+
+        /**
+         * Content Tab: Links
+         */
+
+        $this->start_controls_section(
+            'section_content_timeline_links',
+            [
+                'label' => __('Links', 'essential-addons-elementor'),
+                'conditions' => [
+                    'relation' => 'and',
+                    'terms' => [
+                       [
+                          'name' => 'eael_content_timeline_choose',
+                          'operator' => '==',
+                          'value' => 'dynamic',
+                       ],
+                       [
+                          'relation' => 'or',
+                          'terms' => [
+                             [
+                                'name' => 'eael_show_title',
+                                'operator' => '==',
+                                'value' => 'yes',
+                             ],
+                             [
+                                'name' => 'eael_show_read_more',
+                                'operator' => '==',
+                                'value' => 'yes',
+                             ],
+                          ],
+                       ],
+                    ],
+                 ],
+            ]
+        );
+
+        $this->add_control(
+            'title_link',
+            [
+                'label' => __('Title', 'essential-addons-elementor'),
+                'type' => Controls_Manager::HEADING,
+                'condition' => [
+                    'eael_show_title' => 'yes',
+                ],
+            ]
+        );
+
+        $this->add_control(
+            'title_link_nofollow',
+            [
+                'label' => __('No Follow', 'essential-addons-elementor'),
+                'type' => Controls_Manager::SWITCHER,
+                'label_on' => __('Yes', 'essential-addons-elementor'),
+                'label_off' => __('No', 'essential-addons-elementor'),
+                'return_value' => 'true',
+                'condition' => [
+                    'eael_show_title' => 'yes',
+                ],
+            ]
+        );
+
+        $this->add_control(
+            'title_link_target_blank',
+            [
+                'label' => __('Target Blank', 'essential-addons-elementor'),
+                'type' => Controls_Manager::SWITCHER,
+                'label_on' => __('Yes', 'essential-addons-elementor'),
+                'label_off' => __('No', 'essential-addons-elementor'),
+                'return_value' => 'true',
+                'condition' => [
+                    'eael_show_title' => 'yes',
+                ],
+                'separator' => 'after',
+            ]
+        );
+
+        $this->add_control(
+            'read_more_link',
+            [
+                'label' => __('Read More', 'essential-addons-elementor'),
+                'type' => Controls_Manager::HEADING,
+                'condition' => [
+                    'eael_show_read_more' => 'yes',
+                ],
+            ]
+        );
+
+        $this->add_control(
+            'read_more_link_nofollow',
+            [
+                'label' => __('No Follow', 'essential-addons-elementor'),
+                'type' => Controls_Manager::SWITCHER,
+                'label_on' => __('Yes', 'essential-addons-elementor'),
+                'label_off' => __('No', 'essential-addons-elementor'),
+                'return_value' => 'true',
+                'condition' => [
+                    'eael_show_read_more' => 'yes',
+                ],
+            ]
+        );
+
+        $this->add_control(
+            'read_more_link_target_blank',
+            [
+                'label' => __('Target Blank', 'essential-addons-elementor'),
+                'type' => Controls_Manager::SWITCHER,
+                'label_on' => __('Yes', 'essential-addons-elementor'),
+                'label_off' => __('No', 'essential-addons-elementor'),
+                'return_value' => 'true',
+                'condition' => [
+                    'eael_show_read_more' => 'yes',
+                ],
+            ]
+        );
+
+        $this->end_controls_section();
+
+        /**
+         * Section: Style
+         */
 
 		$this->start_controls_section(
 			'eael_section_post_timeline_style',
@@ -694,8 +829,8 @@ class Content_Timeline extends Widget_Base
 			[
 				'name' => 'eael_timeline_title_typography',
 				'label' => __('Typography', 'essential-addons-elementor'),
-				'scheme' => Scheme_Typography::TYPOGRAPHY_1,
-        'selector' =>'{{WRAPPER}} .eael-content-timeline-content .eael-timeline-title',
+				'scheme' => Typography::TYPOGRAPHY_1,
+                'selector' =>'{{WRAPPER}} .eael-content-timeline-content .eael-timeline-title',
 			]
 		);
 
@@ -755,7 +890,7 @@ class Content_Timeline extends Widget_Base
 			[
 				'name' => 'eael_timeline_excerpt_typography',
 				'label' => __('Excerpt Typography', 'essential-addons-elementor'),
-				'scheme' => Scheme_Typography::TYPOGRAPHY_3,
+				'scheme' => Typography::TYPOGRAPHY_3,
 				'selector' => '{{WRAPPER}} .eael-content-timeline-content p',
 			]
 		);
@@ -798,7 +933,7 @@ class Content_Timeline extends Widget_Base
 			[
 				'name' => 'eael_timeline_date_typography',
 				'label' => __('Date Typography', 'essential-addons-elementor'),
-				'scheme' => Scheme_Typography::TYPOGRAPHY_3,
+				'scheme' => Typography::TYPOGRAPHY_3,
 				'selector' => '{{WRAPPER}} .eael-content-timeline-content .eael-date',
 			]
 		);
@@ -1198,7 +1333,11 @@ class Content_Timeline extends Widget_Base
 							'eael_read_more_text'               => $settings['eael_read_more_text'],
 							'eael_icon_image'                   => $settings['eael_icon_image'],
 							'expanison_indicator'       		=> $settings['excerpt_expanison_indicator'],
-							'title_tag'							=> $settings['title_tag']
+							'title_tag'							=> $settings['title_tag'],
+							'title_link_nofollow'   			=> $settings['title_link_nofollow'] ? 'rel="nofollow"' : '',
+							'title_link_target_blank'			=> $settings['title_link_target_blank'] ? 'target="_blank"' : '',
+							'read_more_link_nofollow'			=> $settings['read_more_link_nofollow'] ? 'rel="nofollow"' : '',
+							'read_more_link_target_blank'		=> $settings['read_more_link_target_blank'] ? 'target="_blank"' : '',
 						];
 
 						$template = $this->get_template($this->get_settings('eael_dynamic_template_Layout'));
@@ -1254,7 +1393,7 @@ class Content_Timeline extends Widget_Base
 								<div class="eael-content-timeline-content">
 									<?php if ('yes' == $settings['eael_show_title']) : ?>
 										<<?php echo Helper::eael_pro_validate_html_tag($settings['title_tag']); ?> class="eael-timeline-title">
-											<?php if (!empty($url)) : ?><a href="<?php echo esc_url($url); ?> <?php echo $target; ?> <?php echo $nofollow; ?>"><?php endif; ?>
+											<?php if (!empty($url)) : ?><a href="<?php echo esc_url($url); ?>" <?php echo $target; ?> <?php echo $nofollow; ?>><?php endif; ?>
 												<?php echo $custom_content['eael_custom_title']; ?>
 												<?php if (!empty($url)) : ?></a><?php endif; ?>
 										</<?php echo Helper::eael_pro_validate_html_tag($settings['title_tag']); ?>>

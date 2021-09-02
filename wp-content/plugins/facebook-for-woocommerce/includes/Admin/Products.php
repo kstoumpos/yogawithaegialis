@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -68,7 +69,11 @@ class Products {
 			$product
 		);
 
-		if ( $category_handler->get_category_depth( $category_id ) < 2 ) {
+		if (
+			empty( $category_id ) ||
+			$category_handler->is_category( $category_id ) &&
+			$category_handler->is_root_category( $category_id )
+		) {
 			// show nothing
 			return;
 		}

@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -19,7 +20,7 @@ use SkyVerge\WooCommerce\Facebook\API;
  *
  * @since 2.0.0
  */
-class Request extends API\Request  {
+class Request extends API\Request {
 
 
 	/**
@@ -34,9 +35,9 @@ class Request extends API\Request  {
 
 		parent::__construct( '/fbe_business', $method );
 
-		$this->params = [
+		$this->params = array(
 			'fbe_external_business_id' => $external_business_id,
-		];
+		);
 	}
 
 

@@ -153,4 +153,19 @@ trait Library
         return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
     }
 
+	/**
+	 * check is plugin active or not
+	 *
+	 * @since v4.3.5
+	 * @param $plugin
+	 * @return bool
+	 */
+    public function is_plugin_active($plugin) {
+	    if ( !function_exists( 'is_plugin_active' ) ){
+		    require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+        }
+
+	    return is_plugin_active( $plugin );
+    }
+
 }

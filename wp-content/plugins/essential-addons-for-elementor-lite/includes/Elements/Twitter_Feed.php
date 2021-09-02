@@ -128,6 +128,17 @@ class Twitter_Feed extends Widget_Base
             ]
         );
 
+	    $this->add_control(
+		    'eael_twitter_feed_data_cache_limit',
+		    [
+			    'label' => __('Data Cache Time', 'essential-addons-for-elementor-lite'),
+			    'type' => Controls_Manager::NUMBER,
+			    'min' => 1,
+			    'default' => 60,
+			    'description' => __('Cache expiration time (Minutes)', 'essential-addons-for-elementor-lite')
+		    ]
+	    );
+
         $this->end_controls_section();
 
         $this->start_controls_section(
@@ -264,6 +275,19 @@ class Twitter_Feed extends Widget_Base
         );
 
         $this->add_control(
+            'eael_twitter_feed_show_read_more_text',
+            [
+                'label' => esc_html__('Read More Text', 'essential-addons-for-elementor-lite'),
+                'type' => Controls_Manager::TEXT,
+                'label_block' => false,
+                'default' => __('Read More', 'essential-addons-for-elementor-lite'),
+	            'condition' => [
+	            	'eael_twitter_feed_show_read_more' => 'true',
+	            ]
+            ]
+        );
+
+        $this->add_control(
             'eael_twitter_feed_show_icon',
             [
                 'label' => esc_html__('Show Icon', 'essential-addons-for-elementor-lite'),
@@ -297,7 +321,7 @@ class Twitter_Feed extends Widget_Base
                         ],
                     ],
                     'default' => '1',
-                    'description' => '<span class="pro-feature"> Get the  <a href="https://wpdeveloper.net/in/upgrade-essential-addons-elementor" target="_blank">Pro version</a> for more stunning elements and customization options.</span>',
+                    'description' => '<span class="pro-feature"> Get the  <a href="https://wpdeveloper.net/upgrade/ea-pro" target="_blank">Pro version</a> for more stunning elements and customization options.</span>',
                 ]
             );
 
@@ -900,8 +924,8 @@ class Twitter_Feed extends Widget_Base
                 'label' => __('Color', 'essential-addons-for-elementor-lite'),
                 'type' => \Elementor\Controls_Manager::COLOR,
                 'scheme' => [
-                    'type' => \Elementor\Scheme_Color::get_type(),
-                    'value' => \Elementor\Scheme_Color::COLOR_1,
+                    'type' => \Elementor\Core\Schemes\Color::get_type(),
+                    'value' => \Elementor\Core\Schemes\Color::COLOR_1,
                 ],
                 'selectors' => [
                     '{{WRAPPER}} .eael-twitter-feed-item .eael-twitter-feed-item-icon' => 'color: {{VALUE}}',

@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -34,7 +35,7 @@ class Response extends API\Response {
 	 */
 	public function get_orders() {
 
-		$orders = [];
+		$orders = array();
 
 		foreach ( $this->get_data() as $order_data ) {
 			$orders[] = new Order( json_decode( json_encode( $order_data ), true ) );

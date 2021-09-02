@@ -53,7 +53,7 @@ class OptimizeCommon
 		add_action('after_switch_theme', array($this, 'clearCache' ));
 
 		// Is WP Rocket's page cache cleared? Clear Asset CleanUp's CSS cache files too
-		if (array_key_exists('action', $_GET) && $_GET['action'] === 'purge_cache') {
+		if ( isset($_GET['action']) && $_GET['action'] === 'purge_cache' ) {
 			// Leave its default parameters, no redirect needed
 			add_action('init', static function() {
 				OptimizeCommon::clearCache();
@@ -95,6 +95,10 @@ class OptimizeCommon
 		});
 
 		// Make sure HTML changes are applied to cached pages from "Cache Enabler" plugin
+		add_filter('cache_enabler_before_store', static function($htmlSource) {
+			return self::alterHtmlSource($htmlSource); // deprecated, include it in case other users have an older version of "Cache Enabler"
+		}, 1, 1);
+
 		add_filter('cache_enabler_page_contents_before_store', static function($htmlSource) {
 			return self::alterHtmlSource($htmlSource);
 		}, 1, 1);
@@ -207,7 +211,7 @@ class OptimizeCommon
 
 		// This is useful to avoid changing the DOM via wp_loaded action hook
 		// In order to check how fast the page loads without the DOM changes (for debugging purposes)
-		$wpacuNoHtmlChanges = array_key_exists( 'wpacu_no_html_changes', $_GET ) || ( defined('WPACU_NO_HTML_CHANGES') && WPACU_NO_HTML_CHANGES );
+		$wpacuNoHtmlChanges = isset($_REQUEST['wpacu_no_html_changes']) || ( defined('WPACU_NO_HTML_CHANGES') && WPACU_NO_HTML_CHANGES );
 
 		if ( $wpacuNoHtmlChanges || Plugin::preventAnyFrontendOptimization() ) {
 			/* [wpacu_timing] */ Misc::scriptExecTimer( 'alter_html_source', 'end' ); /* [/wpacu_timing] */
@@ -259,54 +263,66 @@ class OptimizeCommon
 		/* [wpacu_timing] */ Misc::scriptExecTimer( 'alter_html_source', 'end' ); /* [/wpacu_timing] */
 
 		// [wpacu_debug]
-		if (array_key_exists('wpacu_debug', $_GET)) {
-			$timingKeys = array(
-				'prepare_optimize_files_css',
-				'prepare_optimize_files_js',
-
-				// All HTML alteration via "wp_loaded" action hook
-				'alter_html_source',
-
-				// HTML CleanUp
-				'alter_html_source_cleanup',
-					'alter_html_source_for_remove_html_comments',
-					'alter_html_source_for_remove_meta_generators',
-
-				// CSS
-				'alter_html_source_for_optimize_css',
-				'alter_html_source_unload_ignore_deps_css',
-				'alter_html_source_for_google_fonts_optimization_removal',
-				'alter_html_source_for_inline_css',
-				'alter_html_source_original_to_optimized_css',
-				'alter_html_source_for_preload_css',
-
-				'alter_html_source_for_combine_css',
-				'alter_html_source_for_minify_inline_style_tags',
-
-				// JS
-				'alter_html_source_for_optimize_js',
-				'alter_html_source_unload_ignore_deps_js',
-
-				'alter_html_source_original_to_optimized_js',
-				'alter_html_source_for_preload_js',
-				'alter_html_source_for_combine_js',
-
-				'fetch_strip_hardcoded_assets',
-					'fetch_all_hardcoded_assets',
-
-				'output_css_js_manager',
-
-				'style_loader_tag',
-				'script_loader_tag'
-			);
-
-			foreach ( $timingKeys as $timingKey ) {
-				$htmlSource = Misc::printTimingFor($timingKey, $htmlSource);
-			}
+		if (isset($_GET['wpacu_debug'])) {
+			$htmlSource = self::applyDebugTiming($htmlSource);
 		}
 		// [wpacu_debug]
 
 		return apply_filters( 'wpacu_html_source_after_optimization', $htmlSource );
+	}
+
+	/**
+	 * @param $htmlSource
+	 *
+	 * @return string|string[]
+	 */
+	public static function applyDebugTiming($htmlSource)
+	{
+		$timingKeys = array(
+			'prepare_optimize_files_css',
+			'prepare_optimize_files_js',
+
+			// All HTML alteration via "wp_loaded" action hook
+			'alter_html_source',
+
+			// HTML CleanUp
+			'alter_html_source_cleanup',
+			'alter_html_source_for_remove_html_comments',
+			'alter_html_source_for_remove_meta_generators',
+
+			// CSS
+			'alter_html_source_for_optimize_css',
+			'alter_html_source_unload_ignore_deps_css',
+			'alter_html_source_for_google_fonts_optimization_removal',
+			'alter_html_source_for_inline_css',
+			'alter_html_source_original_to_optimized_css',
+			'alter_html_source_for_preload_css',
+
+			'alter_html_source_for_combine_css',
+			'alter_html_source_for_minify_inline_style_tags',
+
+			// JS
+			'alter_html_source_for_optimize_js',
+			'alter_html_source_unload_ignore_deps_js',
+
+			'alter_html_source_original_to_optimized_js',
+			'alter_html_source_for_preload_js',
+			'alter_html_source_for_combine_js',
+
+			'fetch_strip_hardcoded_assets',
+			'fetch_all_hardcoded_assets',
+
+			'output_css_js_manager',
+
+			'style_loader_tag',
+			'script_loader_tag'
+		);
+
+		foreach ( $timingKeys as $timingKey ) {
+			$htmlSource = Misc::printTimingFor($timingKey, $htmlSource);
+		}
+
+		return $htmlSource;
 	}
 
 	/**
@@ -435,7 +451,7 @@ class OptimizeCommon
 	public static function doCombineIsRegularPage()
 	{
 		// In particular situations, do not process this
-		if (strpos($_SERVER['REQUEST_URI'], '/wp-content/plugins/') !== false
+		if (strpos($_SERVER['REQUEST_URI'], '/'.Misc::getPluginsDir().'/') !== false
 		    && strpos($_SERVER['REQUEST_URI'], '/wp-content/themes/') !== false) {
 			return false;
 		}
@@ -489,7 +505,7 @@ class OptimizeCommon
 			$hrefRelPath = substr($hrefRelPath, 1);
 		}
 
-		$localAssetPath = ABSPATH . $hrefRelPath;
+		$localAssetPath = Misc::getWpRootDirPath() . $hrefRelPath;
 
 		if (strpos($localAssetPath, '?ver') !== false) {
 			list($localAssetPathAlt,) = explode('?ver', $localAssetPath);
@@ -568,7 +584,7 @@ class OptimizeCommon
 		}
 
 		// Perhaps the URL starts with / (not //) and site_url() was not used
-		if (strpos($sourceFromTag, '/') === 0 && strpos($sourceFromTag, '//') !== 0 && is_file(ABSPATH . $sourceFromTag)) {
+		if (strpos($sourceFromTag, '/') === 0 && strpos($sourceFromTag, '//') !== 0 && is_file(Misc::getWpRootDirPath() . $sourceFromTag)) {
 			$isRelPath = true;
 		}
 
@@ -704,7 +720,17 @@ class OptimizeCommon
 			}
 		}
 
-		$finalRelPath = str_replace($finalBaseUrl, '', $finalRelPath);
+		if (strpos($finalRelPath, 'http') === 0) {
+			list(,$noProtocol) = explode('://', $finalBaseUrl);
+			$finalBaseUrls = array(
+				'http://'.$noProtocol,
+				'https://'.$noProtocol
+			);
+		} else {
+			$finalBaseUrls = array($finalBaseUrl);
+		}
+
+		$finalRelPath = str_replace($finalBaseUrls, '', $finalRelPath);
 
 		if (defined('WP_ROCKET_CACHE_BUSTING_URL') && function_exists('get_current_blog_id') && get_current_blog_id()) {
 			$finalRelPath = str_replace(
@@ -980,7 +1006,7 @@ class OptimizeCommon
 			Main::instance()->settings = $wpacuSettingsClass->getAll();
 		}
 
-		$isUriRequest = array_key_exists('wpacu_clear_cache_print', $_GET);
+		$isUriRequest = isset($_GET['wpacu_clear_cache_print']);
 		$isAjaxCallOrUriRequest = (isset($_POST['action']) && $_POST['action'] === WPACU_PLUGIN_ID . '_clear_cache' && is_admin()) || $isUriRequest;
 		$clearedOutput = $keptOutput = array();
 
@@ -1111,7 +1137,7 @@ SQL;
 						$jsonValueArray = @json_decode($optionValue, ARRAY_A);
 
 						if (isset($jsonValueArray['optimize_uri'])) {
-							$allAssetsToKeep[] = rtrim(ABSPATH, '/') . $jsonValueArray['optimize_uri'];
+							$allAssetsToKeep[] = rtrim(Misc::getWpRootDirPath(), '/') . $jsonValueArray['optimize_uri'];
 						}
 					}
 				}
@@ -1260,7 +1286,7 @@ SQL;
 	 */
 	public static function clearOtherPluginsCache()
 	{
-		if (Misc::isPluginActive('autoptimize/autoptimize.php')
+		if ( assetCleanUpClearAutoptimizeCache() && Misc::isPluginActive('autoptimize/autoptimize.php')
 		    && class_exists('\autoptimizeCache')
 		    && method_exists('\autoptimizeCache', 'clearall')) {
 			\autoptimizeCache::clearall();
@@ -1332,7 +1358,7 @@ SQL;
 	public static function doNotClearCache()
 	{
 		// WooCommerce GET or AJAX call
-		if (array_key_exists('wc-ajax', $_GET) && $_GET['wc-ajax']) {
+		if (isset($_GET['wc-ajax']) && $_GET['wc-ajax']) {
 			return true;
 		}
 
@@ -1384,6 +1410,17 @@ SQL;
 	public static function filterWpContentUrl($anyCdnUrl = '')
 	{
 		$wpContentUrl = WP_CONTENT_URL;
+
+		$parseContentUrl = parse_url($wpContentUrl);
+		$parseBaseUrl = parse_url(site_url());
+
+		// Perhaps WPML plugin is used and the content URL is different then the current domain which might be for a different language
+		if ( ($parseContentUrl['host'] !== $parseBaseUrl['host']) &&
+		     (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== $parseContentUrl['host']) &&
+		     isset($parseContentUrl['path']) &&
+			 is_dir(rtrim(ABSPATH, '/') . $parseContentUrl['path']) ) {
+			$wpContentUrl = str_replace($parseContentUrl['host'], $parseBaseUrl['host'], $wpContentUrl);
+		}
 
 		// Is the page loaded via SSL, but the site url from the database starts with 'http://'
 		// Then use '//' in front of CSS/JS generated via Asset CleanUp

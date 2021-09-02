@@ -87,10 +87,12 @@ trait Controls
             'posts_ids',
             [
                 'label' => __('Search & Select', 'essential-addons-for-elementor-lite'),
-                'type' => Controls_Manager::SELECT2,
+                'type' => 'eael-select2',
                 'options' => ControlsHelper::get_post_list(),
                 'label_block' => true,
-                'multiple' => true,
+                'multiple'    => true,
+                'source_name' => 'post_type',
+                'source_type' => 'any',
                 'condition' => [
                     'post_type' => 'by_id',
                 ],
@@ -120,11 +122,11 @@ trait Controls
                 $taxonomy . '_ids',
                 [
                     'label' => $object->label,
-                    'type' => Controls_Manager::SELECT2,
+                    'type' => 'eael-select2',
                     'label_block' => true,
                     'multiple' => true,
-                    'object_type' => $taxonomy,
-                    'options' => wp_list_pluck(get_terms($taxonomy), 'name', 'term_id'),
+                    'source_name' => 'taxonomy',
+                    'source_type' => $taxonomy,
                     'condition' => [
                         'post_type' => $object->object_type,
                     ],
@@ -132,20 +134,20 @@ trait Controls
             );
         }
 
-        $wb->add_control(
-            'post__not_in',
-            [
-                'label' => __('Exclude', 'essential-addons-for-elementor-lite'),
-                'type' => Controls_Manager::SELECT2,
-                'options' => ControlsHelper::get_post_list(),
-                'label_block' => true,
-                'post_type' => '',
-                'multiple' => true,
-                'condition' => [
-                    'post_type!' => ['by_id', 'source_dynamic'],
-                ],
-            ]
-        );
+	    $wb->add_control(
+		    'post__not_in',
+		    [
+			    'label'       => __( 'Exclude', 'essential-addons-for-elementor-lite' ),
+			    'type'        => 'eael-select2',
+			    'label_block' => true,
+			    'multiple'    => true,
+			    'source_name' => 'post_type',
+			    'source_type' => 'any',
+			    'condition'   => [
+				    'post_type!' => [ 'by_id', 'source_dynamic' ],
+			    ],
+		    ]
+	    );
 
         $wb->add_control(
             'posts_per_page',
@@ -670,6 +672,54 @@ trait Controls
                 ]
             );
 
+            if( 'eael-post-block' === $wb->get_name() ) {
+                $wb->add_control(
+                    'post_block_image_height',
+                    [
+                        'label'      => __('Image Height', 'essential-addons-for-elementor-lite'),
+                        'type'       => Controls_Manager::SLIDER,
+                        'range'      => [
+                            'px' => [
+                                'min'  => 0,
+                                'max'  => 600,
+                                'step' => 1,
+                            ],
+                        ],
+                        'size_units' => ['px', 'em', '%'],
+                        'selectors'  => [
+                            '{{WRAPPER}} .eael-entry-thumbnail' => 'height: {{SIZE}}{{UNIT}};',
+                        ],
+                        'condition' => [
+                            'eael_show_image' => 'yes',
+                        ],
+                    ]
+                );
+            }
+
+            if( 'eael-post-grid' === $wb->get_name() ) {
+                $wb->add_responsive_control(
+                    'postgrid_image_height',
+                    [
+                        'label'      => __('Image Height', 'essential-addons-for-elementor-lite'),
+                        'type'       => Controls_Manager::SLIDER,
+                        'range'      => [
+                            'px' => [
+                                'min'  => 0,
+                                'max'  => 600,
+                                'step' => 1,
+                            ],
+                        ],
+                        'size_units' => ['px', 'em', '%'],
+                        'selectors'  => [
+                            '{{WRAPPER}} .eael-entry-thumbnail' => 'height: {{SIZE}}{{UNIT}};',
+                        ],
+                        'condition' => [
+                            'eael_show_image' => 'yes',
+                        ],
+                    ]
+                );
+            }
+
         }
 
         if ('eael-content-timeline' === $wb->get_name()) {
@@ -831,7 +881,7 @@ trait Controls
             $wb->add_control(
                 'excerpt_expanison_indicator',
                 [
-                    'label' => esc_html__('Expanison Indicator', 'essential-addons-for-elementor-lite'),
+                    'label' => esc_html__('Expansion Indicator', 'essential-addons-for-elementor-lite'),
                     'type' => Controls_Manager::TEXT,
                     'dynamic'     => [ 'active' => true ],
                     'label_block' => false,
@@ -858,7 +908,7 @@ trait Controls
             $wb->add_control(
                 'excerpt_expanison_indicator',
                 [
-                    'label' => esc_html__('Expanison Indicator', 'essential-addons-for-elementor-lite'),
+                    'label' => esc_html__('Expansion Indicator', 'essential-addons-for-elementor-lite'),
                     'type' => Controls_Manager::TEXT,
                     'dynamic'     => [ 'active' => true ],
                     'label_block' => false,
@@ -914,9 +964,6 @@ trait Controls
                     'label_off' => __('Hide', 'essential-addons-for-elementor-lite'),
                     'return_value' => 'yes',
                     'default' => 'yes',
-                    'condition' => [
-                        'post_type!' => 'product',
-                    ],
                 ]
             );
 
@@ -929,13 +976,16 @@ trait Controls
                     'default' => __('Read More', 'essential-addons-for-elementor-lite'),
                     'condition' => [
                         'eael_show_read_more_button' => 'yes',
-                        'post_type!' => 'product',
                     ],
                 ]
             );
         }
 
-        if ('eael-post-carousel' === $wb->get_name() || 'eael-post-grid' === $wb->get_name()) {
+        if ( 'eael-post-carousel' === $wb->get_name() || 'eael-post-grid' === $wb->get_name() ) {
+
+//	        $eael_show_post_terms_condition = 'eael-post-grid' === $wb->get_name() ? ['eael_show_image' => 'yes'] : [];
+	        $eael_show_post_terms_condition = ['eael_show_image' => 'yes']; //Applicable for both elements: Post Carousel and Post Grid
+
             $wb->add_control(
                 'eael_show_post_terms',
                 [
@@ -944,11 +994,11 @@ trait Controls
                     'label_on' => __('Show', 'essential-addons-for-elementor-lite'),
                     'label_off' => __('Hide', 'essential-addons-for-elementor-lite'),
                     'return_value' => 'yes',
-                    'condition' => [
-                        'eael_show_image' => 'yes',
-                    ],
+                    'condition' => $eael_show_post_terms_condition,
                 ]
             );
+
+            $eael_show_post_terms_child_condition = ['eael_show_image' => 'yes', 'eael_show_post_terms' => 'yes'];
 
             $wb->add_control(
                 'eael_post_terms',
@@ -960,9 +1010,7 @@ trait Controls
                         'tags' => __('Tags', 'essential-addons-for-elementor-lite'),
                     ],
                     'default' => 'category',
-                    'condition' => [
-                        'eael_show_post_terms' => 'yes',
-                    ],
+                    'condition' => $eael_show_post_terms_child_condition,
                 ]
             );
 
@@ -977,9 +1025,7 @@ trait Controls
                         3 => __('3', 'essential-addons-for-elementor-lite'),
                     ],
                     'default' => 1,
-                    'condition' => [
-                        'eael_show_post_terms' => 'yes',
-                    ],
+                    'condition' => $eael_show_post_terms_child_condition,
                 ]
             );
 
@@ -1156,7 +1202,6 @@ trait Controls
                     'tab' => Controls_Manager::TAB_STYLE,
                     'condition' => [
                         'eael_show_read_more_button' => 'yes',
-                        'post_type!' => 'product',
                     ],
                 ]
             );
@@ -1785,4 +1830,94 @@ trait Controls
 
         return $source;
     }
+
+	public static function nothing_found_style($wb){
+		$wb->start_controls_section(
+			'eael_section_nothing_found_style',
+			[
+				'label' => __('Not Found Message', 'essential-addons-for-elementor-lite'),
+				'tab' => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$wb->add_control( 'eael_section_nothing_found_note', [
+			'type'            => Controls_Manager::RAW_HTML,
+			'raw'             => __( 'Style the message when no posts are found.', 'essential-addons-for-elementor-lite' ),
+			'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
+		] );
+
+		$wb->add_group_control(
+			Group_Control_Typography::get_type(),
+			[
+				'name' => 'eael_post_nothing_found_typography',
+				'selector' => '{{WRAPPER}} .eael-no-posts-found',
+			]
+		);
+		$wb->add_control(
+			'eael_post_nothing_found_color',
+			[
+				'label' => esc_html__('Text Color', 'essential-addons-for-elementor-lite'),
+				'type' => Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .eael-no-posts-found' => 'color: {{VALUE}};',
+				],
+			]
+		);
+		$wb->add_control(
+			'eael_post_nothing_found_bg_color',
+			[
+				'label' => esc_html__('Background Color', 'essential-addons-for-elementor-lite'),
+				'type' => Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}} .eael-no-posts-found' => 'background-color: {{VALUE}};',
+				],
+			]
+		);
+		$wb->add_responsive_control(
+			'eael_post_nothing_found_padding',
+			[
+				'label' => esc_html__('Padding', 'essential-addons-for-elementor-lite'),
+				'type' => Controls_Manager::DIMENSIONS,
+				'size_units' => ['px', 'em', '%'],
+				'default'    => [
+					'top'      => "25",
+					'right'    => "25",
+					'bottom'   => "25",
+					'left'     => "25",
+					'isLinked' => true,
+				],
+				'selectors' => [
+					'{{WRAPPER}} .eael-no-posts-found' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+
+		$wb->add_control(
+			'eael_post_nothing_found_alignment',
+			[
+				'label'     => __( 'Alignment', 'essential-addons-for-elementor-lite' ),
+				'type'      => Controls_Manager::CHOOSE,
+				'options'   => [
+					'left'  => [
+						'title' => __( 'Left', 'essential-addons-for-elementor-lite' ),
+						'icon'  => 'fa fa-align-left',
+					],
+					'center'  => [
+						'title' => __( 'Center', 'essential-addons-for-elementor-lite' ),
+						'icon'  => 'fa fa-align-center',
+					],
+					'right' => [
+						'title' => __( 'Right', 'essential-addons-for-elementor-lite' ),
+						'icon'  => 'fa fa-align-right',
+					],
+				],
+				'default' => 'center',
+				'selectors' => [
+					'{{WRAPPER}} .eael-no-posts-found' => 'text-align: {{VALUE}};',
+				],
+			]
+		);
+
+		$wb->end_controls_section();
+	}
 }

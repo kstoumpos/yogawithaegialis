@@ -179,9 +179,11 @@ SELECT option_name FROM `{$wpdb->prefix}options` WHERE {$transientLikesSql}
 SQL;
 	    $transientsToClear = $wpdb->get_col($sqlQuery);
 
-	    foreach ($transientsToClear as $transientToClear) {
-		    $transientNameToClear = str_replace('_transient_', '', $transientToClear);
-		    delete_transient($transientNameToClear);
+	    if (! empty($transientsToClear)) {
+		    foreach ( $transientsToClear as $transientToClear ) {
+			    $transientNameToClear = str_replace( '_transient_', '', $transientToClear );
+			    delete_transient( $transientNameToClear );
+		    }
 	    }
     }
 
@@ -379,55 +381,53 @@ HTACCESS;
      * It needs to be triggered through a very early 'init' / 'setup_theme' action hook after all plugins are loaded, thus it can't be used in /early-triggers.php
      * e.g. in situations when the page is an AMP one, prevent any changes to the HTML source by Asset CleanUp (Pro)
      *
+	 * @param string $tagActionName
+	 *
 	 * @return bool
 	 */
-	public static function preventAnyFrontendOptimization()
-    {
-        // Only relevant if all the plugins are already loaded
-	    // and in the front-end view
-        if (! defined('WPACU_ALL_ACTIVE_PLUGINS_LOADED') || is_admin()) {
-            return false;
-        }
+	public static function preventAnyFrontendOptimization($tagActionName = '')
+	{
+		// Only relevant if all the plugins are already loaded
+		// and in the front-end view
+		if (! defined('WPACU_ALL_ACTIVE_PLUGINS_LOADED') || is_admin()) {
+			return false;
+		}
 
-        // Perhaps the editor from "Pro" (theme.co) is on
-	    if (apply_filters('wpacu_prevent_any_frontend_optimization', false)) {
-	        if (! defined('WPACU_PREVENT_ANY_FRONTEND_OPTIMIZATION')) {
-		        define( 'WPACU_PREVENT_ANY_FRONTEND_OPTIMIZATION', true );
-	        }
+		// Perhaps the editor from "Pro" (theme.co) is on
+		if (apply_filters('wpacu_prevent_any_frontend_optimization', false)) {
+			return true;
+		}
 
-		    return true;
-	    }
+		// e.g. /amp/ - /amp? - /amp/? - /?amp or ending in /amp
+		$isAmpInRequestUri = ( (isset($_SERVER['REQUEST_URI']) && (preg_match('/(\/amp$|\/amp\?)|(\/amp\/|\/amp\/\?)/', $_SERVER['REQUEST_URI'])))
+                               || isset($_GET['amp']) );
 
-        if (defined('WPACU_PREVENT_ANY_FRONTEND_OPTIMIZATION')) {
-	        return WPACU_PREVENT_ANY_FRONTEND_OPTIMIZATION;
-        }
+		// Is it an AMP endpoint?
+		if ( ($isAmpInRequestUri && Misc::isPluginActive('accelerated-mobile-pages/accelerated-mobile-pages.php')) // "AMP for WP – Accelerated Mobile Pages"
+		     || ($isAmpInRequestUri && Misc::isPluginActive('amp/amp.php')) // "AMP – WordPress plugin"
+		     || (function_exists('is_wp_amp') && Misc::isPluginActive('wp-amp/wp-amp.php') && is_wp_amp()) // "WP AMP — Accelerated Mobile Pages for WordPress and WooCommerce" (Premium plugin)
+		) {
+			return true; // do not print anything on an AMP page
+		}
 
-	    // e.g. /amp/ - /amp? - /amp/? - /?amp or ending in /amp
-	    $isAmpInRequestUri = ((isset($_SERVER['REQUEST_URI']) && (preg_match('/(\/amp$|\/amp\?)|(\/amp\/|\/amp\/\?)/', $_SERVER['REQUEST_URI']))) || (array_key_exists('amp', $_GET)));
+		// Some pages are AMP but their URI does not end in /amp
+		if ( Misc::isPluginActive('accelerated-mobile-pages/accelerated-mobile-pages.php')
+		     || Misc::isPluginActive('amp/amp.php')
+		     || Misc::isPluginActive('wp-amp/wp-amp.php')
+		) {
+			define('WPACU_DO_EXTRA_CHECKS_FOR_AMP', true);
+		}
 
-	    // Is it an AMP endpoint?
-	    if ( ($isAmpInRequestUri && Misc::isPluginActive('accelerated-mobile-pages/accelerated-mobile-pages.php')) // "AMP for WP – Accelerated Mobile Pages"
-	         || ($isAmpInRequestUri && Misc::isPluginActive('amp/amp.php')) // "AMP – WordPress plugin"
-	         || (function_exists('is_wp_amp') && Misc::isPluginActive('wp-amp/wp-amp.php') && is_wp_amp()) // "WP AMP — Accelerated Mobile Pages for WordPress and WooCommerce" (Premium plugin)
-	    ) {
-		    define('WPACU_PREVENT_ANY_FRONTEND_OPTIMIZATION', true);
-		    return true; // do not print anything on an AMP page
-	    }
+		if ( isset($_GET['wpacu_clean_load']) ) {
+			return true;
+		}
 
-	    // Some pages are AMP but their URI does not end in /amp
-	    if ( Misc::isPluginActive('accelerated-mobile-pages/accelerated-mobile-pages.php')
-            || Misc::isPluginActive('amp/amp.php')
-            || Misc::isPluginActive('wp-amp/wp-amp.php')
-        ) {
-		    define('WPACU_DO_EXTRA_CHECKS_FOR_AMP', true);
-	    }
+		// $tagActionName needs to be different than 'parse_query' because is_singular() would trigger too soon and cause notice errors
+		// Has the following page option set: "Do not apply any front-end optimization on this page (this includes any changes related to CSS/JS files)"
+		if ($tagActionName !== 'parse_query' && MetaBoxes::hasNoFrontendOptimizationPageOption()) {
+			return true;
+		}
 
-	    if (array_key_exists('wpacu_clean_load', $_GET)) {
-		    define('WPACU_PREVENT_ANY_FRONTEND_OPTIMIZATION', true);
-	        return true;
-        }
-
-	    define('WPACU_PREVENT_ANY_FRONTEND_OPTIMIZATION', false);
-	    return false;
-    }
+		return false;
+	}
 }

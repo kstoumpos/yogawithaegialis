@@ -13,12 +13,15 @@ use WooCommerce\PayPalCommerce\ApiClient\Endpoint\OrderEndpoint;
 use WooCommerce\PayPalCommerce\ApiClient\Entity\Order;
 use WooCommerce\PayPalCommerce\ApiClient\Entity\Payer;
 use WooCommerce\PayPalCommerce\ApiClient\Entity\PaymentMethod;
+use WooCommerce\PayPalCommerce\ApiClient\Entity\PurchaseUnit;
 use WooCommerce\PayPalCommerce\ApiClient\Exception\PayPalApiException;
+use WooCommerce\PayPalCommerce\ApiClient\Exception\RuntimeException;
 use WooCommerce\PayPalCommerce\ApiClient\Factory\PayerFactory;
 use WooCommerce\PayPalCommerce\ApiClient\Factory\PurchaseUnitFactory;
 use WooCommerce\PayPalCommerce\ApiClient\Repository\CartRepository;
 use WooCommerce\PayPalCommerce\Button\Helper\EarlyOrderHandler;
 use WooCommerce\PayPalCommerce\Session\SessionHandler;
+use WooCommerce\PayPalCommerce\WcGateway\Exception\NotFoundException;
 use WooCommerce\PayPalCommerce\WcGateway\Settings\Settings;
 
 /**
@@ -86,11 +89,18 @@ class CreateOrderEndpoint implements EndpointInterface {
 	private $early_order_handler;
 
 	/**
-	 * The current PayPal order in a process.
+	 * Data from the request.
 	 *
-	 * @var Order|null
+	 * @var array
 	 */
-	private $order;
+	private $parsed_request_data;
+
+	/**
+	 * The array of purchase units for order.
+	 *
+	 * @var PurchaseUnit[]
+	 */
+	private $purchase_units;
 
 	/**
 	 * CreateOrderEndpoint constructor.
@@ -138,12 +148,12 @@ class CreateOrderEndpoint implements EndpointInterface {
 	 * Handles the request.
 	 *
 	 * @return bool
-	 * @throws \WooCommerce\PayPalCommerce\WcGateway\Exception\NotFoundException In case a setting was not found.
 	 */
 	public function handle_request(): bool {
 		try {
-			$data     = $this->request_data->read_request( $this->nonce() );
-			$wc_order = null;
+			$data                      = $this->request_data->read_request( $this->nonce() );
+			$this->parsed_request_data = $data;
+			$wc_order                  = null;
 			if ( 'pay-now' === $data['context'] ) {
 				$wc_order = wc_get_order( (int) $data['order_id'] );
 				if ( ! is_a( $wc_order, \WC_Order::class ) ) {
@@ -156,28 +166,27 @@ class CreateOrderEndpoint implements EndpointInterface {
 						)
 					);
 				}
-				$purchase_units = array( $this->purchase_unit_factory->from_wc_order( $wc_order ) );
+				$this->purchase_units = array( $this->purchase_unit_factory->from_wc_order( $wc_order ) );
 			} else {
-				$purchase_units = $this->cart_repository->all();
+				$this->purchase_units = $this->cart_repository->all();
 			}
 
 			$this->set_bn_code( $data );
-			$needs_shipping          = WC()->cart && WC()->cart->needs_shipping();
-			$shipping_address_is_fix = $needs_shipping && 'checkout' === $data['context'] ? true : false;
-			$order                   = $this->api_endpoint->create(
-				$purchase_units,
-				$this->payer( $data, $wc_order ),
-				null,
-				$this->payment_method(),
-				'',
-				$shipping_address_is_fix
-			);
+
 			if ( 'checkout' === $data['context'] ) {
-					$this->validate_checkout_form( $data['form'], $order );
+				if ( isset( $data['createaccount'] ) && '1' === $data['createaccount'] ) {
+					$this->process_checkout_form_when_creating_account( $data['form'], $wc_order );
+				}
+
+				$this->process_checkout_form( $data['form'] );
 			}
 			if ( 'pay-now' === $data['context'] && get_option( 'woocommerce_terms_page_id', '' ) !== '' ) {
 				$this->validate_paynow_form( $data['form'] );
 			}
+
+			// if we are here so the context is not 'checkout' as it exits before. Therefore, a PayPal order is not created yet.
+			// It would be a good idea to refactor the checkout process in the future.
+			$order = $this->create_paypal_order( $wc_order );
 			wp_send_json_success( $order->to_array() );
 			return true;
 		} catch ( \RuntimeException $error ) {
@@ -189,15 +198,78 @@ class CreateOrderEndpoint implements EndpointInterface {
 					'details' => is_a( $error, PayPalApiException::class ) ? $error->details() : array(),
 				)
 			);
-			return false;
+		} catch ( \Exception $exception ) {
+			wc_add_notice( $exception->getMessage(), 'error' );
 		}
+
+		return false;
+	}
+
+	/**
+	 * Once the checkout has been validated we execute this method.
+	 *
+	 * @param array     $data The data.
+	 * @param \WP_Error $errors The errors, which occurred.
+	 *
+	 * @return array
+	 */
+	public function after_checkout_validation( array $data, \WP_Error $errors ): array {
+		if ( ! $errors->errors ) {
+
+			$order = $this->create_paypal_order();
+
+			/**
+			 * In case we are onboarded and everything is fine with the \WC_Order
+			 * we want this order to be created. We will intercept it and leave it
+			 * in the "Pending payment" status though, which than later will change
+			 * during the "onApprove"-JS callback or the webhook listener.
+			 */
+			if ( ! $this->early_order_handler->should_create_early_order() ) {
+				wp_send_json_success( $order->to_array() );
+			}
+			$this->early_order_handler->register_for_order( $order );
+			return $data;
+		}
+
+		wp_send_json_error(
+			array(
+				'name'    => '',
+				'message' => $errors->get_error_message(),
+				'code'    => (int) $errors->get_error_code(),
+				'details' => array(),
+			)
+		);
+		return $data;
+	}
+
+	/**
+	 * Creates the order in the PayPal, uses data from WC order if provided.
+	 *
+	 * @param \WC_Order|null $wc_order WC order to get data from.
+	 *
+	 * @return Order Created PayPal order.
+	 *
+	 * @throws RuntimeException If create order request fails.
+	 */
+	private function create_paypal_order( \WC_Order $wc_order = null ): Order {
+		$needs_shipping          = WC()->cart && WC()->cart->needs_shipping();
+		$shipping_address_is_fix = $needs_shipping && 'checkout' === $this->parsed_request_data['context'];
+
+		return $this->api_endpoint->create(
+			$this->purchase_units,
+			$this->payer( $this->parsed_request_data, $wc_order ),
+			null,
+			$this->payment_method(),
+			'',
+			$shipping_address_is_fix
+		);
 	}
 
 	/**
 	 * Returns the Payer entity based on the request data.
 	 *
-	 * @param array     $data The request data.
-	 * @param \WC_Order $wc_order The order.
+	 * @param array          $data The request data.
+	 * @param \WC_Order|null $wc_order The order.
 	 *
 	 * @return Payer|null
 	 */
@@ -245,13 +317,17 @@ class CreateOrderEndpoint implements EndpointInterface {
 	 * Returns the PaymentMethod object for the order.
 	 *
 	 * @return PaymentMethod
-	 * @throws \WooCommerce\PayPalCommerce\WcGateway\Exception\NotFoundException In case a setting would not be found.
 	 */
 	private function payment_method() : PaymentMethod {
-		$payee_preferred = $this->settings->has( 'payee_preferred' ) && $this->settings->get( 'payee_preferred' ) ?
-			PaymentMethod::PAYEE_PREFERRED_IMMEDIATE_PAYMENT_REQUIRED
-			: PaymentMethod::PAYEE_PREFERRED_UNRESTRICTED;
-		$payment_method  = new PaymentMethod( $payee_preferred );
+		try {
+			$payee_preferred = $this->settings->has( 'payee_preferred' ) && $this->settings->get( 'payee_preferred' ) ?
+				PaymentMethod::PAYEE_PREFERRED_IMMEDIATE_PAYMENT_REQUIRED
+				: PaymentMethod::PAYEE_PREFERRED_UNRESTRICTED;
+		} catch ( NotFoundException $exception ) {
+			$payee_preferred = PaymentMethod::PAYEE_PREFERRED_UNRESTRICTED;
+		}
+
+		$payment_method = new PaymentMethod( $payee_preferred );
 		return $payment_method;
 	}
 
@@ -259,12 +335,10 @@ class CreateOrderEndpoint implements EndpointInterface {
 	 * Prepare the Request parameter and process the checkout form and validate it.
 	 *
 	 * @param string $form_values The values of the form.
-	 * @param Order  $order The Order.
 	 *
 	 * @throws \Exception On Error.
 	 */
-	private function validate_checkout_form( string $form_values, Order $order ) {
-		$this->order = $order;
+	private function process_checkout_form( string $form_values ) {
 		$form_values = explode( '&', $form_values );
 
 		$parsed_values = array();
@@ -308,39 +382,40 @@ class CreateOrderEndpoint implements EndpointInterface {
 	}
 
 	/**
-	 * Once the checkout has been validated we execute this method.
+	 * Processes checkout and creates the PayPal order after success form validation.
 	 *
-	 * @param array     $data The data.
-	 * @param \WP_Error $errors The errors, which occurred.
-	 *
-	 * @return array
+	 * @param string         $form_values The values of the form.
+	 * @param \WC_Order|null $wc_order WC order to get data from.
+	 * @throws \Exception On Error.
 	 */
-	public function after_checkout_validation( array $data, \WP_Error $errors ): array {
+	private function process_checkout_form_when_creating_account( string $form_values, \WC_Order $wc_order = null ) {
+		$form_values   = explode( '&', $form_values );
+		$parsed_values = array();
+		foreach ( $form_values as $field ) {
+			$field = explode( '=', $field );
 
-		$order = $this->order;
-		if ( ! $errors->errors ) {
-
-			/**
-			 * In case we are onboarded and everything is fine with the \WC_Order
-			 * we want this order to be created. We will intercept it and leave it
-			 * in the "Pending payment" status though, which than later will change
-			 * during the "onApprove"-JS callback or the webhook listener.
-			 */
-			if ( ! $this->early_order_handler->should_create_early_order() ) {
-				wp_send_json_success( $order->to_array() );
+			if ( count( $field ) !== 2 ) {
+				continue;
 			}
-			$this->early_order_handler->register_for_order( $order );
-			return $data;
+			$parsed_values[ $field[0] ] = $field[1];
 		}
+		$_POST    = $parsed_values;
+		$_REQUEST = $parsed_values;
 
-		wp_send_json_error(
-			array(
-				'name'    => '',
-				'message' => $errors->get_error_message(),
-				'code'    => (int) $errors->get_error_code(),
-				'details' => array(),
-			)
+		add_action(
+			'woocommerce_after_checkout_validation',
+			function ( array $data, \WP_Error $errors ) use ( $wc_order ) {
+				if ( ! $errors->errors ) {
+					$order = $this->create_paypal_order( $wc_order );
+					wp_send_json_success( $order->to_array() );
+					return true;
+				}
+			},
+			10,
+			2
 		);
-		return $data;
+
+		$checkout = \WC()->checkout();
+		$checkout->process_checkout();
 	}
 }

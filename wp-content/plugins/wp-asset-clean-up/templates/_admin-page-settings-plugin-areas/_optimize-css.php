@@ -57,6 +57,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                            value="1" /> <span class="wpacu_slider wpacu_round"></span> </label>
 
                 &nbsp;<?php _e('This will take the remaining enqueued CSS files, minify them and load them from the cache.', 'wp-asset-clean-up'); ?>
+	             <?php _e('You might want to minify the local files, the inline CSS code within STYLE tags or both.', 'wp-asset-clean-up'); ?>
 
                 <?php
                 if (! empty($data['is_optimize_css_enabled_by_other_party'])) {
@@ -73,13 +74,45 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
 				$minifyCssExceptionsAreaStyle = empty($data['is_optimize_css_enabled_by_other_party']) && ($data['minify_loaded_css'] == 1) ? 'opacity: 1;' : 'opacity: 0.4;';
 				?>
                 <div id="wpacu_minify_css_area" style="<?php echo $minifyCssExceptionsAreaStyle; ?>">
-                    <div style="padding: 10px; background: #f2faf2;" class="wpacu-fancy-checkbox">
-                        <input id="minify_loaded_css_inline_checkbox"
-                               name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_css_inline]"
-                               <?php echo (($data['minify_loaded_css_inline'] == 1) ? 'checked="checked"' : ''); ?>
-                               type="checkbox"
-                               value="1" />
-                        <label for="minify_loaded_css_inline_checkbox"> Minify inline CSS content within STYLE tags</label>
+                    <!-- -->
+
+                    <div style="margin-top: 8px; padding: 12px; background: #f2faf2; border-radius: 10px;">
+                        <ul style="margin: 0;">
+                            <li style="float: left; margin-right: 30px; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
+                                <label for="minify_loaded_css_for_link_href_radio">
+                                    <input id="minify_loaded_css_for_link_href_radio"
+                                           style="margin: -1px 0 0;"
+						                <?php echo (in_array($data['minify_loaded_css_for'], array('href', '')) ? 'checked="checked"' : ''); ?>
+                                           type="radio"
+                                           name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_css_for]"
+                                           value="href" />
+                                    &nbsp;<?php _e('LINK tags with "href" attribute', 'wp-asset-clean-up'); ?> (<?php echo __('default', 'wp-asset-clean-up'); ?>)
+                                </label>
+                            </li>
+                            <li style="float: left; margin-right: 30px; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
+                                <label for="minify_loaded_css_for_style_inline_radio">
+                                    <input id="minify_loaded_css_for_style_inline_radio"
+                                           style="margin: -1px 0 0;"
+						                <?php echo (($data['minify_loaded_css_for'] === 'inline') ? 'checked="checked"' : ''); ?>
+                                           type="radio"
+                                           name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_css_for]"
+                                           value="inline" />
+                                    &nbsp;<?php _e('STYLE tags with inline CSS code ', 'wp-asset-clean-up'); ?>
+                                </label>
+                            </li>
+                            <li style="float: left; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
+                                <label for="minify_loaded_css_for_link_style_all_radio">
+                                    <input id="minify_loaded_css_for_link_style_all_radio"
+                                           style="margin: -1px 0 0;"
+						                <?php echo (($data['minify_loaded_css_for'] === 'all') ? 'checked="checked"' : ''); ?>
+                                           type="radio"
+                                           name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_css_for]"
+                                           value="all" />
+                                    &nbsp;<?php _e('All LINK &amp; STYLE tags', 'wp-asset-clean-up'); ?> * <small>both options</small>
+                                </label>
+                            </li>
+                        </ul>
+                        <div style="clear: both;"></div>
                     </div>
 
                     <div id="wpacu_minify_css_exceptions_area">
@@ -134,7 +167,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                            name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[combine_loaded_css]"
                            value="1" /> <span class="wpacu_slider wpacu_round"></span> </label>
 
-                &nbsp;<small>* if <code style="font-size: inherit;"><?php echo '/'.str_replace(ABSPATH, '', WP_CONTENT_DIR) . \WpAssetCleanUp\OptimiseAssets\OptimizeCommon::getRelPathPluginCacheDir(); ?></code> directory is not writable for some reason, this feature will not work; requires the DOMDocument XML DOM Parser to be enabled in PHP (which it is by default) for maximum performance</small>
+                &nbsp;<small>* if <code style="font-size: inherit;"><?php echo '/'.str_replace(Misc::getWpRootDirPath(), '', WP_CONTENT_DIR) . \WpAssetCleanUp\OptimiseAssets\OptimizeCommon::getRelPathPluginCacheDir(); ?></code> directory is not writable for some reason, this feature will not work; requires the DOMDocument XML DOM Parser to be enabled in PHP (which it is by default) for maximum performance</small>
                 &nbsp;
 			    <?php
 			    if (! empty($data['is_optimize_css_enabled_by_other_party'])) {

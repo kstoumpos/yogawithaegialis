@@ -92,6 +92,11 @@ class CombineCss
 							continue;
 						}
 
+						// e.g. for 'admin-bar' (keep it as standalone when critical CSS is used)
+						if (isset($linkAttributes['data-wpacu-skip-preload']) && has_filter('wpacu_critical_css')) {
+							continue;
+						}
+
 						// Check if the CSS file has any 'data-wpacu-skip' attribute; if it does, do not alter it
 						if (isset($linkAttributes['data-wpacu-skip']) || isset($scriptAttributes['data-wpacu-apply-media-query'])) {
 							continue;
@@ -441,7 +446,7 @@ HTML;
 						$cssContent = OptimizeCommon::stripSourceMap($cssContent, 'css');
 					}
 
-					$finalCombinedCssContent .= '/*!'.str_replace(ABSPATH, '/', $localAssetsPath)."*/\n";
+					$finalCombinedCssContent .= '/*!'.str_replace(Misc::getWpRootDirPath(), '/', $localAssetsPath)."*/\n";
 					$finalCombinedCssContent .= OptimizeCss::maybeFixCssContent($cssContent, $pathToAssetDir . '/') . "\n";
 
 					$finalCombinedCssContent = self::appendToCombineCss($localAssetsExtra, $assetHref, $pathToAssetDir, $finalCombinedCssContent);
@@ -496,7 +501,7 @@ HTML;
 			}
 
 			if (trim($afterCssContent)) {
-				if ( Main::instance()->settings['minify_loaded_css'] && Main::instance()->settings['minify_loaded_css_inline'] ) {
+				if (MinifyCss::isMinifyCssEnabled() && in_array(Main::instance()->settings['minify_loaded_css_for'], array('inline', 'all'))) {
 					$afterCssContent = MinifyCss::applyMinification( $afterCssContent );
 				}
 
@@ -552,7 +557,7 @@ HTML;
 	public static function proceedWithCssCombine()
 	{
 		// Not on query string request (debugging purposes)
-		if (array_key_exists('wpacu_no_css_combine', $_GET)) {
+		if ( ! empty($_REQUEST) && array_key_exists('wpacu_no_css_combine', $_REQUEST) ) {
 			return false;
 		}
 

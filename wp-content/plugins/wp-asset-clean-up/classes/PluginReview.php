@@ -94,7 +94,7 @@ class PluginReview
 	public function noticeStyles()
     {
         ?>
-        <style type="text/css">
+        <style <?php echo Misc::getStyleTypeAttribute(); ?>>
             .wpacu-review-plugin-notice {
                 border-left: 4px solid #008f9c;
             }
@@ -174,7 +174,7 @@ class PluginReview
 	public function showReviewNotice()
     {
         // On URL request (for debugging)
-        if (array_key_exists('wpacu_show_review_notice', $_GET)) {
+        if ( isset($_GET['wpacu_show_review_notice']) ) {
             return true;
         }
 
@@ -245,7 +245,7 @@ class PluginReview
 	 */
 	public function doCloseNotice()
     {
-        $doRedirect = array_key_exists('wpacu_close_reason', $_GET) && array_key_exists('wpacu_close_reason', $_GET) && ! defined('DOING_AJAX');
+        $doRedirect = isset($_GET['wpacu_close_reason']) && ! defined('DOING_AJAX');
         $reason = isset($_REQUEST['wpacu_close_reason']) ? $_REQUEST['wpacu_close_reason'] : false;
 
         if (! $reason) {

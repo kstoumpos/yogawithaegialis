@@ -70,7 +70,7 @@ class CombineJs
 			$jQueryMigrateInBody = false;
 			$jQueryLibInBodyCount = 0;
 
-			$minifyJsInlineTagsIsNotEnabled = ! (MinifyJs::isMinifyJsEnabled() && Main::instance()->settings['minify_loaded_js_inline']);
+			$minifyJsInlineTagsIsNotEnabled = ! (MinifyJs::isMinifyJsEnabled() && in_array(Main::instance()->settings['minify_loaded_js_for'], array('inline', 'all')));
 
 			if ($minifyJsInlineTagsIsNotEnabled) {
 				$domTag = new \DOMDocument();
@@ -84,6 +84,10 @@ class CombineJs
 
 				if (Main::instance()->isFrontendEditView) {
 					$htmlSourceAlt = preg_replace( '@<form action="#wpacu_wrap_assets" method="post">.*?</form>@si', '', $htmlSourceAlt );
+				}
+
+				if ($htmlSourceAlt === '') {
+					$htmlSourceAlt = $htmlSource;
 				}
 
 				$domTag->loadHTML( $htmlSourceAlt );
@@ -364,6 +368,8 @@ class CombineJs
 			$cdnUrls = OptimizeCommon::getAnyCdnUrls();
 			$cdnUrlForJs = isset($cdnUrls['js']) ? $cdnUrls['js'] : false;
 
+			$typeAttr = Misc::getScriptTypeAttribute();
+
 			foreach ( $finalCacheList as $docLocationScript => $cachedGroupsList ) {
 				foreach ($cachedGroupsList as $groupNo => $cachedValues) {
 					$htmlSourceBeforeGroupReplacement = $htmlSource;
@@ -389,7 +395,7 @@ class CombineJs
 					}
 
 					$finalJsTag = <<<HTML
-<script {$finalJsTagAttrsOutput} id='wpacu-combined-js-{$docLocationScript}-group-{$groupNo}' type='text/javascript' src='{$finalTagUrl}'></script>
+<script {$finalJsTagAttrsOutput} id='wpacu-combined-js-{$docLocationScript}-group-{$groupNo}' {$typeAttr} src='{$finalTagUrl}'></script>
 HTML;
 					// In case one needs to alter it (e.g. developers that might want to add custom attributes such as data-cfasync="false")
 					$finalJsTag = apply_filters(
@@ -437,8 +443,15 @@ HTML;
 
 		if (isset($finalCacheList['body']) && (! empty($finalCacheList['body'])) && Main::instance()->settings['combine_loaded_js_defer_body']) {
 			// CACHE RE-BUILT
+			$typeAttr = Misc::getScriptTypeAttribute();
+
 			if ($isDeferAppliedOnBodyCombineGroupNo > 0 && $domTag = ObjectCache::wpacu_cache_get('wpacu_html_dom_body_tag_for_js')) {
-				$strPart = "id='wpacu-combined-js-body-group-".$isDeferAppliedOnBodyCombineGroupNo."' type='text/javascript' ";
+				$strPart = "id='wpacu-combined-js-body-group-".$isDeferAppliedOnBodyCombineGroupNo."' $typeAttr ";
+
+				if (strpos($htmlSource, $strPart) === false) {
+					return $htmlSource; // something is funny, do not continue
+				}
+
 				list(,$htmlAfterFirstCombinedDeferScript) = explode($strPart, $htmlSource);
 				$htmlAfterFirstCombinedDeferScriptMaybeChanged = $htmlAfterFirstCombinedDeferScript;
 				$scriptTags = $domTag->getElementsByTagName('script');
@@ -456,7 +469,7 @@ HTML;
 					return $htmlSource;
 				}
 
-				$strPart = "id='wpacu-combined-js-body-group-".$isDeferAppliedOnBodyCombineGroupNo."' type='text/javascript' ";
+				$strPart = "id='wpacu-combined-js-body-group-".$isDeferAppliedOnBodyCombineGroupNo."' $typeAttr ";
 
 				$htmlAfterFirstCombinedDeferScriptMaybeChanged = false;
 
@@ -607,7 +620,7 @@ HTML;
 
 				$pathToAssetDir = OptimizeCommon::getPathToAssetDir($assetHref);
 
-				$contentToAddToCombinedFile = '/*!'.str_replace(ABSPATH, '/', $localAssetsPath)."*/\n";
+				$contentToAddToCombinedFile = '/*!'.str_replace(Misc::getWpRootDirPath(), '/', $localAssetsPath)."*/\n";
 
 				// This includes the extra from 'data' (CDATA added via wp_localize_script()) & 'before' as they are both printed BEFORE the SCRIPT tag
 				$contentToAddToCombinedFile .= self::maybeWrapBetweenTryCatch(self::appendToCombineJs('translations', $localAssetsExtra, $assetHref, $pathToAssetDir), $assetHref);
@@ -649,7 +662,7 @@ HTML;
 	public static function appendToCombineJs($addItLocation, $localAssetsExtra, $assetHref, $pathToAssetDir)
 	{
 		$extraContentToAppend = '';
-		$doJsMinifyInline = Main::instance()->settings['minify_loaded_js'] && Main::instance()->settings['minify_loaded_js_inline'];
+		$doJsMinifyInline = MinifyJs::isMinifyJsEnabled() && in_array(Main::instance()->settings['minify_loaded_js_for'], array('inline', 'all'));
 
 		if ($addItLocation === 'before') {
 			// [Before JS Content]
@@ -822,7 +835,7 @@ JS;
 	public static function proceedWithJsCombine()
 	{
 		// not on query string request (debugging purposes)
-		if (array_key_exists('wpacu_no_js_combine', $_GET)) {
+		if ( isset($_REQUEST['wpacu_no_js_combine']) ) {
 			return false;
 		}
 

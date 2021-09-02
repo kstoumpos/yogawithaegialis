@@ -4,6 +4,56 @@
   cursor: pointer;
 }
 
+.eael-lightbox-wrapper {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: left;
+      -ms-flex-align: left;
+          align-items: left;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+/*--- For icon background shape ---*/
+
+.eael-lightbox-icon-bg-shape-square .eael-lightbox-btn,
+.eael-lightbox-icon-bg-shape-radius .eael-lightbox-btn,
+.eael-lightbox-icon-bg-shape-circle .eael-lightbox-btn {
+  width: 90px;
+  height: 90px;
+  text-align: center;
+}
+
+.eael-lightbox-icon-hover-bg-shape-square:hover .eael-lightbox-btn {
+  border-radius: 0;
+}
+
+.eael-lightbox-icon-bg-shape-radius .eael-lightbox-btn,
+.eael-lightbox-icon-hover-bg-shape-radius:hover .eael-lightbox-btn {
+  border-radius: 15px;
+}
+
+.eael-lightbox-icon-bg-shape-circle .eael-lightbox-btn,
+.eael-lightbox-icon-hover-bg-shape-circle:hover .eael-lightbox-btn {
+  border-radius: 50%;
+}
+
+.eael-lightbox-icon-bg-shape-square .eael-lightbox-btn .eael-trigger-svg-icon svg,
+.eael-lightbox-icon-bg-shape-radius .eael-lightbox-btn .eael-trigger-svg-icon svg,
+.eael-lightbox-icon-bg-shape-circle .eael-lightbox-btn .eael-trigger-svg-icon svg,
+.eael-lightbox-icon-bg-shape-square .eael-lightbox-btn .eael-trigger-icon i,
+.eael-lightbox-icon-bg-shape-radius .eael-lightbox-btn .eael-trigger-icon i,
+.eael-lightbox-icon-bg-shape-circle .eael-lightbox-btn .eael-trigger-icon i {
+  margin-top: 50%;
+  -webkit-transform: translateY(-50%);
+      -ms-transform: translateY(-50%);
+          transform: translateY(-50%);
+}
+
+/*--- For icon background shape End ---*/
+
 button.mfp-close {
   background: transparent;
 }
@@ -56,8 +106,8 @@ button.mfp-close {
   }
 }
 
-.eael-lightbox-popup-window.lightbox_type_content,
-.eael-lightbox-popup-window.lightbox_type_custom_html {
+.eael-lightbox-popup-window.lightbox_type_content .eael-lightbox-container,
+.eael-lightbox-popup-window.lightbox_type_custom_html .eael-lightbox-container {
   background-color: #fff;
   padding: 15px;
 }
@@ -380,11 +430,15 @@ button.mfp-close {
   opacity: 0;
 }
 
+.eael-trigger-icon {
+  cursor: pointer;
+}
+
 .mfp-newspaper.mfp-removing.mfp-bg {
   opacity: 0;
 }
 
-.eael-lightbox-button-svg-icon {
+.eael-lightbox-button-svg-icon svg {
   width: 18px;
 }
 

@@ -12,7 +12,7 @@ use Elementor\Repeater;
 use WC_Product;
 
 
-use \Essential_Addons_Elementor\Classes\Helper;
+use \Essential_Addons_Elementor\Classes\Helper as HelperClass;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit();
 }
@@ -46,9 +46,7 @@ trait Woo_Product_Comparable {
 			'stock'       => __( 'Availability', 'essential-addons-for-elementor-lite' ),
 			'weight'      => __( 'weight', 'essential-addons-for-elementor-lite' ),
 			'dimension'   => __( 'Dimension', 'essential-addons-for-elementor-lite' ),
-			'pa_color'    => __( 'Color', 'essential-addons-for-elementor-lite' ),
-			'pa_size'     => __( 'Size', 'essential-addons-for-elementor-lite' ),
-		] );
+		] + self::get_wc_attr_taxonomies_list() );
 	}
 
 	public static function get_themes() {
@@ -114,6 +112,18 @@ trait Woo_Product_Comparable {
 			],
 		] );
 	}
+
+	/*
+	 * return woocommerce attribute taxonomies list
+	 */
+	public static function get_wc_attr_taxonomies_list(){
+		$attributes_tax =  wc_get_attribute_taxonomies();
+		$data = [];
+		foreach ($attributes_tax as $item){
+			$data[wc_attribute_taxonomy_name($item->attribute_name)] = $item->attribute_label;
+		}
+		return $data;
+    }
 
 	protected function init_content_wc_notice_controls() {
 		if ( ! function_exists( 'WC' ) ) {
@@ -240,13 +250,14 @@ trait Woo_Product_Comparable {
 				'active' => true,
 			],
 		] );
+
 		$this->add_control( 'fields', [
 			'label'       => __( 'Fields to show', 'essential-addons-for-elementor-lite' ),
 			'description' => __( 'Select the fields to show in the comparison table', 'essential-addons-for-elementor-lite' ),
 			'type'        => Controls_Manager::REPEATER,
 			'fields'      => apply_filters( 'eael/wcpc/rf-fields', $repeater->get_controls() ),
 			'default'     => $this->get_default_rf_fields(),
-			'title_field' => '{{{ field_label }}}',
+			'title_field' => '{{ field_label }}',
 		] );
 		$this->add_control( 'repeat_price', [
 			'label'       => __( 'Repeat "Price" field', 'essential-addons-for-elementor-lite' ),
@@ -1743,8 +1754,8 @@ trait Woo_Product_Comparable {
 		extract( $options );
 		$not_found_text         = isset( $ds['no_products_found_text'] ) ? $ds['no_products_found_text'] : '';
 		$title                  = isset( $ds['table_title'] ) ? $ds['table_title'] : '';
-		$title_tag              = isset( $ds['table_title_tag'] ) ? Helper::eael_validate_html_tag($ds['table_title_tag'])  : 'h1';
-		$ribbon                 = isset( $ds['ribbon'] ) ? $ds['ribbon'] : '';
+		$title_tag              = isset( $ds['table_title_tag'] ) ? HelperClass::eael_validate_html_tag($ds['table_title_tag'])  : 'h1';
+		$ribbon                 = isset( $ds['ribbon'] ) ? HelperClass::eael_wp_kses($ds['ribbon']): '';
 		$repeat_price           = isset( $ds['repeat_price'] ) ? $ds['repeat_price'] : '';
 		$repeat_add_to_cart     = isset( $ds['repeat_add_to_cart'] ) ? $ds['repeat_add_to_cart'] : '';
 		$linkable_img           = isset( $ds['linkable_img'] ) ? $ds['linkable_img'] : '';
@@ -1791,7 +1802,7 @@ trait Woo_Product_Comparable {
                                 <div class="wcpc-table-header">
 									<?php if ( $field === 'image' ) {
 										if ( ! empty( $title ) ) {
-											printf( "<{$title_tag} class='wcpc-title'>%s</{$title_tag}>", esc_html( $title ) );
+											printf( "<{$title_tag} class='wcpc-title'>%s</{$title_tag}>", HelperClass::eael_wp_kses( $title ) );
 										}
 									} else {
 										if ( 'theme-5' === $theme && $field === 'title' ) {
@@ -1800,7 +1811,7 @@ trait Woo_Product_Comparable {
 											if ( ! empty( $icon ) ) {
 												self::print_icon( $icon );
 											}
-											printf( '<span class="field-name">%s</span>', esc_html( $name ) );
+											printf( '<span class="field-name">%s</span>', HelperClass::eael_wp_kses( $name ) );
 
 										}
 									} ?>
@@ -2051,7 +2062,7 @@ trait Woo_Product_Comparable {
 		$fields_to_show = [];
 		foreach ( $fields as $field ) {
 			if ( isset( $df[ $field['field_type'] ] ) ) {
-				$fields_to_show[ $field['field_type'] ] = $field['field_label'];
+				$fields_to_show[ $field['field_type'] ] = HelperClass::eael_wp_kses($field['field_label']);
 			} else {
 				if ( taxonomy_exists( $field['field_type'] ) ) {
 					$fields_to_show[ $field['field_type'] ] = wc_attribute_label( $field['field_type'] );
@@ -2297,7 +2308,7 @@ trait Woo_Product_Comparable {
 		$fields_to_show = [];
 		foreach ( $fields as $field ) {
 			if ( isset( $df[ $field['field_type'] ] ) ) {
-				$fields_to_show[ $field['field_type'] ] = $field['field_label'];
+				$fields_to_show[ $field['field_type'] ] = HelperClass::eael_wp_kses($field['field_label']);
 			} else {
 				if ( taxonomy_exists( $field['field_type'] ) ) {
 					$fields_to_show[ $field['field_type'] ] = wc_attribute_label( $field['field_type'] );

@@ -66,6 +66,8 @@ trait Admin {
                     'r_title'      => __( 'reCAPTCHA v2', 'essential-addons-for-elementor-lite' ),
                     'r_sitekey'    => __( 'Site Key', 'essential-addons-for-elementor-lite' ),
                     'r_sitesecret' => __( 'Site Secret', 'essential-addons-for-elementor-lite' ),
+                    'r_language'   => __( 'Language', 'essential-addons-for-elementor-lite' ),
+                    'r_language_ph'=> __( 'reCAPTCHA Language Code', 'essential-addons-for-elementor-lite' ),
                     'g_title'      => __( 'Google Login', 'essential-addons-for-elementor-lite' ),
                     'g_cid'        => __( 'Google Client ID', 'essential-addons-for-elementor-lite' ),
                     'f_title'      => __( 'Facebook Login', 'essential-addons-for-elementor-lite' ),
@@ -159,6 +161,10 @@ trait Admin {
     public function save_settings() {
         check_ajax_referer( 'essential-addons-elementor', 'security' );
 
+        if(!current_user_can('manage_options')){
+            wp_send_json_error(__('you are not allowed to do this action', 'essential-addons-for-elementor-lite'));
+        }
+
         if ( !isset( $_POST[ 'fields' ] ) ) {
             return;
         }
@@ -172,6 +178,9 @@ trait Admin {
             }
             if ( isset( $settings[ 'recaptchaSiteSecret' ] ) ) {
                 update_option( 'eael_recaptcha_secret', sanitize_text_field( $settings[ 'recaptchaSiteSecret' ] ) );
+            }
+            if ( isset( $settings[ 'recaptchaLanguage' ] ) ) {
+                update_option( 'eael_recaptcha_language', sanitize_text_field( $settings[ 'recaptchaLanguage' ] ) );
             }
 
             //pro settings

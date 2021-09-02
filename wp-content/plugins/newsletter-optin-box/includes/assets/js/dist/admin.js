@@ -1,0 +1,1 @@
+(()=>{var n;n=jQuery,"undefined"==typeof noptinSettings&&(window.noptinSettings={}),window.noptin=window.noptin||{},n(document).ready((function(){n(".noptin-tip").tooltipster()}))})();

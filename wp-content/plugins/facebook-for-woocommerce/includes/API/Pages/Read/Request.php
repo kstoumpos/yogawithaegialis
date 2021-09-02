@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -19,7 +20,7 @@ use SkyVerge\WooCommerce\Facebook\API;
  *
  * @since 2.0.0
  */
-class Request extends API\Request  {
+class Request extends API\Request {
 
 
 	/**
@@ -44,7 +45,7 @@ class Request extends API\Request  {
 	 */
 	public function get_params() {
 
-		return [ 'fields' => 'name,link' ];
+		return array( 'fields' => 'name,link' );
 	}
 
 

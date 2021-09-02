@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -25,7 +26,7 @@ class Locale {
 
 
 	/** @var string[] an array of supported locale identifiers */
-	private static $supported_locales = [
+	private static $supported_locales = array(
 		'af_ZA',
 		'ar_AR',
 		'as_IN',
@@ -128,7 +129,7 @@ class Locale {
 		'zh_CN',
 		'zh_HK',
 		'zh_TW',
-	];
+	);
 
 
 	/**
@@ -143,7 +144,7 @@ class Locale {
 	 */
 	public static function get_supported_locales() {
 
-		$locales = [];
+		$locales = array();
 
 		if ( class_exists( 'Locale' ) ) {
 
@@ -154,10 +155,9 @@ class Locale {
 					$locales[ $locale ] = ucfirst( $name );
 				}
 			}
-
 		} else {
 
-			include_once( ABSPATH . '/wp-admin/includes/translation-install.php' );
+			include_once ABSPATH . '/wp-admin/includes/translation-install.php';
 
 			$translations = wp_get_available_translations();
 

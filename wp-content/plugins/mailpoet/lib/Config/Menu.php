@@ -43,16 +43,21 @@ class Menu {
   /** @var ContainerWrapper */
   private $container;
 
+  /** @var Router */
+  private $router;
+
   public function __construct(
     AccessControl $accessControl,
     WPFunctions $wp,
     ServicesChecker $servicesChecker,
-    ContainerWrapper $container
+    ContainerWrapper $container,
+    Router $router
   ) {
     $this->accessControl = $accessControl;
     $this->wp = $wp;
     $this->servicesChecker = $servicesChecker;
     $this->container = $container;
+    $this->router = $router;
   }
 
   public function init() {
@@ -69,6 +74,9 @@ class Menu {
 
   public function setup() {
     if (!$this->accessControl->validatePermission(AccessControl::PERMISSION_ACCESS_PLUGIN_ADMIN)) return;
+
+    $this->router->checkRedirects();
+
     if (self::isOnMailPoetAdminPage()) {
       $this->wp->doAction('mailpoet_conflict_resolver_styles');
       $this->wp->doAction('mailpoet_conflict_resolver_scripts');
@@ -91,7 +99,7 @@ class Menu {
            . '|Raleway:400,400i,700,700i'
            . '|Permanent+Marker:400,400i,700,700i'
            . '|Pacifico:400,400i,700,700i';
-          echo '<!--[if !mso]><link href="https://fonts.googleapis.com/css?family=' . $fonts . '" rel="stylesheet"><![endif]-->';
+          echo '<link href="https://fonts.googleapis.com/css?family=' . $fonts . '" rel="stylesheet">';
         });
       }
     }

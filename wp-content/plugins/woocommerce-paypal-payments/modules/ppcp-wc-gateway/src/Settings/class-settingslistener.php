@@ -9,7 +9,9 @@ declare(strict_types=1);
 
 namespace WooCommerce\PayPalCommerce\WcGateway\Settings;
 
+use WooCommerce\PayPalCommerce\ApiClient\Authentication\Bearer;
 use WooCommerce\PayPalCommerce\ApiClient\Authentication\PayPalBearer;
+use WooCommerce\PayPalCommerce\ApiClient\Exception\RuntimeException;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\Cache;
 use WooCommerce\PayPalCommerce\Onboarding\State;
 use WooCommerce\PayPalCommerce\WcGateway\Gateway\CreditCardGateway;
@@ -20,7 +22,6 @@ use WooCommerce\PayPalCommerce\Webhooks\WebhookRegistrar;
  * Class SettingsListener
  */
 class SettingsListener {
-
 
 	const NONCE = 'ppcp-settings';
 
@@ -60,6 +61,13 @@ class SettingsListener {
 	private $state;
 
 	/**
+	 * The Bearer.
+	 *
+	 * @var Bearer
+	 */
+	private $bearer;
+
+	/**
 	 * SettingsListener constructor.
 	 *
 	 * @param Settings         $settings The settings.
@@ -67,13 +75,15 @@ class SettingsListener {
 	 * @param WebhookRegistrar $webhook_registrar The Webhook Registrar.
 	 * @param Cache            $cache The Cache.
 	 * @param State            $state The state.
+	 * @param Bearer           $bearer The bearer.
 	 */
 	public function __construct(
 		Settings $settings,
 		array $setting_fields,
 		WebhookRegistrar $webhook_registrar,
 		Cache $cache,
-		State $state
+		State $state,
+		Bearer $bearer
 	) {
 
 		$this->settings          = $settings;
@@ -81,6 +91,7 @@ class SettingsListener {
 		$this->webhook_registrar = $webhook_registrar;
 		$this->cache             = $cache;
 		$this->state             = $state;
+		$this->bearer            = $bearer;
 	}
 
 	/**
@@ -125,6 +136,57 @@ class SettingsListener {
 			$redirect_url = add_query_arg( 'ppcp-onboarding-error', '1', $redirect_url );
 		}
 
+		wp_safe_redirect( $redirect_url, 302 );
+		exit;
+	}
+
+	/**
+	 * Prevent enabling both Pay Later messaging and PayPal vaulting
+	 */
+	public function listen_for_vaulting_enabled() {
+		if ( ! $this->is_valid_site_request() ) {
+			return;
+		}
+
+		try {
+			$token = $this->bearer->bearer();
+			if ( ! $token->vaulting_available() ) {
+				$this->settings->set( 'vault_enabled', false );
+				$this->settings->persist();
+				return;
+			}
+		} catch ( RuntimeException $exception ) {
+			$this->settings->set( 'vault_enabled', false );
+			$this->settings->persist();
+
+			add_action(
+				'admin_notices',
+				function () use ( $exception ) {
+					printf(
+						'<div class="notice notice-error"><p>%1$s</p><p>%2$s</p></div>',
+						esc_html__( 'Authentication with PayPal failed: ', 'woocommerce-paypal-payments' ) . esc_attr( $exception->getMessage() ),
+						wp_kses_post( __( 'Please verify your API Credentials and try again to connect your PayPal business account. Visit the <a href="https://docs.woocommerce.com/document/woocommerce-paypal-payments/" target="_blank">plugin documentation</a> for more information about the setup.', 'woocommerce-paypal-payments' ) )
+					);
+				}
+			);
+		}
+
+		/**
+		 * No need to verify nonce here.
+		 *
+		 * phpcs:disable WordPress.Security.NonceVerification.Missing
+		 * phpcs:disable WordPress.Security.NonceVerification.Recommended
+		 */
+		if ( ! isset( $_POST['ppcp']['vault_enabled'] ) ) {
+			return;
+		}
+
+		$this->settings->set( 'message_enabled', false );
+		$this->settings->set( 'message_product_enabled', false );
+		$this->settings->set( 'message_cart_enabled', false );
+		$this->settings->persist();
+
+		$redirect_url = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=ppcp-gateway' );
 		wp_safe_redirect( $redirect_url, 302 );
 		exit;
 	}
@@ -270,6 +332,7 @@ class SettingsListener {
 					$settings[ $key ] = isset( $raw_data[ $key ] );
 					break;
 				case 'text':
+				case 'number':
 				case 'ppcp-text-input':
 				case 'ppcp-password':
 					$settings[ $key ] = isset( $raw_data[ $key ] ) ? sanitize_text_field( $raw_data[ $key ] ) : '';

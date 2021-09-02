@@ -3,12 +3,13 @@
 namespace Essential_Addons_Elementor\Pro\Elements;
 
 use \Elementor\Controls_Manager;
+use \Elementor\Icons_Manager;
 use \Elementor\Group_Control_Background;
 use \Elementor\Group_Control_Border;
 use \Elementor\Group_Control_Box_Shadow;
 use \Elementor\Group_Control_Typography;
 use \Elementor\Plugin;
-use \Elementor\Scheme_Typography;
+use \Elementor\Core\Schemes\Typography;
 use \Elementor\Utils;
 use \Elementor\Widget_Base;
 use \Essential_Addons_Elementor\Classes\Helper;
@@ -60,9 +61,68 @@ class Lightbox extends Widget_Base
 	}
 
 
+
 	protected function _register_controls()
 	{
 
+        $this->content_tab();
+
+		/**
+		 * Style Tab: Title
+		 * -------------------------------------------------
+		 */
+
+        $this->style_title();
+
+		/**
+		 * Style Tab: Lightbox
+		 * -------------------------------------------------
+		 */
+
+		$this->style_lightbox();
+
+		 # Lightbox styles
+
+		/**
+		 * Style Tab: Overlay
+		 * -------------------------------------------------
+		 */
+
+		$this->style_overlay();
+
+		# Lightbox styles
+
+
+		/**
+		 * Style Tab: Icon
+		 * -------------------------------------------------
+		 */
+
+        $this->style_icon();
+
+		/**
+		 * Style Tab: Button
+		 * -------------------------------------------------
+		 */
+
+		$this->style_button();
+
+		/**
+		 * Style Tab: Content Styles
+		 * -------------------------------------------------
+		 */
+
+        $this->content_style();
+
+		/**
+		 * Style Tab: Close Button
+		 * -------------------------------------------------
+		 */
+		$this->close_button_style();
+
+	}
+
+	public function content_tab(){
 		/*
 		/*	CONTENT TAB
 		/*-------------------------------------------------*/
@@ -176,6 +236,9 @@ class Lightbox extends Widget_Base
 				'label_on'          => __('Yes', 'essential-addons-elementor'),
 				'label_off'         => __('No', 'essential-addons-elementor'),
 				'return_value'      => 'yes',
+				'condition'             => [
+					'eael_lightbox_type'  => ['lightbox_type_content','lightbox_type_custom_html'],
+				],
 			]
 		);
 
@@ -187,6 +250,7 @@ class Lightbox extends Widget_Base
 				'default'               => __('Lightbox Title', 'essential-addons-elementor'),
 				'condition'             => [
 					'popup_lightbox_title'  => 'yes',
+					'eael_lightbox_type'  => ['lightbox_type_content','lightbox_type_custom_html'],
 				],
 				'dynamic'	=> ['active', true]
 			]
@@ -339,9 +403,9 @@ class Lightbox extends Widget_Base
 			[
 				'label'       => esc_html__('Button Text', 'essential-addons-elementor'),
 				'type'        => Controls_Manager::TEXT,
-                'dynamic'               => [
-                    'active'   => true,
-                ],
+				'dynamic'               => [
+					'active'   => true,
+				],
 				'default'     => esc_html__( 'Open Popup', 'essential-addons-elementor' ),
 				'condition'   => [
 					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
@@ -424,14 +488,14 @@ class Lightbox extends Widget_Base
 						'title' => esc_html__('Center', 'essential-addons-elementor'),
 						'icon'  => 'fa fa-align-center',
 					],
-					'right' => [
+					'flex-end' => [
 						'title' => esc_html__('Right', 'essential-addons-elementor'),
 						'icon'  => 'fa fa-align-right',
 					],
 				],
 				'default'   => 'left',
 				'selectors' => [
-					'{{WRAPPER}} .eael-lightbox-btn' => 'text-align: {{VALUE}}',
+					'{{WRAPPER}} .eael-lightbox-wrapper' => 'justify-content: {{VALUE}}',
 				],
 				'condition' => [
 					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
@@ -454,14 +518,14 @@ class Lightbox extends Widget_Base
 		);
 
 		$this->add_control(
-            'delay',
-            [
-                'label'                 => __( 'Delay', 'essential-addons-elementor' ),
-                'title'                 => __( 'seconds', 'essential-addons-elementor' ),
-                'type'                  => Controls_Manager::TEXT,
-                'dynamic' => [ 'active' => true ],
-                'default'               => '1',
-                'condition'             => [
+			'delay',
+			[
+				'label'                 => __( 'Delay', 'essential-addons-elementor' ),
+				'title'                 => __( 'seconds', 'essential-addons-elementor' ),
+				'type'                  => Controls_Manager::TEXT,
+				'dynamic' => [ 'active' => true ],
+				'default'               => '1',
+				'condition'             => [
 					'eael_lightbox_trigger_type'	=> 'eael_lightbox_trigger_pageload',
 				],
 			]
@@ -515,7 +579,7 @@ class Lightbox extends Widget_Base
 			[
 				'label'       => __('Element Identifier', 'essential-addons-elementor'),
 				'type'        => Controls_Manager::TEXT,
-                'dynamic' => [ 'active' => true ],
+				'dynamic' => [ 'active' => true ],
 				'label_block' => true,
 				'default'     => '#open-popup',
 				'placeholder' => __('#open-popup', 'essential-addons-elementor'),
@@ -629,16 +693,9 @@ class Lightbox extends Widget_Base
 		);
 
 		$this->end_controls_section(); # End of Animation Section
+	}
 
-
-		/*-------------------------------------------------*/
-		/*	Style TAB
-		/*-------------------------------------------------*/
-
-		/**
-		 * Style Tab: Title
-		 * -------------------------------------------------
-		 */
+	public function style_title(){
 		$this->start_controls_section(
 			'section_title_style',
 			[
@@ -731,17 +788,14 @@ class Lightbox extends Widget_Base
 			[
 				'name'                  => 'title_typography',
 				'label'                 => __('Typography', 'essential-addons-elementor'),
-				'scheme'                => Scheme_Typography::TYPOGRAPHY_4,
+				'scheme'                => Typography::TYPOGRAPHY_4,
 				'selector'              => '.eael-lightbox-popup-window-{{ID}} .eael-lightbox-header .eael-lightbox-title, .eael-lightbox-modal-window-{{ID}} .eael-lightbox-header .eael-lightbox-title',
 			]
 		);
 		$this->end_controls_section();
+	}
 
-
-		/**
-		 * Style Tab: Lightbox
-		 * -------------------------------------------------
-		 */
+	public function style_lightbox(){
 		$this->start_controls_section(
 			'eael_section_lightbox_styles',
 			[
@@ -757,8 +811,8 @@ class Lightbox extends Widget_Base
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '',
 				'selectors' => [
-					'.eael-lightbox-popup-window.eael-lightbox-popup-window-{{ID}}' => 'background-color: {{VALUE}};',
-					'.eael-lightbox-popup-window.eael-lightbox-modal-window-{{ID}}' => 'background-color: {{VALUE}};',
+					'.eael-lightbox-popup-window.eael-lightbox-popup-window-{{ID}} .eael-lightbox-container' => 'background-color: {{VALUE}};',
+					'.eael-lightbox-popup-window.eael-lightbox-modal-window-{{ID}} .mfp-iframe' => 'background-color: {{VALUE}};',
 				],
 			]
 		);
@@ -767,7 +821,7 @@ class Lightbox extends Widget_Base
 			Group_Control_Border::get_type(),
 			[
 				'name'     => 'eael_lightbox_container_border',
-				'selector' => '.eael-lightbox-popup-window.eael-lightbox-popup-window-{{ID}}, .eael-lightbox-popup-window.eael-lightbox-modal-window-{{ID}}',
+				'selector' => '.eael-lightbox-popup-window.eael-lightbox-popup-window-{{ID}} .eael-lightbox-container, .eael-lightbox-popup-window.eael-lightbox-modal-window-{{ID}} .mfp-iframe',
 			]
 		);
 
@@ -778,8 +832,8 @@ class Lightbox extends Widget_Base
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => ['px'],
 				'selectors'  => [
-					'.eael-lightbox-popup-window.eael-lightbox-popup-window-{{ID}}' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}}; overflow: hidden;',
-					'.eael-lightbox-popup-window.eael-lightbox-modal-window-{{ID}}' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}}; overflow: hidden;',
+					'.eael-lightbox-popup-window.eael-lightbox-modal-window-{{ID}} .mfp-iframe' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}}; overflow: hidden;',
+					'.eael-lightbox-popup-window.eael-lightbox-popup-window-{{ID}} .eael-lightbox-container'	=> 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}}; overflow: hidden;',
 				],
 			]
 		);
@@ -791,8 +845,8 @@ class Lightbox extends Widget_Base
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => ['px'],
 				'selectors'  => [
-					'.eael-lightbox-popup-window.eael-lightbox-popup-window-{{ID}}' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
-					'.eael-lightbox-popup-window.eael-lightbox-modal-window-{{ID}}' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'.eael-lightbox-popup-window.eael-lightbox-popup-window-{{ID}} .eael-lightbox-container' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'.eael-lightbox-popup-window.eael-lightbox-modal-window-{{ID}} .mfp-iframe' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
 			]
 		);
@@ -806,12 +860,10 @@ class Lightbox extends Widget_Base
 			]
 		);
 
-		$this->end_controls_section(); # Lightbox styles
+		$this->end_controls_section();
+	}
 
-		/**
-		 * Style Tab: Overlay
-		 * -------------------------------------------------
-		 */
+	public function style_overlay(){
 		$this->start_controls_section(
 			'eael_section_lightbox_overlay',
 			[
@@ -837,7 +889,7 @@ class Lightbox extends Widget_Base
 				'type'      => Controls_Manager::COLOR,
 				'default'   => "rgba(0,0,0,.8)",
 				'selectors' => [
-					'.mfp-bg.eael-lightbox-modal-popup-{{ID}}.mfp-bg' => 'background: {{VALUE}};',
+					'.mfp-bg.eael-lightbox-modal-popup-{{ID}}' => 'background: {{VALUE}};',
 				],
 				'condition' => [
 					'eael_lightbox_container_overlay' => 'yes',
@@ -846,13 +898,9 @@ class Lightbox extends Widget_Base
 		);
 
 		$this->end_controls_section();
-		# Lightbox styles
+	}
 
-
-		/**
-		 * Style Tab: Icon
-		 * -------------------------------------------------
-		 */
+	public function style_icon(){
 		$this->start_controls_section(
 			'section_icon_style',
 			[
@@ -861,22 +909,6 @@ class Lightbox extends Widget_Base
 				'condition'             => [
 					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
 					'trigger_type'               => ['icon', 'image']
-				],
-			]
-		);
-
-		$this->add_control(
-			'icon_color',
-			[
-				'label'                 => __('Color', 'essential-addons-elementor'),
-				'type'                  => Controls_Manager::COLOR,
-				'default'               => '',
-				'selectors'             => [
-					'{{WRAPPER}} .eael-trigger-icon' => 'color: {{VALUE}}',
-				],
-				'condition'             => [
-					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
-					'trigger_type'  => 'icon',
 				],
 			]
 		);
@@ -900,7 +932,7 @@ class Lightbox extends Widget_Base
 				'size_units'            => ['px', '%'],
 				'selectors'             => [
 					'{{WRAPPER}} .eael-trigger-icon' => 'font-size: {{SIZE}}{{UNIT}}',
-					'{{WRAPPER}} .eael-trigger-svg-icon'	=> 'width: {{SIZE}}{{UNIT}};'
+					'{{WRAPPER}} .eael-trigger-svg-icon svg'	=> 'width: {{SIZE}}{{UNIT}};'
 				],
 				'condition'             => [
 					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
@@ -908,6 +940,238 @@ class Lightbox extends Widget_Base
 				],
 			]
 		);
+
+		$this->add_responsive_control(
+			'icon_bg_size',
+			[
+				'label' => __('Icon Background Size', 'essential-addons-elementor'),
+				'type' => Controls_Manager::SLIDER,
+				'default' => [
+					'size' => 90,
+				],
+				'range' => [
+					'px' => [
+						'min' => 0,
+						'max' => 300,
+						'step' => 1,
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}} .eael-lightbox-btn' => 'width: {{SIZE}}px; height: {{SIZE}}px;',
+				],
+				'condition' => [
+					'lightbox_icon_bg_shape!' => 'none',
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->start_controls_tabs('eael_lightbox_icon_style_controls');
+
+		$this->start_controls_tab(
+			'lightbox_icon_normal',
+			[
+				'label' => esc_html__('Normal', 'essential-addons-elementor'),
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_control(
+			'lightbox_icon_color',
+			[
+				'label' => esc_html__('Icon Color', 'essential-addons-elementor'),
+				'type' => Controls_Manager::COLOR,
+				'default' => '#4d4d4d',
+				'selectors' => [
+					'{{WRAPPER}} .eael-trigger-icon' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .eael-trigger-icon svg' => 'fill: {{VALUE}}',
+				],
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_control(
+			'lightbox_icon_bg_shape',
+			[
+				'label' => esc_html__('Background Shape', 'essential-addons-elementor'),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'none',
+				'label_block' => false,
+				'options' => [
+					'none' => esc_html__('None', 'essential-addons-elementor'),
+					'circle' => esc_html__('Circle', 'essential-addons-elementor'),
+					'radius' => esc_html__('Radius', 'essential-addons-elementor'),
+					'square' => esc_html__('Square', 'essential-addons-elementor'),
+				],
+				'prefix_class' => 'eael-lightbox-icon-bg-shape-',
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_control(
+			'lightbox_icon_bg_color',
+			[
+				'label' => esc_html__('Background Color', 'essential-addons-elementor'),
+				'type' => Controls_Manager::COLOR,
+				'default' => '',
+				'selectors' => [
+					'{{WRAPPER}} .eael-lightbox-btn' => 'background: {{VALUE}};',
+				],
+				'condition' => [
+					'lightbox_icon_bg_shape!' => 'none',
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Border::get_type(),
+			[
+				'name' => 'lightbox_icon_border',
+				'label' => esc_html__('Border', 'essential-addons-elementor'),
+				'selector' => '{{WRAPPER}} .eael-lightbox-btn',
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Box_Shadow::get_type(),
+			[
+				'name' => 'lightbox_icon_shadow',
+				'selector' => '{{WRAPPER}} .eael-lightbox-btn',
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->end_controls_tab();
+
+		$this->start_controls_tab(
+			'lightbox_icon_hover',
+			[
+				'label' => esc_html__('Hover', 'essential-addons-elementor'),
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_control(
+			'lightbox_icon_hover_animation',
+			[
+				'label' => esc_html__('Animation', 'essential-addons-elementor'),
+				'type' => Controls_Manager::HOVER_ANIMATION,
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_control(
+			'lightbox_icon_hover_color',
+			[
+				'label' => esc_html__('Icon Color', 'essential-addons-elementor'),
+				'type' => Controls_Manager::COLOR,
+				'default' => '',
+				'selectors' => [
+					'{{WRAPPER}} .eael-trigger-icon:hover' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .eael-trigger-icon:hover svg' => 'fill: {{VALUE}}',
+				],
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_control(
+			'lightbox_icon_hover_bg_color',
+			[
+				'label' => esc_html__('Background Color', 'essential-addons-elementor'),
+				'type' => Controls_Manager::COLOR,
+				'default' => '',
+				'selectors' => [
+					'{{WRAPPER}} .eael-lightbox-btn:hover' => 'background: {{VALUE}};',
+				],
+				'condition' => [
+					'lightbox_icon_hover_bg_shape!' => 'none',
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_control(
+			'lightbox_icon_hover_bg_shape',
+			[
+				'label' => esc_html__('Background Shape', 'essential-addons-elementor'),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'none',
+				'label_block' => false,
+				'options' => [
+					'none' => esc_html__('None', 'essential-addons-elementor'),
+					'circle' => esc_html__('Circle', 'essential-addons-elementor'),
+					'radius' => esc_html__('Radius', 'essential-addons-elementor'),
+					'square' => esc_html__('Square', 'essential-addons-elementor'),
+				],
+				'prefix_class' => 'eael-lightbox-icon-hover-bg-shape-',
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Border::get_type(),
+			[
+				'name' => 'lightbox_hover_icon_border',
+				'label' => esc_html__('Border', 'essential-addons-elementor'),
+				'selector' => '{{WRAPPER}} .eael-lightbox-btn:hover',
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Box_Shadow::get_type(),
+			[
+				'name' => 'lightbox_icon_hover_shadow',
+				'selector' => '{{WRAPPER}} .eael-lightbox-btn:hover',
+				'condition' => [
+					'eael_lightbox_trigger_type' => 'eael_lightbox_trigger_button',
+					'trigger_type'  => 'icon',
+				],
+			]
+		);
+
+		$this->end_controls_tab();
+
+		$this->end_controls_tabs();
+
+
+
+
 
 		$this->add_responsive_control(
 			'icon_image_width',
@@ -960,12 +1224,9 @@ class Lightbox extends Widget_Base
 		);
 
 		$this->end_controls_section();
+	}
 
-
-		/**
-		 * Style Tab: Button
-		 * -------------------------------------------------
-		 */
+	public function style_button(){
 		$this->start_controls_section(
 			'eael_section_lightbox_trigger_styles',
 			[
@@ -1057,7 +1318,7 @@ class Lightbox extends Widget_Base
 			Group_Control_Typography::get_type(),
 			[
 				'name'      => 'eael_lightbox_open_btn_typography',
-				'scheme'    => Scheme_Typography::TYPOGRAPHY_1,
+				'scheme'    => Typography::TYPOGRAPHY_1,
 				'selector'  => '{{WRAPPER}} .eael-lightbox-btn > span'
 			]
 		);
@@ -1079,6 +1340,7 @@ class Lightbox extends Widget_Base
 				'default'   => '#ffffff',
 				'selectors' => [
 					'{{WRAPPER}} .eael-lightbox-btn > span' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .eael-lightbox-btn > span .eael-lightbox-button-svg-icon svg' => 'fill: {{VALUE}};',
 				],
 			]
 		);
@@ -1131,6 +1393,7 @@ class Lightbox extends Widget_Base
 				'default'   => '#ffffff',
 				'selectors' => [
 					'{{WRAPPER}} .eael-lightbox-btn > span:hover' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .eael-lightbox-btn > span:hover .eael-lightbox-button-svg-icon svg' => 'fill: {{VALUE}};',
 				]
 			]
 		);
@@ -1180,11 +1443,9 @@ class Lightbox extends Widget_Base
 		$this->end_controls_tabs();
 
 		$this->end_controls_section();
+	}
 
-		/**
-		 * Style Tab: Content Styles
-		 * -------------------------------------------------
-		 */
+	public function content_style(){
 		$this->start_controls_section(
 			'eael_section_lightbox_content_styles',
 			[
@@ -1200,7 +1461,7 @@ class Lightbox extends Widget_Base
 			Group_Control_Typography::get_type(),
 			[
 				'name'     => 'eael_lightbox_content_typography',
-				'scheme'   => Scheme_Typography::TYPOGRAPHY_1,
+				'scheme'   => Typography::TYPOGRAPHY_1,
 				'selector' => '.eael-lightbox-container .eael-lightbox-content'
 			]
 		);
@@ -1217,12 +1478,9 @@ class Lightbox extends Widget_Base
 		);
 
 		$this->end_controls_section();
+	}
 
-
-		/**
-		 * Style Tab: Close Button
-		 * -------------------------------------------------
-		 */
+	public function close_button_style(){
 		$this->start_controls_section(
 			'eael_section_lightbox_closebtn_styles',
 			[
@@ -1463,7 +1721,7 @@ class Lightbox extends Widget_Base
 				'name'                  => 'eael_lightbox_closebtn_bg',
 				'label'                 => __('Background', 'essential-addons-elementor'),
 				'types'                 => ['classic', 'gradient'],
-				'selector'              => '.eael-lightbox-popup-window-{{ID}} .mfp-close, .eael-lightbox-modal-window-{{ID}} .mfp-close',
+				'selector'              => '.eael-lightbox-popup-window-{{ID}} button.mfp-close, .eael-lightbox-modal-window-{{ID}} button.mfp-close',
 				'condition'             => [
 					'close_button'   => 'yes',
 				],
@@ -1576,14 +1834,16 @@ class Lightbox extends Widget_Base
 		$this->end_controls_section();
 	}
 
-
 	protected function render()
 	{
-
+        $uniq_id = uniqid() ;
+        $widget_id = $this->get_id();
 		$settings    = $this->get_settings_for_display();
 		$popup_image = $settings['eael_lightbox_type_image'];
-		$button_icon = ((isset($settings['__fa4_migrated']['eael_lightbox_open_btn_icon_new']) || empty($settings['eael_lightbox_open_btn_icon'])) ? $settings['eael_lightbox_open_btn_icon_new']['value'] : $settings['eael_lightbox_open_btn_icon']);
-		$trigger_icon = ((isset($settings['__fa4_migrated']['trigger_only_icon_new']) || empty($settings['trigger_only_icon'])) ? $this->get_settings('trigger_only_icon_new')['value'] : $this->get_settings('trigger_only_icon'));
+        $button_icon_migrated = isset($settings['__fa4_migrated']['eael_lightbox_open_btn_icon_new']);
+        $button_icon_is_new = empty($settings['eael_lightbox_open_btn_icon']);
+        $trigger_icon_migrated = isset($settings['__fa4_migrated']['trigger_only_icon_new']);
+        $trigger_icon_is_new = empty($settings['trigger_only_icon']);
 
 		$this->add_render_attribute(
 			'eael-lightbox-wrapper',
@@ -1597,7 +1857,7 @@ class Lightbox extends Widget_Base
 
 		$this->add_render_attribute('eael-lightbox-wrapper', 'class', 'eael-lightbox-wrapper');
 		$this->add_render_attribute('eael-lightbox-wrapper', 'data-trigger', $settings['eael_lightbox_trigger_type']);
-		$this->add_render_attribute('eael-lightbox-wrapper', 'data-lightbox-id', 'lightbox_' . esc_attr($this->get_id()));
+		$this->add_render_attribute('eael-lightbox-wrapper', 'data-lightbox-id', 'lightbox_' . esc_attr($uniq_id));
 
 		// Popup Type
 		if ('lightbox_type_image' == $settings['eael_lightbox_type'] || 'lightbox_type_content' == $settings['eael_lightbox_type'] || 'lightbox_type_template' == $settings['eael_lightbox_type'] || 'lightbox_type_custom_html' == $settings['eael_lightbox_type']) {
@@ -1609,11 +1869,11 @@ class Lightbox extends Widget_Base
 		}
 
 		if ('lightbox_type_image' === $settings['eael_lightbox_type'] || 'lightbox_type_content' === $settings['eael_lightbox_type'] || 'lightbox_type_template' === $settings['eael_lightbox_type'] || 'lightbox_type_custom_html' === $settings['eael_lightbox_type']) {
-			$this->add_render_attribute('eael-lightbox-wrapper', 'data-src', '#eael-lightbox-window-' . esc_attr($this->get_id()));
+			$this->add_render_attribute('eael-lightbox-wrapper', 'data-src', '#eael-lightbox-window-' . esc_attr($uniq_id));
 		}
 		if ('lightbox_type_url' === $settings['eael_lightbox_type']) {
 			$this->add_render_attribute('eael-lightbox-wrapper', 'data-src', esc_url($settings['eael_lightbox_type_url']['url']));
-			$this->add_render_attribute('eael-lightbox-wrapper', 'data-iframe-class', 'eael-lightbox-popup-window eael-lightbox-modal-window-' . esc_attr($this->get_id()));
+			$this->add_render_attribute('eael-lightbox-wrapper', 'data-iframe-class', 'eael-lightbox-popup-window eael-lightbox-modal-window-' . esc_attr($widget_id));
 		}
 
 		if ($settings['layout_type'] == 'fullscreen') {
@@ -1623,9 +1883,9 @@ class Lightbox extends Widget_Base
 		}
 
 		if ('yes' == $settings['eael_lightbox_container_overlay']) {
-			$this->add_render_attribute('eael-lightbox-wrapper', 'data-main-class', 'eael-lightbox-modal-popup-' . esc_attr($this->get_id()));
+			$this->add_render_attribute('eael-lightbox-wrapper', 'data-main-class', 'eael-lightbox-modal-popup-' . esc_attr($widget_id));
 		} else {
-			$this->add_render_attribute('eael-lightbox-wrapper', 'data-main-class', 'eael-lightbox-no-overlay eael-lightbox-modal-popup-' . esc_attr($this->get_id()));
+			$this->add_render_attribute('eael-lightbox-wrapper', 'data-main-class', 'eael-lightbox-no-overlay eael-lightbox-modal-popup-' . esc_attr($uniq_id));
 		}
 
 		if ('yes' === $settings['close_button']) {
@@ -1644,7 +1904,7 @@ class Lightbox extends Widget_Base
 
 		// Trigger
 		if ($settings['eael_lightbox_trigger_type'] != 'eael_lightbox_trigger_external') {
-			$this->add_render_attribute('eael-lightbox-wrapper', 'data-trigger-element', '.eael-modal-popup-link-' . esc_attr($this->get_id()));
+			$this->add_render_attribute('eael-lightbox-wrapper', 'data-trigger-element', '.eael-modal-popup-link-' . esc_attr($uniq_id));
 		}
 
 		if (($settings['eael_lightbox_trigger_type']) == 'eael_lightbox_trigger_button' && $settings['trigger_type'] == 'button') {
@@ -1653,11 +1913,11 @@ class Lightbox extends Widget_Base
 			$this->add_render_attribute(
 				'trigger_button',
 				[
-					'id'	=> 'btn-eael-lightbox-' . esc_attr($this->get_id()),
+					'id'	=> 'btn-eael-lightbox-' . esc_attr($uniq_id),
 					'class'	=> [
 						'eael-modal-popup-button',
 						'eael-modal-popup-link',
-						'eael-modal-popup-link-' . esc_attr($this->get_id()),
+						'eael-modal-popup-link-' . esc_attr($uniq_id),
 						'elementor-button',
 						'elementor-size-' . $settings['button_size'],
 					]
@@ -1688,9 +1948,9 @@ class Lightbox extends Widget_Base
 		}
 
 		// Popup Window
-		$this->add_render_attribute('lightbox-popup-window', 'class', 'eael-lightbox-popup-window eael-lightbox-popup-window-' . esc_attr($this->get_id()));
+		$this->add_render_attribute('lightbox-popup-window', 'class', 'eael-lightbox-popup-window eael-lightbox-popup-window-' . esc_attr($widget_id));
 
-		$this->add_render_attribute('lightbox-popup-window', 'id', 'eael-lightbox-window-' . esc_attr($this->get_id()));
+		$this->add_render_attribute('lightbox-popup-window', 'id', 'eael-lightbox-window-' . esc_attr($uniq_id));
 
 		// Popup window container
 		$this->add_render_attribute('popup-window-container', 'class', 'eael-lightbox-container');
@@ -1707,36 +1967,40 @@ class Lightbox extends Widget_Base
 
 					if ('button' == $settings['trigger_type']) {
 						printf('<%1$s %2$s>', $trigger_html_tag, $this->get_render_attribute_string('trigger_button'));
-						if (!empty($button_icon) && $settings['eael_lightbox_open_btn_icon_align'] == 'left') {
-							if (isset($button_icon['url'])) {
-								printf('<img class="open-pop-up-button-icon-left eael-lightbox-button-svg-icon" src="%1$s" alt="%2$s" />', esc_url($button_icon['url']), esc_attr(get_post_meta($button_icon['id'], '_wp_attachment_image_alt', true)));
-							} else {
-								printf('<i class="open-pop-up-button-icon-left %1$s" aria-hidden="true"></i>', $button_icon);
-							}
-						}
+						if ( ($button_icon_migrated || $button_icon_is_new) && $settings['eael_lightbox_open_btn_icon_align'] == 'left') {
+                            echo '<span class="open-pop-up-button-icon-left eael-lightbox-button-svg-icon">';
+                            Icons_Manager::render_icon( $settings['eael_lightbox_open_btn_icon_new'] );
+                            echo '</span>';
+                        } else if (!empty($settings['eael_lightbox_open_btn_icon'])) {
+                            printf('<i class="open-pop-up-button-icon-left %1$s" aria-hidden="true"></i>', $settings['eael_lightbox_open_btn_icon']);
+                        }
 
 						echo esc_attr($settings['eael_lightbox_open_btn']);
 
-						if (!empty($button_icon) && $settings['eael_lightbox_open_btn_icon_align'] == 'right') {
-							if (isset($button_icon['url'])) {
-								printf('<img class="open-pop-up-button-icon-right eael-lightbox-button-svg-icon" src="%1$s" alt="%2$s" />', esc_url($button_icon['url']), esc_attr(get_post_meta($button_icon['id'], '_wp_attachment_image_alt', true)));
-							} else {
-								printf('<i class="open-pop-up-button-icon-right %1$s" aria-hidden="true"></i>', $button_icon);
-							}
-						}
+                        if ( ($button_icon_migrated || $button_icon_is_new) && $settings['eael_lightbox_open_btn_icon_align'] == 'right') {
+                            echo '<span class="open-pop-up-button-icon-right eael-lightbox-button-svg-icon">';
+                            Icons_Manager::render_icon( $settings['eael_lightbox_open_btn_icon_new'] );
+                            echo '</span>';
+                        } else if (!empty($settings['eael_lightbox_open_btn_icon'])) {
+                            printf('<i class="open-pop-up-button-icon-right %1$s" aria-hidden="true"></i>', $settings['eael_lightbox_open_btn_icon']);
+                        }
+
 						printf('</ %1$s>', $trigger_html_tag);
+
 					} else if ('icon' ==  $settings['trigger_type']) {
-						if (!empty($trigger_icon)) {
-							if (isset($trigger_icon['url'])) {
-								printf('<img src="%1$s" class="eael-trigger-icon eael-trigger-svg-icon eael-modal-popup-link %2$s" alt="%3$s" />', $trigger_icon['url'], 'eael-modal-popup-link-' . esc_attr($this->get_id()), esc_attr(get_post_meta($trigger_icon['id'], '_wp_attachment_image_alt', true)));
-							} else {
-								printf('<i class="eael-trigger-icon eael-modal-popup-link %1$s %2$s" aria-hidden="true"></i>', $trigger_icon, 'eael-modal-popup-link-' . esc_attr($this->get_id()));
-							}
-						}
+
+                        if ( $trigger_icon_migrated || $trigger_icon_is_new ) {
+                            echo '<span class="eael-trigger-icon eael-trigger-svg-icon eael-modal-popup-link eael-modal-popup-link-' . esc_attr($uniq_id) .'">';
+                            Icons_Manager::render_icon( $settings['trigger_only_icon_new'] );
+                            echo '</span>';
+                        } else if (!empty($settings['trigger_only_icon'])) {
+                            printf('<i class="eael-trigger-icon eael-modal-popup-link %1$s %2$s" aria-hidden="true"></i>', $settings['trigger_only_icon'], 'eael-modal-popup-link-' . esc_attr($uniq_id));
+                        }
+
 					} else if ('image' == $settings['trigger_type']) {
 						$trigger_image = $settings['trigger_only_image'];
 						if (!empty($trigger_image['url'])) {
-							printf('<img class="eael-trigger-image eael-modal-popup-link %1$s" src="%2$s" alt="%3$s">', 'eael-modal-popup-link-' . esc_attr($this->get_id()), esc_url($trigger_image['url']), esc_attr(get_post_meta($trigger_image['id'], '_wp_attachment_image_alt', true)));
+							printf('<img class="eael-trigger-image eael-modal-popup-link %1$s" src="%2$s" alt="%3$s">', 'eael-modal-popup-link-' . esc_attr($uniq_id), esc_url($trigger_image['url']), esc_attr(get_post_meta($trigger_image['id'], '_wp_attachment_image_alt', true)));
 						}
 					}
 				}
@@ -1757,8 +2021,9 @@ class Lightbox extends Widget_Base
 				if ('lightbox_type_image' == ($settings['eael_lightbox_type'])) {
 					printf('<img src="%1$s" alt="%2$s">', esc_url($popup_image['url']), esc_attr(get_post_meta($popup_image['id'], '_wp_attachment_image_alt', true)));
 				} elseif ('lightbox_type_content' == ($settings['eael_lightbox_type'])) {
-
-					echo do_shortcode($settings['eael_lightbox_type_content']);
+                    echo '<div class="eael-lightbox-content">';
+                      echo do_shortcode($settings['eael_lightbox_type_content']);
+                    echo '</div>';
 				} elseif ('lightbox_type_template' == $settings['eael_lightbox_type']) {
 
 					if (!empty($settings['eael_primary_templates'])) {

@@ -10,18 +10,25 @@ declare(strict_types=1);
 namespace WooCommerce\PayPalCommerce\WcGateway\Settings;
 
 use WooCommerce\PayPalCommerce\AdminNotices\Entity\Message;
-use WooCommerce\PayPalCommerce\AdminNotices\Repository\Repository;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\DccApplies;
 use WooCommerce\PayPalCommerce\Button\Helper\MessagesApply;
 use WooCommerce\PayPalCommerce\Onboarding\State;
 use WooCommerce\PayPalCommerce\WcGateway\Gateway\CreditCardGateway;
 use Psr\Container\ContainerInterface;
 use Woocommerce\PayPalCommerce\WcGateway\Helper\DccProductStatus;
+use Woocommerce\PayPalCommerce\WcGateway\Helper\SettingsStatus;
 
 /**
  * Class SettingsRenderer
  */
 class SettingsRenderer {
+
+	/**
+	 * The Settings status helper.
+	 *
+	 * @var SettingsStatus
+	 */
+	protected $settings_status;
 
 	/**
 	 * The settings.
@@ -74,6 +81,7 @@ class SettingsRenderer {
 	 * @param DccApplies         $dcc_applies Whether DCC gateway can be shown.
 	 * @param MessagesApply      $messages_apply Whether messages can be shown.
 	 * @param DccProductStatus   $dcc_product_status The product status.
+	 * @param SettingsStatus     $settings_status The Settings status helper.
 	 */
 	public function __construct(
 		ContainerInterface $settings,
@@ -81,7 +89,8 @@ class SettingsRenderer {
 		array $fields,
 		DccApplies $dcc_applies,
 		MessagesApply $messages_apply,
-		DccProductStatus $dcc_product_status
+		DccProductStatus $dcc_product_status,
+		SettingsStatus $settings_status
 	) {
 
 		$this->settings           = $settings;
@@ -90,34 +99,88 @@ class SettingsRenderer {
 		$this->dcc_applies        = $dcc_applies;
 		$this->messages_apply     = $messages_apply;
 		$this->dcc_product_status = $dcc_product_status;
+		$this->settings_status    = $settings_status;
 	}
 
 	/**
-	 * Returns the notice, when onboarding failed.
+	 * Returns notices list.
 	 *
 	 * @return array
 	 */
 	public function messages() : array {
 
+		$messages = array();
+
+		if ( $this->can_display_vaulting_admin_message() ) {
+
+			$vaulting_title           = __( 'PayPal vaulting', 'woocommerce-paypal-payments' );
+			$pay_later_messages_title = __( 'Pay Later Messaging', 'woocommerce-paypal-payments' );
+
+			$enabled  = $this->paypal_vaulting_is_enabled() ? $vaulting_title : $pay_later_messages_title;
+			$disabled = $this->settings_status->pay_later_messaging_is_enabled() ? $vaulting_title : $pay_later_messages_title;
+
+			$pay_later_messages_or_vaulting_text = sprintf(
+				// translators: %1$s and %2$s is translated PayPal vaulting and Pay Later Messaging strings.
+				__(
+					'You have %1$s enabled, that\'s why %2$s options are unavailable now. You cannot use both features at the same time.',
+					'woocommerce-paypal-payments'
+				),
+				$enabled,
+				$disabled
+			);
+			$messages[] = new Message( $pay_later_messages_or_vaulting_text, 'warning' );
+		}
+
         //phpcs:disable WordPress.Security.NonceVerification.Recommended
         //phpcs:disable WordPress.Security.NonceVerification.Missing
 		if ( ! isset( $_GET['ppcp-onboarding-error'] ) || ! empty( $_POST ) ) {
-			return array();
+			return $messages;
 		}
 		//phpcs:enable WordPress.Security.NonceVerification.Recommended
 		//phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		$messages = array(
-			new Message(
-				__(
-					'We could not complete the onboarding process. Some features, such as card processing, will not be available. To fix this, please try again.',
-					'woocommerce-paypal-payments'
-				),
-				'error',
-				false
+		$messages[] = new Message(
+			__(
+				'We could not complete the onboarding process. Some features, such as card processing, will not be available. To fix this, please try again.',
+				'woocommerce-paypal-payments'
 			),
+			'error',
+			false
 		);
+
 		return $messages;
+	}
+
+	/**
+	 * Check whether vaulting is enabled.
+	 *
+	 * @return bool
+	 */
+	private function paypal_vaulting_is_enabled(): bool {
+		return $this->settings->has( 'vault_enabled' ) && (bool) $this->settings->get( 'vault_enabled' );
+	}
+
+	/**
+	 * Check if current screen is PayPal checkout settings screen.
+	 *
+	 * @return bool Whether is PayPal checkout screen or not.
+	 */
+	private function is_paypal_checkout_screen(): bool {
+		$current_screen = get_current_screen();
+        //phpcs:disable WordPress.Security.NonceVerification.Recommended
+        //phpcs:disable WordPress.Security.NonceVerification.Missing
+		if ( isset( $current_screen->id ) && 'woocommerce_page_wc-settings' === $current_screen->id
+			&& isset( $_GET['section'] ) && 'ppcp-gateway' === $_GET['section'] ) {
+
+			if ( isset( $_GET['ppcp-tab'] ) && 'ppcp-gateway' !== $_GET['ppcp-tab'] ) {
+				return false;
+			}
+
+			return true;
+		}
+        //phpcs:enable
+
+		return false;
 	}
 
 	/**
@@ -295,7 +358,6 @@ class SettingsRenderer {
 			$key          = 'ppcp[' . $field . ']';
 			$id           = 'ppcp-' . $field;
 			$config['id'] = $id;
-			$th_td        = 'ppcp-heading' !== $config['type'] ? 'td' : 'td';
 			$colspan      = 'ppcp-heading' !== $config['type'] ? 1 : 2;
 			$classes      = isset( $config['classes'] ) ? $config['classes'] : array();
 			$classes[]    = sprintf( 'ppcp-settings-field-%s', str_replace( 'ppcp-', '', $config['type'] ) );
@@ -319,7 +381,7 @@ class SettingsRenderer {
 				?>
 			</th>
 			<?php endif; ?>
-			<<?php echo esc_attr( $th_td ); ?> colspan="<?php echo (int) $colspan; ?>">
+			<td colspan="<?php echo (int) $colspan; ?>">
 					<?php
 					'ppcp-text' === $config['type'] ?
 					$this->render_text( $config )
@@ -329,7 +391,7 @@ class SettingsRenderer {
 				<?php if ( $description ) : ?>
 				<p class="<?php echo 'ppcp-heading' === $config['type'] ? '' : 'description'; ?>"><?php echo wp_kses_post( $description ); ?></p>
 				<?php endif; ?>
-			</<?php echo esc_attr( $th_td ); ?>>
+			</td>
 		</tr>
 			<?php
 		endforeach;
@@ -465,7 +527,7 @@ class SettingsRenderer {
 				<p>
 					<?php
 					esc_html_e(
-						'Unfortunatly, the card processing option is not yet available in your country.',
+						'Unfortunately, the card processing option is not yet available in your country.',
 						'woocommerce-paypal-payments'
 					);
 					?>
@@ -474,4 +536,19 @@ class SettingsRenderer {
 		</tr>
 		<?php
 	}
+
+	/**
+	 * Checks if vaulting admin message can be displayed.
+	 *
+	 * @return bool Whether the message can be displayed or not.
+	 */
+	private function can_display_vaulting_admin_message(): bool {
+		if ( State::STATE_ONBOARDED !== $this->state->current_state() ) {
+			return false;
+		}
+
+		return $this->is_paypal_checkout_screen() && $this->paypal_vaulting_is_enabled()
+			|| $this->is_paypal_checkout_screen() && $this->settings_status->pay_later_messaging_is_enabled();
+	}
 }
+

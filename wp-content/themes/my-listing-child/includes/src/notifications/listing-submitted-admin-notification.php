@@ -30,7 +30,7 @@ class Listing_Submitted_Admin_Notification extends Base_Notification {
 	}
 
 	/**
-	 * Validate and prepare notifcation arguments.
+	 * Validate and prepare notification arguments.
 	 *
 	 * @since 2.1
 	 */

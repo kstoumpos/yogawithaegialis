@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -19,7 +20,7 @@ use SkyVerge\WooCommerce\Facebook\API\FBE\Configuration;
  *
  * @since 2.0.0
  */
-class Request extends Configuration\Request  {
+class Request extends Configuration\Request {
 
 
 	/**
@@ -49,10 +50,10 @@ class Request extends Configuration\Request  {
 	 */
 	public function set_messenger_configuration( Configuration\Messenger $configuration ) {
 
-		$this->data['messenger_chat'] = [
+		$this->data['messenger_chat'] = array(
 			'enabled' => $configuration->is_enabled(),
 			'domains' => $configuration->get_domains(),
-		];
+		);
 	}
 
 

@@ -11,13 +11,24 @@ class Overview
 	/**
 	 * @var array
 	 */
-	public $data = array();
+	public $data = array(
+        'page_options_to_text' => array(
+	        'no_css_minify'      => 'Do not minify CSS',
+	        'no_css_optimize'    => 'Do not combine CSS',
+            'no_js_minify'       => 'Do not minify JS',
+	        'no_js_optimize'     => 'Do not combine JS',
+            'no_assets_settings' => 'Do not apply any CSS &amp; JavaScript settings (including preloading, "async", "defer" &amp; any unload rules)',
+            'no_wpacu_load'      => 'Do not load %s on this page'
+        )
+    );
 
 	/**
 	 * Overview constructor.
 	 */
 	public function __construct()
     {
+        $this->data['page_options_to_text']['no_wpacu_load'] = sprintf(__($this->data['page_options_to_text']['no_wpacu_load'], 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE);
+
         // [START] Clear load exceptions for a handle
 	    $transientName = 'wpacu_load_exceptions_cleared';
 	    if ( isset( $_POST['wpacu_action'], $_POST['wpacu_handle'], $_POST['wpacu_asset_type'] )
@@ -381,6 +392,34 @@ SQL;
 			$this->data['assets_info'] = Main::getHandlesInfo();
 			}
 
+		// [PAGE OPTIONS]
+		// 1) For posts, pages and custom post types
+		global $wpdb;
+
+		$this->data['page_options_results'] = array();
+
+		$pageOptionsResults = $wpdb->get_results('SELECT post_id, meta_value FROM `'.$wpdb->postmeta."` WHERE meta_key='_".WPACU_PLUGIN_ID."_page_options' && meta_value !=''", ARRAY_A);
+
+		foreach ($pageOptionsResults as $pageOptionResult) {
+			$postId = $pageOptionResult['post_id'];
+			$optionsDecoded = @json_decode( $pageOptionResult['meta_value'], ARRAY_A );
+
+			if (is_array($optionsDecoded) && ! empty($optionsDecoded)) {
+				$this->data['page_options_results']['posts'][] = array('post_id' => $postId, 'options' => $optionsDecoded);
+			}
+		}
+
+		// 2) For the homepage set as latest posts (e.g. not a single page set as the front page, this is included in the previous check)
+		$globalPageOptions = get_option(WPACU_PLUGIN_ID . '_global_data');
+
+		if ($globalPageOptions) {
+			$globalPageOptionsList = @json_decode( $globalPageOptions, true );
+			if ( isset( $globalPageOptionsList['page_options']['homepage'] ) && ! empty( $globalPageOptionsList['page_options']['homepage'] ) ) {
+				$this->data['page_options_results']['homepage'] = array('options' => $globalPageOptionsList['page_options']['homepage']);
+			}
+		}
+		// [/PAGE OPTIONS]
+
 		Main::instance()->parseTemplate('admin-page-overview', $this->data, true);
 	}
 
@@ -421,6 +460,10 @@ SQL;
 
             if (strpos($src, '/') === 0 && strpos($src, '//') !== 0) {
                 $src = site_url() . $src;
+            }
+
+            if (strpos($src, '/wp-content/plugins/') !== false) {
+                $src = str_replace('/wp-content/plugins/', '/'.Misc::getPluginsDir().'/', $src);
             }
 
 	        $ver = $wp_version; // default
@@ -896,9 +939,12 @@ HTML;
         }
 
 		if (! $anyUnloadRule && $anyLoadExceptionRule) {
-		    $clearLoadExceptionsConfirmMsg = sprintf(esc_attr(__('This will clear all load exceptions for the `%s` CSS handle', 'wp-asset-clean-up')), $handleData['handle'])
-                . esc_js("\n\n") . esc_js(__('Click `OK` to confirm the action', 'wp-asset-clean-up'));
+		    $handleType = ($handleData['asset_type'] === 'styles') ? 'CSS' : 'JS';
+		    $clearLoadExceptionsConfirmMsg = sprintf( esc_attr(__('This will clear all load exceptions for the `%s` %s handle', 'wp-asset-clean-up')), $handleData['handle'], $handleType).'.'
+                . esc_js("\n\n") . esc_js(__('Click `OK` to confirm the action', 'wp-asset-clean-up')).'!';
 		    $wpacuNonceField = wp_nonce_field('wpacu_clear_load_exceptions', 'wpacu_clear_load_exceptions_nonce');
+
+		    $uniqueDelimiter = md5($handleData['handle'].$handleData['asset_type']);
 		    $clearLoadExceptionsArea = <<<HTML
 <form method="post" action="" style="display: inline-block;">
 <input type="hidden" name="wpacu_action" value="clear_load_exceptions" />
@@ -906,9 +952,9 @@ HTML;
 <input type="hidden" name="wpacu_asset_type" value="{$handleData['asset_type']}" />
 {$wpacuNonceField}
 <script type="text/javascript">
-var wpacuClearLoadExceptionsConfirmMsg = '{$clearLoadExceptionsConfirmMsg}';
+var wpacuClearLoadExceptionsConfirmMsg_{$uniqueDelimiter} = '{$clearLoadExceptionsConfirmMsg}';
 </script>
-<button onclick="return confirm(wpacuClearLoadExceptionsConfirmMsg);" type="submit" class="button button-secondary clear-load-exceptions"><span class="dashicons dashicons-trash" style="vertical-align: text-bottom;"></span> Clear load exceptions for this handle</button>
+<button onclick="return confirm(wpacuClearLoadExceptionsConfirmMsg_{$uniqueDelimiter});" type="submit" class="button button-secondary clear-load-exceptions"><span class="dashicons dashicons-trash" style="vertical-align: text-bottom;"></span> Clear load exceptions for this handle</button>
 </form>
 HTML;
 			$handleChangesOutput['load_exception_notice'] = '<div><em><small><strong>Note:</strong> Although a load exception rule is added, it is not relevant as there are no rules that would work together with it (e.g. unloaded site-wide, on all posts). This exception can be removed as the file is loaded anyway in all pages.</small></em>&nbsp;'.

@@ -269,9 +269,16 @@ class FontsGoogle
 	 */
 	public static function alterGoogleFontLink($linkHrefOriginal, $escHtml = true, $alterFor = 'css')
 	{
+		$isInVar = false; // The link is inside a variable with a JSON format
+
 		// Some special filtering here as some hosting environments (at least staging) behave funny with // inside SCRIPT tags
 		if ($alterFor === 'js') {
-			$conditionOne = stripos($linkHrefOriginal, str_replace('//', '', self::$containsStr)) === false;
+			$containsStrNoSlashes = str_replace('/', '', self::$containsStr);
+			$conditionOne = stripos($linkHrefOriginal, $containsStrNoSlashes) === false;
+
+			if (strpos($linkHrefOriginal, '\/') !== false) {
+				$isInVar = true;
+			}
 		} else { // css (default)
 			$conditionOne = stripos($linkHrefOriginal, self::$containsStr) === false;
 		}
@@ -286,6 +293,10 @@ class FontsGoogle
 		}
 
 		$altLinkHref = str_replace('&#038;', '&', $linkHrefOriginal);
+
+		if ($isInVar) {
+			$altLinkHref = str_replace('\/', '/', $altLinkHref);
+		}
 
 		$urlQuery = parse_url($altLinkHref, PHP_URL_QUERY);
 		parse_str($urlQuery, $outputStr);
@@ -404,19 +415,13 @@ class FontsGoogle
 	 */
 	public static function alterGoogleFontUrlFromJsContent($jsContent)
 	{
-		// Continue only if any of the needles (e.g. fonts.googleapis.com, WebFontConfig) are found in the haystack
-		if (stripos($jsContent, 'fonts.googleapis.com') === false &&
-		    strpos($jsContent, 'WebFontConfig') === false) {
+		if (stripos($jsContent, 'fonts.googleapis.com') === false) {
 			return $jsContent;
 		}
 
 		$newJsOutput = $jsContent;
 
-		preg_match_all(
-			'#fonts.googleapis.com/(.*?)(["\'])#si',
-			$jsContent,
-			$matchesFromJsCode
-		);
+		preg_match_all('#fonts.googleapis.com(.*?)(["\'])#si', $jsContent, $matchesFromJsCode);
 
 		if (isset($matchesFromJsCode[0]) && ! empty($matchesFromJsCode)) {
 			foreach ($matchesFromJsCode[0] as $match) {
@@ -424,7 +429,6 @@ class FontsGoogle
 				$googleApisUrl = trim($match, '"\' ');
 
 				$newGoogleApisUrl = self::alterGoogleFontLink($googleApisUrl, false, 'js');
-
 				if ($newGoogleApisUrl !== $googleApisUrl) {
 					$newJsMatchOutput = str_replace($googleApisUrl, $newGoogleApisUrl, $matchRule);
 					$newJsOutput      = str_replace($matchRule, $newJsMatchOutput, $newJsOutput);

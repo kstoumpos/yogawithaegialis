@@ -10,7 +10,7 @@ use Psr\Container\ContainerInterface as BaseContainerInterface;
  * Something that can retrieve and determine the existence of a value by key.
  */
 interface ContainerInterface extends
-    BaseContainerInterface,
-    HasCapableInterface
+    HasCapableInterface,
+    BaseContainerInterface
 {
 }

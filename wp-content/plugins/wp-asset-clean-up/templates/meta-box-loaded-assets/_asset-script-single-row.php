@@ -43,15 +43,13 @@ if (isset($data['handle_rows_contracted']['scripts'][$data['row']['obj']->handle
     class="wpacu_asset_row <?php echo $data['row']['class']; ?>"
     style="<?php if ($isCoreFile && $hideCoreFiles) { echo 'display: none;'; } ?>">
 	<td valign="top" style="position: relative;" data-wpacu-row-status="<?php echo $dataRowStatusAttr; ?>">
+        <input type="hidden" name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[scripts][<?php echo $data['row']['obj']->handle; ?>]" value="" />
         <div class="wpacu_handle_row_expand_contract_area">
             <a data-wpacu-handle="<?php echo $data['row']['obj']->handle; ?>"
                data-wpacu-handle-for="script"
                class="wpacu_handle_row_expand_contract"
                href="#"><span class="dashicons dashicons-<?php echo $dashSign; ?>"></span></a>
-            <input type="hidden"
-                   id="wpacu_script_<?php echo $data['row']['obj']->handle; ?>_row_contracted_area"
-                   name="wpacu_handle_row_contracted_area[scripts][<?php echo $data['row']['obj']->handle; ?>]"
-                   value="<?php echo $rowIsContracted; ?>" />
+            <!-- -->
         </div>
 	    <?php
         include '_asset-script-single-row/_handle.php';
@@ -129,6 +127,6 @@ if (isset($data['handle_rows_contracted']['scripts'][$data['row']['obj']->handle
 	        include '_asset-script-single-row/_notes.php';
 	        ?>
 		</div>
-        <img style="display: none;" class="wpacu-ajax-loader" src="<?php echo WPACU_PLUGIN_URL; ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="" />
+        <img style="display: none;" class="wpacu-ajax-loader" src="<?php echo WPACU_PLUGIN_URL; ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="<?php echo __('Loading'); ?>..." />
 	</td>
 </tr>

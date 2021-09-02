@@ -3,7 +3,8 @@ namespace Essential_Addons_Elementor\Pro\Elements;
 
 use \Elementor\Controls_Manager;
 use \Elementor\Group_Control_Background;
-use \Elementor\Scheme_Typography;
+use Elementor\Icons_Manager;
+use \Elementor\Core\Schemes\Typography;
 use \Elementor\Group_Control_Border;
 use \Elementor\Group_Control_Box_Shadow;
 use \Elementor\Group_Control_Typography;
@@ -358,6 +359,7 @@ class Counter extends Widget_Base {
                 'default'               => '',
                 'selectors'             => [
                     '{{WRAPPER}} .eael-counter-icon' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .eael-counter-icon svg' => 'fill: {{VALUE}};',
                 ],
                 'condition'             => [
                     'eael_icon_type'  => 'icon',
@@ -380,7 +382,8 @@ class Counter extends Widget_Base {
                 'size_units'            => [ 'px', 'em' ],
                 'selectors'             => [
                     '{{WRAPPER}} .eael-counter-icon' => 'font-size: {{SIZE}}{{UNIT}}',
-                    '{{WRAPPER}} .eael-counter-icon .eael-counter-svg-icon'    => 'height: {{SIZE}}{{UNIT}}; width: {{SIZE}}{{UNIT}};'
+                    '{{WRAPPER}} .eael-counter-icon .eael-counter-svg-icon'=> 'height: {{SIZE}}{{UNIT}}; width: {{SIZE}}{{UNIT}};',
+                    '{{WRAPPER}} .eael-counter-icon .eael-counter-svg-icon svg'=> 'height: {{SIZE}}{{UNIT}}; width: {{SIZE}}{{UNIT}};'
                 ],
                 'condition'             => [
                     'eael_icon_type'  => 'icon',
@@ -1194,13 +1197,11 @@ class Counter extends Widget_Base {
         if ( $settings['eael_icon_type'] == 'icon' ) { ?>
             <span class="eael-counter-icon-wrap">
                 <span class="eael-counter-icon">
-                    <?php if ($icon_is_new || $icon_migrated) { ?>
-                        <?php if( isset($settings['counter_icon_new']['value']['url']) ) : ?>
-                            <img class="eael-counter-svg-icon" src="<?php echo $settings['counter_icon_new']['value']['url'] ?>" alt="<?php echo esc_attr(get_post_meta($settings['counter_icon_new']['value']['id'], '_wp_attachment_image_alt', true)); ?>">
-                        <?php else : ?>
-                            <span class="<?php echo $settings['counter_icon_new']['value'] ?>" aria-hidden="true"></span>
-                        <?php endif; ?>
-                    <?php } else { ?>
+                    <?php if ($icon_is_new || $icon_migrated) {
+                        echo '<span class="eael-counter-svg-icon">';
+                        Icons_Manager::render_icon( $settings['counter_icon_new'] );
+                        echo '</span>';
+                     } else { ?>
                         <span class="<?php echo $settings['counter_icon'] ?>" aria-hidden="true"></span>
                     <?php } ?>
                 </span>
@@ -1232,5 +1233,5 @@ class Counter extends Widget_Base {
     /**
 	 * Render counter widget output in the editor.
 	 */
-    protected function _content_template() { }
+    protected function content_template() { }
 }

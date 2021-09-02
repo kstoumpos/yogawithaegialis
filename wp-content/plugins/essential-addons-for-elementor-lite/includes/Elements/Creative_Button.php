@@ -12,9 +12,11 @@ use \Elementor\Group_Control_Background;
 use \Elementor\Group_Control_Border;
 use \Elementor\Group_Control_Box_Shadow;
 use \Elementor\Group_Control_Typography;
+use Elementor\Icons_Manager;
 use Elementor\Modules\DynamicTags\Module as TagsModule;
-use \Elementor\Scheme_Typography;
+use \Elementor\Core\Schemes\Typography;
 use \Elementor\Widget_Base;
+use Essential_Addons_Elementor\Classes\Helper;
 
 
 class Creative_Button extends Widget_Base
@@ -199,7 +201,7 @@ class Creative_Button extends Widget_Base
                         ],
                     ],
                     'default'     => '1',
-                    'description' => '<span class="pro-feature"> Get the  <a href="https://wpdeveloper.net/in/upgrade-essential-addons-elementor" target="_blank">Pro version</a> for more stunning elements and customization options.</span>',
+                    'description' => '<span class="pro-feature"> Get the  <a href="https://wpdeveloper.net/upgrade/ea-pro" target="_blank">Pro version</a> for more stunning elements and customization options.</span>',
                 ]
             );
 
@@ -264,7 +266,7 @@ class Creative_Button extends Widget_Base
                     'default' => '#ffffff',
                     'selectors' => [
                         '{{WRAPPER}} .eael-creative-button i' => 'color: {{VALUE}};',
-                        '{{WRAPPER}} .eael-creative-button svg' => 'fill: {{VALUE}};',
+                        '{{WRAPPER}} .eael-creative-button .creative-button-inner svg' => 'fill: {{VALUE}};',
                     ],
                 ]
             );
@@ -277,6 +279,7 @@ class Creative_Button extends Widget_Base
                     'default'   => '#ffffff',
                     'selectors' => [
                         '{{WRAPPER}} .eael-creative-button'                                      => 'color: {{VALUE}};',
+                        '{{WRAPPER}} .eael-creative-button svg'                             => 'fill: {{VALUE}};',
                         '{{WRAPPER}} .eael-creative-button.eael-creative-button--tamaya::before' => 'color: {{VALUE}};',
                         '{{WRAPPER}} .eael-creative-button.eael-creative-button--tamaya::after'  => 'color: {{VALUE}};',
                     ],
@@ -356,7 +359,7 @@ class Creative_Button extends Widget_Base
                     'default' => '#ffffff',
                     'selectors' => [
                         '{{WRAPPER}} .eael-creative-button:hover i' => 'color: {{VALUE}};',
-                        '{{WRAPPER}} .eael-creative-button:hover svg' => 'fill: {{VALUE}};',
+                        '{{WRAPPER}} .eael-creative-button:hover .creative-button-inner svg' => 'fill: {{VALUE}};',
                     ],
                 ]
             );
@@ -368,7 +371,7 @@ class Creative_Button extends Widget_Base
                     'type'      => Controls_Manager::COLOR,
                     'default'   => '#ffffff',
                     'selectors' => [
-                        '{{WRAPPER}} .eael-creative-button:hover'                               => 'color: {{VALUE}};',
+                        '{{WRAPPER}} .eael-creative-button:hover .cretive-button-text' => 'color: {{VALUE}};',
                         '{{WRAPPER}} .eael-creative-button.eael-creative-button--winona::after' => 'color: {{VALUE}};',
                     ],
                 ]
@@ -485,7 +488,7 @@ class Creative_Button extends Widget_Base
                 Group_Control_Typography::get_type(),
                 [
                     'name'     => 'eael_creative_button_typography',
-                    'scheme'   => Scheme_Typography::TYPOGRAPHY_1,
+                    'scheme'   => Typography::TYPOGRAPHY_1,
                     'selector' => '{{WRAPPER}} .eael-creative-button .cretive-button-text, {{WRAPPER}} .eael-creative-button--winona::after',
                 ]
             );
@@ -513,9 +516,9 @@ class Creative_Button extends Widget_Base
                     ],
                     'selectors'  => [
                         '{{WRAPPER}} .eael-creative-button i'   => 'font-size: {{SIZE}}{{UNIT}};',
-                        '{{WRAPPER}} .eael-creative-button img' => 'height: {{SIZE}}{{UNIT}};width: {{SIZE}}{{UNIT}};',
+	                    '{{WRAPPER}} .eael-creative-button svg' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};',
                     ],
-                ]
+	            ]
             );
 
             $this->add_responsive_control(
@@ -581,35 +584,26 @@ class Creative_Button extends Widget_Base
                 <div class="creative-button-inner">
 
                     <?php if ($settings['creative_button_effect'] !== 'eael-creative-button--tamaya' && $settings['eael_creative_button_icon_alignment'] == 'left') : ?>
-                        <?php if ($icon_migrated || $icon_is_new) { ?>
-                            <?php if (isset($settings['eael_creative_button_icon_new']['value']['url'])) : ?>
-                                <img src="<?php echo esc_attr($settings['eael_creative_button_icon_new']['value']['url']); ?>" class="eael-creative-button-icon-left" alt="<?php echo esc_attr(get_post_meta($settings['eael_creative_button_icon_new']['value']['id'], '_wp_attachment_image_alt', true)); ?>">
-                            <?php else : ?>
-                                <?php if (!empty($settings['eael_creative_button_icon_new']['value'])) {
-                                    echo '<i class="' . esc_attr($settings['eael_creative_button_icon_new']['value']) . ' eael-creative-button-icon-left" aria-hidden="true"></i>';
-                                } ?>
-                            <?php endif; ?>
-                        <?php } else { ?>
+                        <?php if ($icon_migrated || $icon_is_new) {
+		                    echo '<span class="eael-creative-button-icon-left">';
+		                    Icons_Manager::render_icon( $settings['eael_creative_button_icon_new'], [ 'aria-hidden' => 'true' ] );
+		                    echo '</span>';
+                         } else { ?>
                             <i class="<?php echo esc_attr($settings['eael_creative_button_icon']); ?> eael-creative-button-icon-left" aria-hidden="true"></i>
                         <?php } ?>
                     <?php endif; ?>
 
-                    <span class="cretive-button-text"><?php echo $settings['creative_button_text']; ?></span>
+                    <span class="cretive-button-text"><?php echo Helper::eael_wp_kses($settings['creative_button_text']); ?></span>
 
                     <?php if ($settings['creative_button_effect'] !== 'eael-creative-button--tamaya' && $settings['eael_creative_button_icon_alignment'] == 'right') : ?>
-                        <?php if ($icon_migrated || $icon_is_new) { ?>
-                            <?php if (isset($settings['eael_creative_button_icon_new']['value']['url'])) : ?>
-                                <img src="<?php echo esc_attr($settings['eael_creative_button_icon_new']['value']['url']); ?>" class="eael-creative-button-icon-right" alt="<?php echo esc_attr(get_post_meta($settings['eael_creative_button_icon_new']['value']['id'], '_wp_attachment_image_alt', true)); ?>">
-                            <?php else : ?>
-                                <?php if (!empty($settings['eael_creative_button_icon_new']['value'])) {
-                                    echo '<i class="' . esc_attr($settings['eael_creative_button_icon_new']['value']) . ' eael-creative-button-icon-right" aria-hidden="true"></i>';
-                                } ?>
-                            <?php endif; ?>
-                        <?php } else { ?>
+                        <?php if ($icon_migrated || $icon_is_new) {
+                            echo '<span class="eael-creative-button-icon-right">';
+		                    Icons_Manager::render_icon( $settings['eael_creative_button_icon_new'], [ 'aria-hidden' => 'true' ] );
+		                    echo '</span>';
+                        } else { ?>
                             <i class="<?php echo esc_attr($settings['eael_creative_button_icon']); ?> eael-creative-button-icon-right" aria-hidden="true"></i>
                         <?php } ?>
                     <?php endif; ?>
-
                 </div>
             </a>
         </div>

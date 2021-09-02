@@ -59,24 +59,34 @@ class Listing_Approved_User_Notification extends Base_Notification {
 	}
 
 	public function get_subject() {
-		return sprintf( _x( 'Your listing "%s" has been approved', 'Notifications', 'my-listing' ), esc_html( $this->listing->get_name() ) );
+		return sprintf( _x( 'You retreat listing is live ✔️', 'Notifications', 'my-listing' ), esc_html( $this->listing->get_name() ) );
 	}
 
 	public function get_message() {
 		$template = new Notification_Template;
 
 		$template->add_paragraph( sprintf(
-			_x( '<br><br><div align="center"><span style="font-size: 22px; line-height: 35.2px;">Hi %s,<br></span></div>', 'Notifications', 'my-listing' ),
+			_x( '<div align="center" style="margin-top: -30px;margin-bottom: 40px;"><span style="margin: 0;line-height:30px;mso-line-height-rule:exactly;font-family:Montserrat, sans-serif;font-size:25px;font-style:normal;font-weight:normal;color:#333333">Your retreat listing is live!<br></span></div>', 'Notifications', 'my-listing' ),
 			esc_html( $this->author->first_name )
 		) );
 
 		$template->add_paragraph( sprintf(
-			_x( '<div align="center" style="background-color: white;"><span style="font-size: 16px; line-height: 28.8px;">Your submitted listing <strong>%s</strong> has been approved and published.</span></div><br><br>', 'Notifications', 'my-listing' ),
-			esc_html( $this->listing->get_name() )
+			_x( '<div align="center" style="margin-bottom: -10px;padding-top:5px;padding-bottom:5px;padding-right:40px background-color: white;"><span style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:Montserrat, sans-serif;line-height:24px;color:#333333;font-size:16px">Hey %s we have some great news for you!<br>Your yoga retreat listing %s has been approved and published!</span></div><br>', 'Notifications', 'my-listing' ),
+            esc_html( $this->author->first_name ),
+            esc_html( $this->listing->get_name() )
 		) );
 
         $template->add_break()->add_primary_button(
-            _x( '<div align="center" style="padding-left: 5px; padding-right: 5px; line-height: 19.2px; font-size: 16px; color: #FFFFFF; background-color: #202125; margin-left: 30%; margin-right: 30%; padding-bottom: 13px; padding-top: 13px; border-radius: 5px;">VIEW LISTING</div><br>', 'Notifications', 'my-listing' ),
+            _x( '<div align="center" style="font-size: 16px;
+                color: aliceblue;
+                border-style: solid;
+                border-color: #999999;
+                background: #000000;
+                border-width: 1px;
+                display: inline-block;
+                border-radius: 0;
+                width: auto;
+                padding: 10px 10px 10px 10px;">View yoga retreat</div><br>', 'Notifications', 'my-listing' ),
             esc_url( $this->listing->get_link() )
         );
 

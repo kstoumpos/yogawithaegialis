@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -430,7 +431,7 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 			// Convert all slug_names in $option_values into the visible names that
 			// advertisers have set to be the display names for a given attribute value
 			$terms = get_the_terms( $this->id, $key );
-			return ! is_array( $terms ) ? [] : array_map(
+			return ! is_array( $terms ) ? array() : array_map(
 				function ( $slug_name ) use ( $terms ) {
 					foreach ( $terms as $term ) {
 						if ( $term->slug === $slug_name ) {
@@ -603,9 +604,9 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 				$product_data                            = $this->apply_enhanced_catalog_fields_from_attributes( $product_data, $google_product_category );
 			}
 
-			// add the Commerce values (only inventory for the moment)
+			// add the Commerce values (only stock quantity for the moment)
 			if ( Products::is_product_ready_for_commerce( $this->woo_product ) ) {
-				$product_data['inventory'] = (int) max( 0, $this->woo_product->get_stock_quantity() );
+				$product_data['quantity_to_sell_on_facebook'] = (int) max( 0, $this->woo_product->get_stock_quantity() );
 			}
 
 			// Only use checkout URLs if they exist.
@@ -666,8 +667,8 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 			}
 			$enhanced_data = array();
 
-			$category       = $category_handler->get_category_with_attrs( $google_category_id );
-			$all_attributes = $this->get_matched_attributes_for_product( $this->woo_product, $category['attributes'] );
+			$category_attrs = $category_handler->get_attributes_with_fallback_to_parent_category( $google_category_id );
+			$all_attributes = $this->get_matched_attributes_for_product( $this->woo_product, $category_attrs );
 
 			foreach ( $all_attributes as $attribute ) {
 				$value            = Products::get_enhanced_catalog_attribute( $attribute['key'], $this->woo_product );
@@ -695,20 +696,21 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 		 * Filters list of attributes to only those available for a given product
 		 *
 		 * @param \WC_Product $product WooCommerce Product
-		 * @param array $all_attributes List of Enhanced Catalog attributes to match
+		 * @param array       $all_attributes List of Enhanced Catalog attributes to match
 		 * @return array
 		 */
 		public function get_matched_attributes_for_product( $product, $all_attributes ) {
 			$matched_attributes = array();
-			$sanitized_keys = array_map(
+			$sanitized_keys     = array_map(
 				function( $key ) {
 						return \WC_Facebookcommerce_Utils::sanitize_variant_name( $key, false );
 				},
 				array_keys( $product->get_attributes() )
 			);
 
-			$matched_attributes = array_filter( $all_attributes,
-				function( $attribute ) use ($sanitized_keys) {
+			$matched_attributes = array_filter(
+				$all_attributes,
+				function( $attribute ) use ( $sanitized_keys ) {
 					return in_array( $attribute['key'], $sanitized_keys );
 				}
 			);

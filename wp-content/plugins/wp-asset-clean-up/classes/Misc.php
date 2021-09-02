@@ -14,18 +14,18 @@ class Misc
 	 * @var array
 	 */
 	public static $potentialCachePlugins = array(
-		'wp-rocket/wp-rocket.php', // WP Rocket
-		'wp-super-cache/wp-cache.php', // WP Super Cache
+		'breeze/breeze.php', // Breeze – WordPress Cache Plugin
+		'cache-enabler/cache-enabler.php', // Cache Enabler
+		'cachify/cachify.php', // Cachify
+		'comet-cache/comet-cache.php', // Comet Cache
+		'hyper-cache/plugin.php', // Hyper Cache
+		'litespeed-cache/litespeed-cache.php', // LiteSpeed Cache
+		'simple-cache/simple-cache.php', // Simple Cache
+		'swift-performance-lite/performance.php', // Swift Performance Lite
 		'w3-total-cache/w3-total-cache.php', // W3 Total Cache
 		'wp-fastest-cache/wpFastestCache.php', // WP Fastest Cache
-		'swift-performance-lite/performance.php', // Swift Performance Lite
-		'breeze/breeze.php', // Breeze – WordPress Cache Plugin
-		'comet-cache/comet-cache.php', // Comet Cache
-		'cache-enabler/cache-enabler.php', // Cache Enabler
-		'hyper-cache/plugin.php', // Hyper Cache
-		'cachify/cachify.php', // Cachify
-		'simple-cache/simple-cache.php', // Simple Cache
-		'litespeed-cache/litespeed-cache.php' // LiteSpeed Cache
+		'wp-rocket/wp-rocket.php', // WP Rocket
+		'wp-super-cache/wp-cache.php' // WP Super Cache
 	);
 
 	/**
@@ -44,7 +44,7 @@ class Misc
 	public function getActiveCachePlugins()
 	{
 		if (empty($this->activeCachePlugins)) {
-			$activePlugins = get_option( 'active_plugins', array() );
+			$activePlugins = self::getActivePlugins();
 
 			foreach ( self::$potentialCachePlugins as $cachePlugin ) {
 				if ( in_array( $cachePlugin, $activePlugins ) ) {
@@ -103,19 +103,17 @@ class Misc
 	 */
 	public static function isHttpsSecure()
 	{
-		$isSecure = false;
-
-		if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
-			$isSecure = true;
-		} elseif (
-			( ! empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' )
-			|| ( ! empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on' )
-		) {
-			// Is it behind a load balancer?
-			$isSecure = true;
+		if ( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ) {
+			return true;
 		}
 
-		return $isSecure;
+		if ( ( ! empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' )
+		     || ( ! empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on' ) ) {
+			// Is it behind a load balancer?
+			return true;
+		}
+
+		return false;
 	}
 
     /**
@@ -136,9 +134,9 @@ class Misc
         }
 
 	    // It's singular page: post, page, custom post type (e.g. 'product' from WooCommerce)
-        if ($postId > 0) {
-            return self::_filterPageUrl(get_permalink($postId));
-        }
+	    if ($postId > 0) {
+		    return self::_filterPageUrl(get_permalink($postId));
+	    }
 
 	    // If it's not a singular page, nor the home page, continue...
 	    // It could be: Archive page (e.g. author, category, tag, date, custom taxonomy), Search page, 404 page etc.
@@ -180,6 +178,70 @@ class Misc
 
         return $postUrl;
     }
+
+	/**
+	 * @param $postId
+	 *
+	 * @return array|false|string|string[]|\WP_Error
+	 */
+	public static function getPageUri($postId)
+    {
+	    $parseUrl = parse_url(get_site_url());
+	    $rootUrl = $parseUrl['scheme'].'://'.$parseUrl['host'];
+
+	    $dbPageUrl = get_permalink($postId);
+
+	    return str_replace( $rootUrl, '', $dbPageUrl );
+    }
+
+	/**
+	 * Note: If plugins are disabled via "Plugins Manager" -> "IN THE DASHBOARD /wp-admin/"
+	 * where the target pages require this function, the list could be incomplete if those plugins registered custom post types
+	 *
+	 * @param $postTypes
+	 *
+	 * @return mixed
+	 */
+	public static function filterCustomPostTypesList($postTypes)
+	{
+		foreach (array_keys($postTypes) as $postTypeKey) {
+			if (in_array($postTypeKey, array('post', 'page', 'attachment'))) {
+				unset($postTypes[$postTypeKey]); // no default post types
+			}
+
+			// Polish existing values
+			if ($postTypeKey === 'product' && self::isPluginActive('woocommerce/woocommerce.php')) {
+				$postTypes[$postTypeKey] = 'product &#10230; WooCommerce';
+			}
+
+			if ($postTypeKey === 'download' && self::isPluginActive('easy-digital-downloads/easy-digital-downloads.php')) {
+				$postTypes[$postTypeKey] = 'download &#10230; Easy Digital Downloads';
+			}
+		}
+
+		return $postTypes;
+	}
+
+	/**
+	 * @param $postTypes
+	 *
+	 * @return mixed
+	 */
+	public static function filterCustomTaxonomyList($taxonomyList)
+	{
+		foreach (array_keys($taxonomyList) as $taxonomy) {
+			if (in_array($taxonomy, array('category', 'post_tag', 'post_format'))) {
+				unset($taxonomyList[$taxonomy]); // no default post types
+			}
+
+			// Polish existing values
+			if ($taxonomy === 'product_cat' && Misc::isPluginActive('woocommerce/woocommerce.php')) {
+				$taxonomyList[$taxonomy] = 'product_cat &#10230; Product\'s Category in WooCommerce';
+			}
+		}
+
+		return $taxonomyList;
+	}
 
 	/**
 	 * @return bool
@@ -258,7 +320,8 @@ class Misc
 	    // Otherwise, it will default to "Your latest posts", the other choice from "Your homepage displays"
 
 	    if (self::getShowOnFront() === 'page') {
-			$pageOnFront = get_option('page_on_front');
+			$pageOnFront  = get_option('page_on_front');
+			$pageForPosts = get_option('page_for_posts');
 
 		    // "Homepage:" has a value
 			if ($pageOnFront > 0 && is_front_page()) {
@@ -271,6 +334,11 @@ class Misc
 				// Blog page
 				return true;
 			}
+
+			// Both have values
+		    if ($pageOnFront && $pageForPosts && ($pageOnFront !== $pageForPosts) && self::isBlogPage()) {
+		    	return false; // Blog posts page (but not home page)
+		    }
 
 		    // Another scenario is when both 'Homepage:' and 'Posts page:' have values
 		    // If we are on the blog page (which is "Posts page:" value), then it will return false
@@ -333,7 +401,7 @@ class Misc
 
 	    // Loaded from WordPress directories (Core)
 	    return in_array( $parentDir, array( 'wp-includes', 'wp-admin' ) ) || strpos( $handleData->src,
-			    '/plugins/jquery-updater/js/jquery-' ) !== false;
+			    '/'.self::getPluginsDir('dir_name').'/jquery-updater/js/jquery-' ) !== false;
     }
 
 	/**
@@ -364,7 +432,7 @@ class Misc
 	    	if (strpos($src, $path) !== false) {
 	    		list ($baseUrl, $relSrc) = explode($path, $src);
 
-	    		$localPathToFile = ABSPATH . $path . $relSrc;
+	    		$localPathToFile = self::getWpRootDirPath() . $path . $relSrc;
 
 	    		if (is_file($localPathToFile)) {
 	    			return array('base_url' => $baseUrl, 'rel_src' => $path . $relSrc, 'file_exists' => 1);
@@ -405,7 +473,7 @@ class Misc
 	    $relSrc = $src;
 
 	    if ($localAssetPath) {
-		    $relSrc = str_replace(ABSPATH, '', $relSrc);
+		    $relSrc = str_replace(self::getWpRootDirPath(), '', $relSrc);
 	    }
 
 	    $relSrc = str_replace(site_url(), '', $relSrc);
@@ -446,7 +514,23 @@ class Misc
 	 */
 	public static function isPluginActive($plugin)
 	{
-    	return in_array($plugin, apply_filters('active_plugins', get_option('active_plugins', array())));
+		// Site level check
+		if (in_array( $plugin, (array) get_option( 'active_plugins', array() ), true )) {
+			return true;
+		}
+
+		// Multisite check
+		if ( ! is_multisite() ) {
+			return false;
+		}
+
+		$plugins = get_site_option( 'active_sitewide_plugins' );
+
+		if ( isset( $plugins[ $plugin ] ) ) {
+			return true;
+		}
+
+		return false;
     }
 
 	/**
@@ -528,13 +612,21 @@ class Misc
 
 		return <<<HTML
 <script id="wpacu-preload-async-css-fallback">
-    /*! LoadCSS. [c]2017 Filament Group, Inc. MIT License */
-    /* This file is meant as a standalone workflow for
-	- testing support for link[rel=preload]
-	- enabling async CSS loading in browsers that do not support rel=preload
-	- applying rel preload css once loaded, whether supported or not.
-	*/
-    !function(n){"use strict";n.wpacuLoadCSS||(n.wpacuLoadCSS=function(){});var o=wpacuLoadCSS.relpreload={};if(o.support=function(){var e;try{e=n.document.createElement("link").relList.supports("preload")}catch(t){e=!1}return function(){return e}}(),o.bindMediaToggle=function(t){var e=t.media||"all";function a(){t.addEventListener?t.removeEventListener("load",a):t.attachEvent&&t.detachEvent("onload",a),t.setAttribute("onload",null),t.media=e}t.addEventListener?t.addEventListener("load",a):t.attachEvent&&t.attachEvent("onload",a),setTimeout(function(){t.rel="stylesheet",t.media="only x"}),setTimeout(a,3e3)},o.poly=function(){if(!o.support())for(var t=n.document.getElementsByTagName("link"),e=0;e<t.length;e++){var a=t[e];"preload"!==a.rel||"style"!==a.getAttribute("as")||a.getAttribute("data-wpacuLoadCSS")||(a.setAttribute("data-wpacuLoadCSS",!0),o.bindMediaToggle(a))}},!o.support()){o.poly();var t=n.setInterval(o.poly,500);n.addEventListener?n.addEventListener("load",function(){o.poly(),n.clearInterval(t)}):n.attachEvent&&n.attachEvent("onload",function(){o.poly(),n.clearInterval(t)})}"undefined"!=typeof exports?exports.wpacuLoadCSS=wpacuLoadCSS:n.wpacuLoadCSS=wpacuLoadCSS}("undefined"!=typeof global?global:this);
+/*! LoadCSS. [c]2020 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/
+(function(w){"use strict";var wpacuLoadCSS=function(href,before,media,attributes){var doc=w.document;var ss=doc.createElement('link');var ref;if(before){ref=before}else{var refs=(doc.body||doc.getElementsByTagName('head')[0]).childNodes;ref=refs[refs.length-1]}
+var sheets=doc.styleSheets;if(attributes){for(var attributeName in attributes){if(attributes.hasOwnProperty(attributeName)){ss.setAttribute(attributeName,attributes[attributeName])}}}
+ss.rel="stylesheet";ss.href=href;ss.media="only x";function ready(cb){if(doc.body){return cb()}
+setTimeout(function(){ready(cb)})}
+ready(function(){ref.parentNode.insertBefore(ss,(before?ref:ref.nextSibling))});var onwpaculoadcssdefined=function(cb){var resolvedHref=ss.href;var i=sheets.length;while(i--){if(sheets[i].href===resolvedHref){return cb()}}
+setTimeout(function(){onwpaculoadcssdefined(cb)})};function loadCB(){if(ss.addEventListener){ss.removeEventListener("load",loadCB)}
+ss.media=media||"all"}
+if(ss.addEventListener){ss.addEventListener("load",loadCB)}
+ss.onwpaculoadcssdefined=onwpaculoadcssdefined;onwpaculoadcssdefined(loadCB);return ss};if(typeof exports!=="undefined"){exports.wpacuLoadCSS=wpacuLoadCSS}else{w.wpacuLoadCSS=wpacuLoadCSS}}(typeof global!=="undefined"?global:this))
 </script>
 HTML;
 	}
@@ -802,7 +894,7 @@ SQL;
 
 		// Is it a Google Font request that was stripped site-wide?
 		if ($assetTypeKey === 'styles') {
-			$isGoogleFontLink = stripos($data['row']['obj']->srcHref, '//fonts.googleapis.com/') !== false;
+			$isGoogleFontLink = isset($data['row']['obj']->srcHref) && stripos($data['row']['obj']->srcHref, '//fonts.googleapis.com/') !== false;
 
 			if ($isGoogleFontLink && $data['plugin_settings']['google_fonts_remove']) {
 				return true;
@@ -819,6 +911,45 @@ SQL;
 	}
 
 	/**
+	 * @param string $get
+	 *
+	 * @return false|string
+	 */
+	public static function getPluginsDir($get = 'rel_path')
+	{
+		$return = '';
+		$relPath = trim( str_replace( self::getWpRootDirPath(), '', WP_PLUGIN_DIR ), '/' );
+
+		if ($get === 'rel_path') {
+			$return = $relPath;
+		} elseif ($get === 'dir_name') {
+			$return = substr(strrchr($relPath, '/'), 1);
+		}
+
+		return $return;
+	}
+
+	/**
+	 * Needed when the plugins' directory is different than the default one: /wp-content/plugins/
+	 *
+	 * @param $values
+	 *
+	 * @return array
+	 */
+	public static function replaceRelPluginPath($values)
+	{
+		$relPluginPath = self::getPluginsDir();
+
+		if ($relPluginPath !== 'wp-content/plugins') {
+			return array_filter( $values, function( $value ) use ( $relPluginPath ) {
+				return str_replace( '/wp-content/plugins/', '/' . $relPluginPath . '/', $value );
+			} );
+		}
+
+		return $values;
+	}
+
+	/**
 	 * @param $src
 	 *
 	 * @return bool|mixed
@@ -826,12 +957,13 @@ SQL;
 	public static function maybeIsInactiveAsset($src)
 	{
 		// Quickest way
-		preg_match_all('#/wp-content/plugins/(.*?)/#', $src, $matches, PREG_PATTERN_ORDER);
+		$pluginsDirRel = self::getPluginsDir();
+		preg_match_all('#/'.$pluginsDirRel.'/(.*?)/#', $src, $matches, PREG_PATTERN_ORDER);
 
 		if (isset($matches[1][0]) && $matches[1][0]) {
 			$pluginDirName = $matches[1][0];
 
-			$activePlugins = get_option( 'active_plugins', array() );
+			$activePlugins = self::getActivePlugins();
 			$activePluginsStr = implode(',', $activePlugins);
 
 			if (strpos($activePluginsStr, $pluginDirName.'/') === false) {
@@ -853,8 +985,8 @@ SQL;
 
 		$relSrc = str_replace( site_url(), '', $srcAlt );
 
-		if (strpos($relSrc, '/wp-content/plugins') !== false) {
-			list (,$relSrc) = explode('/wp-content/plugins', $relSrc);
+		if (strpos($relSrc, '/'.$pluginsDirRel) !== false) {
+			list (,$relSrc) = explode('/'.$pluginsDirRel, $relSrc);
 		}
 
 		if (strpos($relSrc, $relPluginsUrl) !== false) {
@@ -864,7 +996,7 @@ SQL;
 			if (strpos($relSrc, '/') !== false) {
 				list ( $pluginDirName, ) = explode( '/', $relSrc );
 
-				$activePlugins = get_option( 'active_plugins', array() );
+				$activePlugins = self::getActivePlugins();
 				$activePluginsStr = implode(',', $activePlugins);
 
 				if (strpos($activePluginsStr, $pluginDirName.'/') === false) {
@@ -877,28 +1009,57 @@ SQL;
 	}
 
 	/**
+	 * @return array
+	 */
+	public static function getActivePlugins($type = 'all')
+	{
+		$wpacuActivePlugins = array();
+
+		if (in_array($type, array('site', 'all'))) {
+			$wpacuActivePlugins = (array) get_option( 'active_plugins', array() );
+		}
+
+		// In case we're dealing with a MultiSite setup
+		if (in_array($type, array('network', 'all')) && is_multisite()) {
+			$wpacuActiveSiteWidePlugins = (array)get_site_option('active_sitewide_plugins', array());
+
+			if ( ! empty($wpacuActiveSiteWidePlugins) ) {
+				foreach (array_keys($wpacuActiveSiteWidePlugins) as $activeSiteWidePlugin) {
+					$wpacuActivePlugins[] = $activeSiteWidePlugin;
+				}
+			}
+		}
+
+		return array_unique($wpacuActivePlugins);
+	}
+
+	/**
 	 * @param bool $onlyTransient
+	 * @param bool $forceDownload
 	 *
 	 * @return array|bool|mixed|object
 	 */
-	public static function fetchActiveFreePluginsIcons($onlyTransient = false)
+	public static function fetchActiveFreePluginsIcons($onlyTransient = false, $forceDownload = false)
     {
-    	$activePluginsIconsJson = get_transient('wpacu_active_plugins_icons');
+    	// Check the transient if $forceDownload is set to false (default)
+    	if ( ! $forceDownload ) {
+		    $activePluginsIconsJson = get_transient( 'wpacu_active_plugins_icons' );
 
-    	if ($activePluginsIconsJson) {
-		    $activePluginsIcons = @json_decode($activePluginsIconsJson, ARRAY_A);
+		    if ( $activePluginsIconsJson ) {
+			    $activePluginsIcons = @json_decode( $activePluginsIconsJson, ARRAY_A );
+		    }
+
+		    if ( ! empty( $activePluginsIcons ) && is_array( $activePluginsIcons ) ) {
+			    return $activePluginsIcons;
+		    }
+
+		    // Do not fetch the icons from the WordPress.org repository if only transient was required
+		    if ( $onlyTransient ) {
+			    return array();
+		    }
 	    }
 
-    	if (! empty($activePluginsIcons) && is_array($activePluginsIcons)) {
-    		return $activePluginsIcons;
-	    }
-
-    	// Do not fetch the icons from the WordPress.org repository if only transient was required
-    	if ($onlyTransient) {
-    		return array();
-	    }
-
-	    $allActivePlugins = array_unique(get_option('active_plugins', array()));
+	    $allActivePlugins = self::getActivePlugins();
 
 	    if (empty($allActivePlugins)) {
 	    	return array();
@@ -980,7 +1141,9 @@ SQL;
 	    	return array();
 	    }
 
-	    set_transient('wpacu_active_plugins_icons', json_encode($activePluginsIcons), 1209600); // in seconds
+	    $expiresInSeconds = 604800; // one week
+
+	    set_transient('wpacu_active_plugins_icons', json_encode($activePluginsIcons), $expiresInSeconds);
 
 	    return $activePluginsIcons;
     }
@@ -1005,7 +1168,11 @@ SQL;
 
 	    $allActivePluginsIcons = self::fetchActiveFreePluginsIcons(true) ?: array();
 
-	    foreach (array_unique(get_option('active_plugins', array())) as $activePlugin) {
+	    if ( ! is_array($allActivePluginsIcons) ) {
+		    $allActivePluginsIcons = array();
+	    }
+
+	    foreach (self::getActivePlugins() as $activePlugin) {
 		    if (strpos($activePlugin, '/') !== false) {
 			    list ($pluginSlug) = explode('/', $activePlugin);
 
@@ -1043,6 +1210,38 @@ SQL;
 	    }
 
 	    return '';
+    }
+
+	/**
+	 * @return string
+	 */
+	public static function getStyleTypeAttribute()
+	{
+		$typeAttr = '';
+
+		if ( function_exists( 'is_admin' ) && ! is_admin() &&
+		     function_exists( 'current_theme_supports' ) && ! current_theme_supports( 'html5', 'style' )
+		) {
+			$typeAttr = " type='text/css'";
+		}
+
+		return $typeAttr;
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getScriptTypeAttribute()
+    {
+	    $typeAttr = '';
+
+	    if ( function_exists( 'is_admin' ) && ! is_admin() &&
+	         function_exists( 'current_theme_supports' ) && ! current_theme_supports( 'html5', 'script' )
+	    ) {
+		    $typeAttr = " type='text/javascript'";
+	    }
+
+	    return $typeAttr;
     }
 
 	/**
@@ -1155,6 +1354,30 @@ SQL;
 		}
 
 		return $output;
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getWpRootDirPath()
+	{
+		if (isset($GLOBALS['wpacu_wp_root_dir_path']) && $GLOBALS['wpacu_wp_root_dir_path']) {
+			return $GLOBALS['wpacu_wp_root_dir_path'];
+		}
+
+		$possibleWpConfigFile = dirname(WP_CONTENT_DIR).'/wp-config.php';
+		$possibleIndexFile = dirname(WP_CONTENT_DIR).'/index.php';
+
+		// This is good for hosting accounts under FlyWheel which have a different way of loading WordPress
+		// and we can't rely on ABSPATH; On most hosting accounts, the condition below would be a match and would work well
+		if (is_file($possibleWpConfigFile) && is_file($possibleIndexFile)) {
+			$GLOBALS['wpacu_wp_root_dir_path'] = dirname(WP_CONTENT_DIR).'/';
+			return $GLOBALS['wpacu_wp_root_dir_path'];
+		}
+
+		// Default to the old ABSPATH
+		$GLOBALS['wpacu_wp_root_dir_path'] = ABSPATH.'/';
+		return $GLOBALS['wpacu_wp_root_dir_path'];
 	}
 
 	/**
@@ -1327,7 +1550,7 @@ SQL;
 	 */
 	public static function scriptExecTimer($name, $action = 'start')
 	{
-		if (! array_key_exists('wpacu_debug', $_GET)) {
+		if (! isset($_GET['wpacu_debug'])) {
 			return ''; // only trigger it in debugging mode
 		}
 

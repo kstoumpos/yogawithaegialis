@@ -16,6 +16,7 @@ use MailPoet\Entities\FormEntity;
 use MailPoet\Entities\NewsletterEntity;
 use MailPoet\Entities\ScheduledTaskEntity;
 use MailPoet\Entities\SendingQueueEntity;
+use MailPoet\Entities\StatisticsFormEntity;
 use MailPoet\Entities\UserFlagEntity;
 use MailPoet\Form\FormsRepository;
 use MailPoet\Mailer\MailerLog;
@@ -24,7 +25,6 @@ use MailPoet\Models\NewsletterLink;
 use MailPoet\Models\ScheduledTask;
 use MailPoet\Models\Segment;
 use MailPoet\Models\SendingQueue;
-use MailPoet\Models\StatisticsForms;
 use MailPoet\Models\Subscriber;
 use MailPoet\Referrals\ReferralDetector;
 use MailPoet\Segments\WP;
@@ -182,7 +182,6 @@ class Populator {
     $this->scheduleUnsubscribeTokens();
     $this->scheduleSubscriberLinkTokens();
     $this->detectReferral();
-    $this->updateFormsSuccessMessages();
     $this->moveGoogleAnalyticsFromPremium();
     $this->addPlacementStatusToForms();
     $this->migrateFormPlacement();
@@ -232,8 +231,8 @@ class Populator {
 
     // set default sender info based on current user
     $sender = [
-      'name' => $currentUser->display_name, // phpcs:ignore Squiz.NamingConventions.ValidVariableName.NotCamelCaps
-      'address' => $currentUser->user_email, // phpcs:ignore Squiz.NamingConventions.ValidVariableName.NotCamelCaps
+      'name' => $currentUser->display_name, // phpcs:ignore Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps
+      'address' => $currentUser->user_email, // phpcs:ignore Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps
     ];
 
     // set default from name & address
@@ -564,9 +563,10 @@ class Populator {
   }
 
   private function createSourceForSubscribers() {
+    $statisticsFormTable = $this->entityManager->getClassMetadata(StatisticsFormEntity::class)->getTableName();
     Subscriber::rawExecute(
       ' UPDATE LOW_PRIORITY `' . Subscriber::$_table . '` subscriber ' .
-      ' JOIN `' . StatisticsForms::$_table . '` stats ON stats.subscriber_id=subscriber.id ' .
+      ' JOIN `' . $statisticsFormTable . '` stats ON stats.subscriber_id=subscriber.id ' .
       ' SET `source` = "' . Source::FORM . '"' .
       ' WHERE `source` = "' . Source::UNKNOWN . '"'
     );
@@ -665,17 +665,6 @@ class Populator {
     $task->status = ScheduledTask::STATUS_SCHEDULED;
     $task->scheduledAt = $datetime;
     $task->save();
-  }
-
-  /**
-   * Remove this comment when this private function is actually used
-   * @phpcsSuppress SlevomatCodingStandard.Classes.UnusedPrivateElements
-   */
-  private function updateFormsSuccessMessages() {
-    if (version_compare($this->settings->get('db_version', '3.23.2'), '3.23.1', '>')) {
-      return;
-    }
-    $this->settings->updateSuccessMessages();
   }
 
   private function enableStatsNotificationsForAutomatedEmails() {

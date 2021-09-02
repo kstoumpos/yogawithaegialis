@@ -16,11 +16,7 @@ use WooCommerce\PayPalCommerce\ApiClient\Exception\RuntimeException;
  */
 class PaymentToken {
 
-
 	const TYPE_PAYMENT_METHOD_TOKEN = 'PAYMENT_METHOD_TOKEN';
-	const VALID_TYPES               = array(
-		self::TYPE_PAYMENT_METHOD_TOKEN,
-	);
 
 	/**
 	 * The Id.
@@ -37,20 +33,29 @@ class PaymentToken {
 	private $type;
 
 	/**
+	 * The payment source.
+	 *
+	 * @var \stdClass
+	 */
+	private $source;
+
+	/**
 	 * PaymentToken constructor.
 	 *
-	 * @param string $id The Id.
-	 * @param string $type The type.
+	 * @param string    $id The Id.
+	 * @param string    $type The type.
+	 * @param \stdClass $source The source.
 	 * @throws RuntimeException When the type is not valid.
 	 */
-	public function __construct( string $id, string $type = self::TYPE_PAYMENT_METHOD_TOKEN ) {
-		if ( ! in_array( $type, self::VALID_TYPES, true ) ) {
+	public function __construct( string $id, string $type = self::TYPE_PAYMENT_METHOD_TOKEN, \stdClass $source ) {
+		if ( ! in_array( $type, self::get_valid_types(), true ) ) {
 			throw new RuntimeException(
 				__( 'Not a valid payment source type.', 'woocommerce-paypal-payments' )
 			);
 		}
-		$this->id   = $id;
-		$this->type = $type;
+		$this->id     = $id;
+		$this->type   = $type;
+		$this->source = $source;
 	}
 
 	/**
@@ -72,14 +77,40 @@ class PaymentToken {
 	}
 
 	/**
+	 * Returns the source.
+	 *
+	 * @return \stdClass
+	 */
+	public function source(): \stdClass {
+		return $this->source;
+	}
+
+	/**
 	 * Returns the object as array.
 	 *
 	 * @return array
 	 */
 	public function to_array(): array {
 		return array(
-			'id'   => $this->id(),
-			'type' => $this->type(),
+			'id'     => $this->id(),
+			'type'   => $this->type(),
+			'source' => $this->source(),
 		);
 	}
+
+	/**
+	 * Returns a list of valid token types.
+	 * Can be modified through the `woocommerce_paypal_payments_valid_payment_token_types` filter.
+	 *
+	 * @return array
+	 */
+	public static function get_valid_types() {
+		return apply_filters(
+			'woocommerce_paypal_payments_valid_payment_token_types',
+			array(
+				self::TYPE_PAYMENT_METHOD_TOKEN,
+			)
+		);
+	}
+
 }

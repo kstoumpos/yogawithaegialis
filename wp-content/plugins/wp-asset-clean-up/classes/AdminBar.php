@@ -64,8 +64,10 @@ class AdminBar
 		}
 
 		if ($wpacuUnloadedAssetsStatus) {
+			$styleAttrType = Misc::getStyleTypeAttribute();
+
 			$cssStyle = <<<HTML
-<style type="text/css">
+<style {$styleAttrType}>
 #wpadminbar .wpacu-alert-sign-top-admin-bar {
     font-size: 20px;
     color: lightyellow;
@@ -230,7 +232,7 @@ HTML;
 							'href'   => admin_url('admin.php?page=wpassetcleanup_overview#wpacu-overview-js-'.$jsHandle)
 						));
 					}
-				}
+					}
 			}
 		}
 		// [END LISTING UNLOADED ASSETS]

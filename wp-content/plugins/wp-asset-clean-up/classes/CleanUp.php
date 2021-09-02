@@ -25,7 +25,11 @@ class CleanUp
 	 */
 	public function doClean()
 	{
-		if ( Plugin::preventAnyFrontendOptimization() || Main::instance()->preventAssetsSettings() || (defined('WPACU_ALLOW_ONLY_UNLOAD_RULES') && WPACU_ALLOW_ONLY_UNLOAD_RULES) ) {
+		if ( ! method_exists( '\WpAssetCleanUp\Plugin', 'preventAnyFrontendOptimization' ) ) {
+			return; // something's funny as, for some reason, on very rare occasions, the class is not found, so don't continue
+		}
+
+		if ( (defined('WPACU_ALLOW_ONLY_UNLOAD_RULES') && WPACU_ALLOW_ONLY_UNLOAD_RULES) || Main::instance()->preventAssetsSettings() || Plugin::preventAnyFrontendOptimization() ) {
 			return;
 		}
 
@@ -376,7 +380,13 @@ class CleanUp
 			$strContains = array($strContains);
 		}
 
-		$strContains = array_map(function($value) { return preg_quote($value, '/'); }, $strContains);
+		$strContains = array_map(function($value) {
+			if (strpos($value, 'data-wpacu-style-handle') !== false) {
+				return $value; // no need to use preg-quote
+			}
+
+			return preg_quote($value, '/');
+		}, $strContains);
 
 		preg_match_all(
 			'#<link[^>]*('.implode('|', $strContains).')[^>].*(>)#Usmi',
@@ -415,7 +425,13 @@ class CleanUp
 			$strContains = array($strContains);
 		}
 
-		$strContains = array_map(function($value) { return preg_quote($value, '/'); }, $strContains);
+		$strContains = array_map(function($value) {
+			if (strpos($value, 'data-wpacu-script-handle') !== false) {
+				return $value; // no need to use preg-quote
+			}
+
+			return preg_quote($value, '/');
+		}, $strContains);
 
 		preg_match_all(
 			'#<script[^>]*('.implode('|', $strContains).')[^>].*(>)#Usmi',
@@ -516,7 +532,7 @@ class CleanUp
 	 */
 	public function cleanUpHtmlOutputForAssetsCall()
 	{
-		if (array_key_exists('wpacu_clean_load', $_GET)) {
+		if (isset($_GET['wpacu_clean_load'])) {
 			// No Admin Bar
 			add_filter('show_admin_bar', '__return_false', PHP_INT_MAX);
 		}

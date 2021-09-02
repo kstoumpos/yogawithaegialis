@@ -24,7 +24,7 @@ class Message_Received_User_Notification extends Base_Notification {
 	}
 
 	/**
-	 * Validate and prepare notifcation arguments.
+	 * Validate and prepare notification arguments.
 	 *
 	 * @since 2.1
 	 */
@@ -54,7 +54,7 @@ class Message_Received_User_Notification extends Base_Notification {
 	public function get_subject() {
 		if ( $this->sender_listing ) {
 			return sprintf(
-				_x( 'New message received from %s.', 'Notifications', 'my-listing' ),
+				_x( 'You received an inquiry %s.', 'Notifications', 'my-listing' ),
 				esc_html( $this->sender_listing->get_name() )
 			);
 		} elseif ( $this->receiver_listing ) {
@@ -75,24 +75,24 @@ class Message_Received_User_Notification extends Base_Notification {
 		$template = new Notification_Template;
 
 		$template->add_paragraph( sprintf(
-			_x( '<div align="center" style="font-size: 22px;">Hi %s,</div>', 'Notifications', 'my-listing' ),
+			_x( '<div align="center" style="font-size: 22px;">Hey %s,</div>', 'Notifications', 'my-listing' ),
 			esc_html( $this->message->receiver->first_name )
 		) );
 
 		if ( $this->sender_listing ) {
 			$template->add_paragraph( sprintf(
-				_x( '<div align="center" style="font-size: 22px;">You have received a message from <strong>%s</strong>:</div>', 'Notifications', 'my-listing' ),
+				_x( '<div align="center" style="font-size: 22px;">You received an inquiry from %s:</div>', 'Notifications', 'my-listing' ),
 				esc_html( $this->sender_listing->get_name() )
 			) );
 		} elseif ( $this->receiver_listing ) {
 			$template->add_paragraph( sprintf(
-				_x( '<div align="center" style="font-size: 22px;">You have received a message from user <strong>%s</strong> on listing <strong>%s</strong>:</div>', 'Notifications', 'my-listing' ),
+				_x( '<div align="center" style="font-size: 15px;">You have received a new message from user %s on listing <strong>%s</strong>:</div>', 'Notifications', 'my-listing' ),
 				esc_html( $this->message->sender->display_name ),
 				esc_html( $this->receiver_listing->get_name() )
 			) );
 		} else {
 			$template->add_paragraph( sprintf(
-				_x( '<div align="center" style="font-size: 22px;">You have received a message from user <strong>%s</strong>:</div>', 'Notifications', 'my-listing' ),
+				_x( '<div align="center" style="font-size: 15px;">You have received a new message from user %s:</div>', 'Notifications', 'my-listing' ),
 				esc_html( $this->message->sender->display_name )
 			) );
 		}
@@ -102,7 +102,7 @@ class Message_Received_User_Notification extends Base_Notification {
 		$template
 			->add_break()
 			->add_primary_button( sprintf(
-				_x( '<div align="center" style="font-size: 22px;">Open %s</div>', 'Notifications', 'my-listing' ),
+				_x( '<div align="center" style="font-size: 22px;">Reply now </div>', 'Notifications', 'my-listing' ),
 				get_bloginfo('name')
 			), home_url('/') );
 

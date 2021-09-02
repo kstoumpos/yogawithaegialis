@@ -522,12 +522,19 @@ class Optml_Admin {
 	function daily_sync() {
 
 		$api_key = $this->settings->get( 'api_key' );
+		$service_data = $this->settings->get( 'service_data' );
+		$application = '';
+
+		if ( isset( $service_data['cdn_key'] ) ) {
+			$application = $service_data['cdn_key'];
+		}
+
 		if ( empty( $api_key ) ) {
 			return;
 		}
 
 		$request = new Optml_Api();
-		$data    = $request->get_user_data( $api_key );
+		$data    = $request->get_user_data( $api_key, $application );
 		if ( $data === false || is_wp_error( $data ) ) {
 			return;
 		}
@@ -626,7 +633,9 @@ class Optml_Admin {
 			'strings'                    => $this->get_dashboard_strings(),
 			'assets_url'                 => OPTML_URL . 'assets/',
 			'connection_status'          => empty( $service_data ) ? 'no' : 'yes',
+			'has_application'            => isset( $service_data['app_count'] ) && $service_data['app_count'] >= 1 ? 'yes' : 'no',
 			'user_status'                => isset( $service_data['status'] ) && $service_data['status'] === 'inactive' ? 'inactive' : 'active',
+			'available_apps'             => isset( $service_data['available_apps'] ) ? $service_data['available_apps'] : null,
 			'api_key'                    => $api_key,
 			'root'                       => untrailingslashit( rest_url( OPTML_NAMESPACE . '/v1' ) ),
 			'nonce'                      => wp_create_nonce( 'wp_rest' ),
@@ -668,7 +677,9 @@ class Optml_Admin {
 			'step_one_api_title'             => __( 'Enter your API key.', 'optimole-wp' ),
 			'step_one_api_desc'              => sprintf( __( 'Copy the API key you have received via email or you can get it from %1$s Optimole dashboard%2$s. <br/>', 'optimole-wp' ), '<a href="https://dashboard.optimole.com/" target="_blank"> ', '</a>' ),
 			'step_two_api_title'             => __( 'Connect to Optimole.', 'optimole-wp' ),
-			'step_two_api_desc'              => __( ' Fill in the upper API key field and connect to Optimole service.', 'optimole-wp' ),
+			'step_two_api_desc'              => __( 'Fill in the upper API key field and connect to Optimole service.', 'optimole-wp' ),
+			'step_three_api_title'           => __( 'Select your domain', 'optimole-wp' ),
+			'step_three_api_desc'            => __( 'If your account has multiple domains select the one you want to use.', 'optimole-wp' ),
 			'api_exists'                     => __( 'I already have an API key.', 'optimole-wp' ),
 			'back_to_register'               => __( 'Register account', 'optimole-wp' ),
 			'back_to_connect'                => __( 'Connect account', 'optimole-wp' ),
@@ -784,6 +795,8 @@ The root cause might be either a security plugin which blocks this feature or so
 				'exclude_title_lazyload'            => __( 'Don\'t lazyload images if', 'optimole-wp' ),
 				'exclude_title_optimize'            => __( 'Don\'t optimize images if', 'optimole-wp' ),
 				'exclude_url_desc'                  => __( 'Page url contains', 'optimole-wp' ),
+				'exclude_first_images_title'        => __( 'Exclude first <number> of images from lazyload', 'optimole-wp' ),
+				'exclude_first_images_desc'         => __( 'Exclude the first <number> images from lazyload on every page to avoid lazy load on above the fold images. Use 0 to disable this.', 'optimole-wp' ),
 				'filter_class'                      => __( 'Image class', 'optimole-wp' ),
 				'filter_ext'                        => __( 'Image extension', 'optimole-wp' ),
 				'filter_filename'                   => __( 'Image filename', 'optimole-wp' ),
@@ -844,6 +857,9 @@ The root cause might be either a security plugin which blocks this feature or so
 				'sync_media'                        => __( 'Sync images', 'optimole-wp' ),
 				'rollback_media'                    => __( 'Rollback images', 'optimole-wp' ),
 				'sync_media_progress'               => __( 'We are currently offloading your images to Optimole, please wait', 'optimole-wp' ),
+				'estimated_time'                    => __( 'Estimated time for offloading all images', 'optimole-wp' ),
+				'calculating_estimated_time'        => __( 'We are currently calculating the estimated time for this job', 'optimole-wp' ),
+				'minutes'                           => __( 'minutes', 'optimole-wp' ),
 				'rollback_media_progress'           => __( 'We are currently moving images to your media library, please wait', 'optimole-wp' ),
 				'rollback_media_error'              => __( 'An unexpected error occured while pulling the offloaded back to your site', 'optimole-wp' ),
 				'rollback_media_error_desc'         => __( 'You can try again to pull back the rest of the images.', 'optimole-wp' ),

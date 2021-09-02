@@ -4,7 +4,7 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-if (array_key_exists('wpacu_clean_load', $_GET)) {
+if ( isset($_GET['wpacu_clean_load']) ) {
 	// Autoptimize
 	$_GET['ao_noptimize'] = $_REQUEST['ao_noptimize'] = '1';
 
@@ -21,30 +21,130 @@ if (array_key_exists('wpacu_clean_load', $_GET)) {
 	add_filter('pre_option_wpo_minify_config', function() { return array(); });
 }
 
-if (! function_exists('assetCleanUpHasNoLoadMatches')) {
+if (! function_exists('assetCleanUpClearAutoptimizeCache')) {
+	/*
+	 * By default Autoptimize Cache is cleared after certain Asset CleanUp actions
+	 *
+	 * To be set in wp-config.php if necessary to deactivate this behaviour
+	 * define('WPACU_DO_NOT_CLEAR_AUTOPTIMIZE_CACHE', true);
+	 *
+	 * @return bool
+	 */
+	function assetCleanUpClearAutoptimizeCache()
+	{
+		return ! ( defined( 'WPACU_DO_NOT_ALSO_CLEAR_AUTOPTIMIZE_CACHE' ) && WPACU_DO_NOT_ALSO_CLEAR_AUTOPTIMIZE_CACHE );
+	}
+}
+
+if (! function_exists('assetCleanUpRequestUriHasAnyPublicVar')) {
 	/**
-	 * Any matches from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages"?
 	 * @param $targetUri
 	 *
 	 * @return bool
 	 */
-	function assetCleanUpHasNoLoadMatches($targetUri = '')
+	function assetCleanUpRequestUriHasAnyPublicVar($targetUri)
 	{
+		$urlQuery = parse_url($targetUri, PHP_URL_QUERY);
+
+		if ( ! $urlQuery ) {
+			return false;
+		}
+
+		$publicQueryVars = array(
+			'attachment',
+			'attachment_id',
+			'author',
+			'author_name',
+			'cat',
+			'calendar',
+			'category_name',
+			'comments_popup',
+			'cpage',
+			'day',
+			'error',
+			'exact',
+			'feed',
+			'hour',
+			'm',
+			'minute',
+			'monthnum',
+			'more',
+			'name',
+			'order',
+			'orderby',
+			'p',
+			'page_id',
+			'page',
+			'paged',
+			'pagename',
+			'pb',
+			'post_type',
+			'posts',
+			'preview',
+			'robots',
+			's',
+			'search',
+			'second',
+			'sentence',
+			'static',
+			'subpost',
+			'subpost_id',
+			'taxonomy',
+			'tag',
+			'tag_id',
+			'tb',
+			'term',
+			'w',
+			'withcomments',
+			'withoutcomments',
+			'year'
+		);
+
+		foreach ($publicQueryVars as $queryVar) {
+			if (strpos('?'.$urlQuery, '&'.$queryVar.'=') !== false || strpos('?'.$urlQuery, '?'.$queryVar.'=') !== false) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+}
+
+if (! function_exists('assetCleanUpHasNoLoadMatches')) {
+	/**
+	 * Any matches from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages"?
+	 *
+	 * @param string $targetUri
+	 * @param bool $forceCheck
+	 *
+	 * @return bool
+	 */
+	function assetCleanUpHasNoLoadMatches($targetUri = '', $forceCheck = false)
+	{
+		if ( ! $forceCheck && isset( $_GET['wpacu_ignore_no_load_option'] ) ) {
+			return false;
+		}
+
 		if ($targetUri === '') {
 			// When called from the Dashboard, it should never be empty
 			if (is_admin()) {
 				return false;
 			}
 
-			$targetUri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : ''; // Invalid request
+			$targetUri = isset($_SERVER['REQUEST_URI']) ? rawurldecode($_SERVER['REQUEST_URI']) : ''; // Invalid request
 		} else {
 			// Passed from the Dashboard as an URL; Strip the prefix and hostname to keep only the URI
-			$parseUrl = parse_url($targetUri);
+			$parseUrl = parse_url(rawurldecode($targetUri));
 			$targetUri = isset($parseUrl['path']) ? $parseUrl['path'] : '';
 		}
 
 		if ($targetUri === '') {
 			return false; // Invalid request
+		}
+
+		// Already detected? Avoid duplicate queries
+		if (isset($GLOBALS['wpacu_no_load_matches'][$targetUri])) {
+			return $GLOBALS['wpacu_no_load_matches'][$targetUri];
 		}
 
 		$doNotLoadRegExps = array();
@@ -74,10 +174,84 @@ if (! function_exists('assetCleanUpHasNoLoadMatches')) {
 			foreach ( $doNotLoadRegExps as $doNotLoadRegExp ) {
 				if ( @preg_match( $doNotLoadRegExp, $targetUri ) || (strpos($targetUri, $doNotLoadRegExp) !== false) ) {
 					// There's a match
-					return $targetUri;
+					$GLOBALS['wpacu_no_load_matches'][$targetUri] = 'is_set_in_settings';
+					return $GLOBALS['wpacu_no_load_matches'][$targetUri];
 				}
 			}
 		}
+
+		/*
+		 * Page Options -> The following option might be checked "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
+		 * For homepage (e.g. latest posts) or a page, post or custom post type
+		 */
+		$parseUrl = parse_url(get_site_url());
+		$rootUrl = $parseUrl['scheme'].'://'.$parseUrl['host'];
+		$homepageUri = isset($parseUrl['path']) ? $parseUrl['path'] : '/';
+
+		$cleanTargetUri = $targetUri;
+
+		if (strpos($targetUri, '?') !== false) {
+			list($cleanTargetUri) = explode('?', $cleanTargetUri);
+		}
+
+		/*
+		 * First verification: If it's a homepage and it's not a "page" homepage but a different one such as latest posts
+		 */
+		$isHomePageUri = trim($homepageUri, '/') === trim($cleanTargetUri, '/') && ! assetCleanUpRequestUriHasAnyPublicVar($targetUri);
+		$isSinglePageSetAsHomePage = ( get_option('show_on_front') === 'page' && get_option('page_on_front') > 0 );
+
+		if ( $isHomePageUri && ! $isSinglePageSetAsHomePage ) {
+			// Anything different then a page set as the homepage
+			$globalPageOptions = get_option(WPACU_PLUGIN_ID . '_global_data');
+
+			if ($globalPageOptions) {
+				$globalPageOptionsList = @json_decode($globalPageOptions, true);
+
+				if (isset($globalPageOptionsList['page_options']['homepage']['no_wpacu_load'])
+				    && $globalPageOptionsList['page_options']['homepage']['no_wpacu_load'] == 1) {
+					$GLOBALS['wpacu_no_load_matches'][$targetUri] = 'is_set_in_page';
+					return $GLOBALS['wpacu_no_load_matches'][$targetUri];
+				}
+			}
+		}
+
+		/*
+		 * Second verification: For any post, page, custom post type including any page set as the homepage in "Reading" -> "Your homepage displays" -> "A static page (select below)"
+		 */
+		if ($isHomePageUri && $isSinglePageSetAsHomePage) {
+			$pageId = get_option('page_on_front');
+			$pageOptionsJson = get_post_meta($pageId, '_' . WPACU_PLUGIN_ID . '_page_options', true);
+			$pageOptions = @json_decode( $pageOptionsJson, ARRAY_A );
+
+			if (isset($pageOptions['no_wpacu_load']) && $pageOptions['no_wpacu_load'] == 1) {
+				$GLOBALS['wpacu_no_load_matches'][$targetUri] = 'is_set_in_page';
+				return $GLOBALS['wpacu_no_load_matches'][$targetUri];
+			}
+		} else {
+			// Visiting a post, page or custom post type but not the homepage
+			global $wpdb;
+			$anyPagesWithSpecialOptions = $wpdb->get_col( 'SELECT meta_value FROM `' . $wpdb->prefix . 'postmeta` WHERE meta_key=\'_wpassetcleanup_page_options\' && meta_value LIKE \'%no_wpacu_load%\'' );
+
+			if ( ! empty( $anyPagesWithSpecialOptions ) ) {
+				foreach ( $anyPagesWithSpecialOptions as $metaValue ) {
+					$postPageOptions = @json_decode($metaValue, ARRAY_A);
+
+					if ( ! isset($postPageOptions['no_wpacu_load'], $postPageOptions['_page_uri']) ) {
+						continue;
+					}
+
+					$dbPageUrl = $postPageOptions['_page_uri'];
+					$dbPageUri = str_replace( $rootUrl, '', $dbPageUrl );
+
+					if ( ( $dbPageUri === $targetUri ) || ( strpos( $targetUri, $dbPageUri ) === 0 ) ) {
+						$GLOBALS['wpacu_no_load_matches'][$targetUri] = 'is_set_in_page';
+						return $GLOBALS['wpacu_no_load_matches'][$targetUri];
+					}
+				}
+			}
+		}
+
+		$GLOBALS['wpacu_no_load_matches'][$targetUri] = false;
 
 		return false;
 	}
@@ -96,14 +270,14 @@ if (! function_exists('assetCleanUpNoLoad')) {
 		}
 
 		// Hide top WordPress admin bar on request for debugging purposes and a cleared view of the tested page
-		if ( array_key_exists( 'wpacu_no_admin_bar', $_GET ) ) {
+		if ( isset($_REQUEST['wpacu_no_admin_bar']) ) {
 			add_filter( 'show_admin_bar', '__return_false', PHP_INT_MAX );
 		}
 
 		// On request: for debugging purposes - e.g. https://yourwebsite.com/?wpacu_no_load
 		// Also make sure it's in the REQUEST URI and $_GET wasn't altered incorrectly before it's checked
 		// Technically, it will be like the plugin is not activated: no global settings and unload rules will be applied
-		if ( array_key_exists( 'wpacu_no_load', $_GET ) && strpos( $_SERVER['REQUEST_URI'], 'wpacu_no_load' ) !== false ) {
+		if ( isset($_GET['wpacu_no_load'], $_SERVER['REQUEST_URI']) && strpos( $_SERVER['REQUEST_URI'], 'wpacu_no_load' ) !== false ) {
 			define( 'WPACU_NO_LOAD_SET', true );
 
 			return true;
@@ -143,6 +317,13 @@ if (! function_exists('assetCleanUpNoLoad')) {
 		     ( strpos( $_SERVER['REQUEST_URI'],
 				     'admin-ajax.php' ) !== false ) && // The request URI contains 'admin-ajax.php'
 		     is_admin() ) { // If /wp-admin/admin-ajax.php is called, then it will return true
+			define( 'WPACU_NO_LOAD_SET', true );
+
+			return true;
+		}
+
+		// On some hosts .css and .js files are loaded dynamically (e.g. through the WordPress environment)
+		if (isset($_SERVER['REQUEST_URI']) && preg_match('#.(css|js)\?ver=#', $_SERVER['REQUEST_URI'])) {
 			define( 'WPACU_NO_LOAD_SET', true );
 
 			return true;
@@ -215,11 +396,25 @@ if (! function_exists('assetCleanUpNoLoad')) {
 			}
 		}
 
-		// "Divi" theme builder: Front-end View Edit Mode
-		if ( (isset($_GET['et_fb']) && $_GET['et_fb']) || (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'et_fb=1') !== false) ) {
-			define( 'WPACU_NO_LOAD_SET', true );
+		// If some users want to have Asset CleanUp loaded on Divi Builder to avoid loading certain plugins (for a faster page editor)
+		// they can do that by adding the following constant in wp-config.php
+		// define('WPACU_LOAD_ON_DIVI_BUILDER_EDIT', true);
+		$loadPluginOnDiviBuilderEdit = defined('WPACU_LOAD_ON_DIVI_BUILDER_EDIT') && WPACU_LOAD_ON_DIVI_BUILDER_EDIT;
+		$isDiviBuilderLoaded = ( isset( $_GET['et_fb'] ) && $_GET['et_fb'] ) || ( isset( $_SERVER['REQUEST_URI'] ) && strpos( $_SERVER['REQUEST_URI'], 'et_fb=1' ) !== false );
 
-			return true;
+		if ( ! $loadPluginOnDiviBuilderEdit ) {
+			// "Divi" theme builder: Front-end View Edit Mode
+			if ( $isDiviBuilderLoaded ) {
+				define( 'WPACU_NO_LOAD_SET', true );
+
+				return true;
+			}
+		} else {
+			// Since the user the constant WPACU_LOAD_ON_DIVI_BUILDER_EDIT, we'll check if the Divi Builder is ON
+			// And if it is set the constant WPACU_ALLOW_ONLY_UNLOAD_RULES to true which will allow only unload rules, but do not trigger any other ones such as preload/defer, etc.
+			if ( $isDiviBuilderLoaded && ! defined('WPACU_ALLOW_ONLY_UNLOAD_RULES') ) {
+				define( 'WPACU_ALLOW_ONLY_UNLOAD_RULES', true );
+			}
 		}
 
 		// "Divi" theme builder: Do not trigger the plugin on AJAX calls
@@ -331,7 +526,7 @@ if (! function_exists('assetCleanUpNoLoad')) {
 		}
 
 		// Gravity Forms (called for uploading files)
-		if ( ( ( isset($_GET['gf_page']) && $_GET['gf_page']) || isset($_GET['gf-download'], $_GET['form-id'] ) ) && is_file( WP_CONTENT_DIR . '/plugins/gravityforms/gravityforms.php' ) ) {
+		if ( ( ( isset($_GET['gf_page']) && $_GET['gf_page']) || isset($_GET['gf-download'], $_GET['form-id'] ) ) && is_file( WP_PLUGIN_DIR . '/gravityforms/gravityforms.php' ) ) {
 			define( 'WPACU_NO_LOAD_SET', true );
 
 			return true;
@@ -368,29 +563,37 @@ if (! function_exists('assetCleanUpNoLoad')) {
 
 		// REST Request
 		if ( ( defined( 'REST_REQUEST' ) && REST_REQUEST )
-		     || ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/wp/v2/' ) !== false )
-		     || ( strpos( $cleanRequestUri, '/wp-json/wc/' ) !== false )
+		     || ( isset($_SERVER['REQUEST_URI']) && strpos( $_SERVER['REQUEST_URI'], '/wp-json/wp/v2/' ) !== false )
+		     || ( isset($_SERVER['REQUEST_URI']) && strpos( $cleanRequestUri, '/wp-json/wc/' ) !== false )
 		) {
 			define( 'WPACU_NO_LOAD_SET', true );
 
 			return true;
 		}
 
-		$parseUrl              = parse_url( get_site_url() );
-		$parseUrlPath          = isset( $parseUrl['path'] ) ? $parseUrl['path'] : '';
-		$targetUriAfterSiteUrl = trim( str_replace( array( get_site_url(), $parseUrlPath ), '',
-			$_SERVER['REQUEST_URI'] ), '/' );
+		$parseUrl     = parse_url( get_site_url() );
+		$parseUrlPath = isset( $parseUrl['path'] ) ? $parseUrl['path'] : '';
+
+		// We want to make sure the RegEx rules will be working fine if certain characters (e.g. Thai ones) are used
+		$requestUriAsItIs = rawurldecode($_SERVER['REQUEST_URI']);
+
+		$targetUriAfterSiteUrl = trim( str_replace( array( get_site_url(), $parseUrlPath ), '', $requestUriAsItIs ), '/' )    ;
 
 		if ( strpos( $targetUriAfterSiteUrl, 'wp-json/' ) === 0 ) {
 			// WooCommerce, Thrive Ovation
 			if (strpos( $targetUriAfterSiteUrl, 'wp-json/wc/' ) === 0 || strpos( $targetUriAfterSiteUrl, 'wp-json/tvo/' ) === 0) {
 				define( 'WPACU_NO_LOAD_SET', true );
+
 				return true;
 			}
 
 			// Other plugins with a similar pattern
-			if (preg_match('#/wp-json/(.*?)/v#', $targetUriAfterSiteUrl)) {
+			if ($targetUriAfterSiteUrl === 'wp-json' ||
+			    $targetUriAfterSiteUrl === 'wp-json/' ||
+			    preg_match('#wp-json/(.*?)/v#', $targetUriAfterSiteUrl) ||
+			    preg_match('#wp-json/(|\?)#', $targetUriAfterSiteUrl)) {
 				define( 'WPACU_NO_LOAD_SET', true );
+
 				return true;
 			}
 		}
@@ -435,20 +638,36 @@ if (! function_exists('assetCleanUpNoLoad')) {
 			return true;
 		}
 
+		// WooCommerce API call
+		if ( (isset($_GET['wc-api']) && $_GET['wc-api']) || (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/index.php?wc-api=') !== false) ) {
+			define( 'WPACU_NO_LOAD_SET', true );
+
+			return true;
+		}
+
 		// Stop triggering Asset CleanUp (completely) on specific front-end pages
 		// Do the trigger here and if necessary exit as early as possible to save resources via "registered_taxonomy" action hook)
-		if ( assetCleanUpHasNoLoadMatches() ) {
+		$anyPluginNoLoadMatches = assetCleanUpHasNoLoadMatches();
+
+		if ( $anyPluginNoLoadMatches ) {
 			// Only use exit() when "wpassetcleanup_load" is used
 			if ( isset( $_REQUEST['wpassetcleanup_load'] ) && $_REQUEST['wpassetcleanup_load'] ) {
-				add_action( 'registered_taxonomy', function() {
+				add_action( 'registered_taxonomy', function() use ($anyPluginNoLoadMatches) {
 					if ( current_user_can( 'administrator' ) ) {
-						$msg = sprintf(
-							__(
-								'This page\'s URL is matched by one of the RegEx rules you have in <em>"Settings"</em> -&gt; <em>"Plugin Usage Preferences"</em> -&gt; <em>"Do not load the plugin on certain pages"</em>, thus %s is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please remove the matching RegEx rule and the list of CSS/JS will be fetched.',
-								'wp-asset-clean-up'
-							),
-							WPACU_PLUGIN_TITLE
-						);
+						if ( $anyPluginNoLoadMatches === 'is_set_in_settings' ) {
+							$msg = sprintf(
+								__( 'This page\'s URL is matched by one of the RegEx rules you have in <em>"Settings"</em> -&gt; <em>"Plugin Usage Preferences"</em> -&gt; <em>"Do not load the plugin on certain pages"</em>, thus %s is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please remove the matching RegEx rule and the list of CSS/JS will be fetched.',
+									'wp-asset-clean-up'
+								),
+								WPACU_PLUGIN_TITLE
+							);
+						} elseif ( $anyPluginNoLoadMatches === 'is_set_in_page' ) {
+							$msg = sprintf(
+								__( 'This homepage\'s URI is matched by the rule you have in the "Page Options", thus %s is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please uncheck the option and reload this page.',
+									'wp-asset-clean-up'
+								), WPACU_PLUGIN_TITLE );
+						}
+
 						exit( $msg );
 					}
 				} );

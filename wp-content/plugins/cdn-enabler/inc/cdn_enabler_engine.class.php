@@ -171,7 +171,7 @@ final class CDN_Enabler_Engine {
     /**
      * rewrite URL to use CDN hostname
      *
-     * @since   0.0.1
+     * @since   2.0.0
      * @change  2.0.2
      *
      * @param   array   $matches   pattern matches from parsed contents
@@ -217,8 +217,8 @@ final class CDN_Enabler_Engine {
     /**
      * rewrite contents
      *
-     * @since   0.0.1
-     * @change  2.0.1
+     * @since   2.0.0
+     * @change  2.0.4
      *
      * @param   string  $contents                      contents to parse
      * @return  string  $contents|$rewritten_contents  rewritten contents if applicable, unchanged otherwise
@@ -235,7 +235,7 @@ final class CDN_Enabler_Engine {
 
         $included_file_extensions_regex = quotemeta( implode( '|', explode( PHP_EOL, self::$settings['included_file_extensions'] ) ) );
 
-        $urls_regex = '#(?:(?:[\"\'\s=>,]|url\()\K|^)[^\"\'\s(=>,]+(' . $included_file_extensions_regex . ')(\?[^\/?\\\"\'\s)>,]+)?(?:(?=\/?[?\\\"\'\s)>,])|$)#i';
+        $urls_regex = '#(?:(?:[\"\'\s=>,;]|url\()\K|^)[^\"\'\s(=>,;]+(' . $included_file_extensions_regex . ')(\?[^\/?\\\"\'\s)>,]+)?(?:(?=\/?[?\\\"\'\s)>,&])|$)#i';
 
         $rewritten_contents = apply_filters( 'cdn_enabler_contents_after_rewrite', preg_replace_callback( $urls_regex, 'self::rewrite_url', $contents ) );
 

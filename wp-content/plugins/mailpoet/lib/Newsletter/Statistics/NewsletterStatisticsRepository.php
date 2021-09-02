@@ -12,8 +12,10 @@ use MailPoet\Entities\StatisticsClickEntity;
 use MailPoet\Entities\StatisticsOpenEntity;
 use MailPoet\Entities\StatisticsUnsubscribeEntity;
 use MailPoet\Entities\StatisticsWooCommercePurchaseEntity;
+use MailPoet\Entities\UserAgentEntity;
 use MailPoet\WooCommerce\Helper as WCHelper;
 use MailPoetVendor\Doctrine\ORM\EntityManager;
+use MailPoetVendor\Doctrine\ORM\QueryBuilder;
 use MailPoetVendor\Doctrine\ORM\UnexpectedResultException;
 
 /**
@@ -34,13 +36,15 @@ class NewsletterStatisticsRepository extends Repository {
   }
 
   public function getStatistics(NewsletterEntity $newsletter): NewsletterStatistics {
-    return new NewsletterStatistics(
+    $stats = new NewsletterStatistics(
       $this->getStatisticsClickCount($newsletter),
       $this->getStatisticsOpenCount($newsletter),
       $this->getStatisticsUnsubscribeCount($newsletter),
       $this->getTotalSentCount($newsletter),
       $this->getWooCommerceRevenue($newsletter)
     );
+    $stats->setMachineOpenCount($this->getStatisticsMachineOpenCount($newsletter));
+    return $stats;
   }
 
   /**
@@ -81,6 +85,17 @@ class NewsletterStatisticsRepository extends Repository {
   public function getStatisticsOpenCount(NewsletterEntity $newsletter): int {
     $counts = $this->getStatisticCounts(StatisticsOpenEntity::class, [$newsletter]);
     return $counts[$newsletter->getId()] ?? 0;
+  }
+
+  public function getStatisticsMachineOpenCount(NewsletterEntity $newsletter): int {
+    $qb = $this->getStatisticsQuery(StatisticsOpenEntity::class, [$newsletter]);
+    $result = $qb->andWhere('(stats.userAgentType = :userAgentType)')
+      ->setParameter('userAgentType', UserAgentEntity::USER_AGENT_TYPE_MACHINE)
+      ->getQuery()
+      ->getResult();
+
+    if (empty($result)) return 0;
+    return $result['cnt'] ?? 0;
   }
 
   public function getStatisticsUnsubscribeCount(NewsletterEntity $newsletter): int {
@@ -134,12 +149,13 @@ class NewsletterStatisticsRepository extends Repository {
   }
 
   private function getStatisticCounts(string $statisticsEntityName, array $newsletters): array {
-    $results = $this->entityManager->createQueryBuilder()
-      ->select('IDENTITY(stats.newsletter) AS id, COUNT(DISTINCT stats.subscriber) as cnt')
-      ->from($statisticsEntityName, 'stats')
-      ->where('stats.newsletter IN (:newsletters)')
-      ->groupBy('stats.newsletter')
-      ->setParameter('newsletters', $newsletters)
+    $qb = $this->getStatisticsQuery($statisticsEntityName, $newsletters);
+    if (in_array($statisticsEntityName, [StatisticsOpenEntity::class, StatisticsClickEntity::class], true)) {
+      $qb->andWhere('(stats.userAgentType = :userAgentType) OR (stats.userAgentType IS NULL)')
+        ->setParameter('userAgentType', UserAgentEntity::USER_AGENT_TYPE_HUMAN);
+    }
+
+    $results = $qb
       ->getQuery()
       ->getResult();
 
@@ -148,6 +164,15 @@ class NewsletterStatisticsRepository extends Repository {
       $counts[(int)$result['id']] = (int)$result['cnt'];
     }
     return $counts;
+  }
+
+  private function getStatisticsQuery(string $statisticsEntityName, array $newsletters): QueryBuilder {
+    return $this->entityManager->createQueryBuilder()
+      ->select('IDENTITY(stats.newsletter) AS id, COUNT(DISTINCT stats.subscriber) as cnt')
+      ->from($statisticsEntityName, 'stats')
+      ->where('stats.newsletter IN (:newsletters)')
+      ->groupBy('stats.newsletter')
+      ->setParameter('newsletters', $newsletters);
   }
 
   private function getWooCommerceRevenues(array $newsletters) {

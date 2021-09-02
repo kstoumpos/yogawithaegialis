@@ -27,7 +27,7 @@ abstract class Base_Notification {
 	}
 
 	/**
-	 * Validate and prepare notifcation arguments.
+	 * Validate and prepare notification arguments.
 	 *
 	 * @since 2.1
 	 */
@@ -64,7 +64,7 @@ abstract class Base_Notification {
 	public function send_email() {
 		$args = [
 			'to' => $this->get_mailto(),
-			'subject' => sprintf( '[%s] %s', get_bloginfo('name'), $this->get_subject() ),
+			'subject' => sprintf( '%s %s', '', $this->get_subject() ),
 			'message' => $this->get_email_template(),
 			'headers' => [
 				'Content-type: text/html; charset: '.get_bloginfo( 'charset' ),

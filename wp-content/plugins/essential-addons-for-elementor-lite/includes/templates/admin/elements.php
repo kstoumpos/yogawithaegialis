@@ -8,7 +8,7 @@ $elements = [
                 'key'   => 'creative-btn',
                 'title' => __( 'Creative Button', 'essential-addons-for-elementor-lite'),
                 'demo_link' => 'https://essential-addons.com/elementor/creative-buttons/',
-                'doc_link' => 'https://essential-addons.com/elementor/docs/creative-buttons/',
+                'doc_link' => 'https://essential-addons.com/elementor/docs/creative-elements/ea-countdown/',
             ],
             [
                 'key'   => 'team-members',
@@ -102,7 +102,7 @@ $elements = [
             [
                 'key'    => 'team-member-carousel',
                 'title'  => __( 'Team Member Carousel', 'essential-addons-for-elementor-lite'),
-                'demo_link' => 'https://essential-addons.com/elementor/team-member-carousel/',
+                'demo_link' => 'https://essential-addons.com/elementor/team-members-carousel/',
                 'doc_link' => 'https://essential-addons.com/elementor/docs/team-member-carousel/',
                 'is_pro' => true
             ],
@@ -117,6 +117,12 @@ $elements = [
                 'title' => __( 'Event Calendar', 'essential-addons-elementor' ),
                 'demo_link' => 'https://essential-addons.com/elementor/event-calendar/',
                 'doc_link' => 'https://essential-addons.com/elementor/docs/event-calendar/',
+            ],
+            [
+                'key'   => 'simple-menu',
+                'title' => __( 'Simple Menu', 'essential-addons-elementor' ),
+                'demo_link' => 'https://essential-addons.com/elementor/simple-menu/',
+                'doc_link' => 'https://essential-addons.com/elementor/docs/simple-menu/',
             ],
         ]
     ],
@@ -495,6 +501,19 @@ $elements = [
                 'is_pro' => true
             ],
             [
+                'key'   => 'woo-product-slider',
+                'title' => __( 'Woo Product Slider', 'essential-addons-for-elementor-lite'),
+                'demo_link' => 'https://essential-addons.com/elementor/woo-product-slider/',
+                'doc_link' => 'https://essential-addons.com/elementor/docs/woo-product-slider/',
+                'is_pro' => true
+            ],
+            [
+                'key'   => 'woo-product-carousel',
+                'title' => __( 'Woo Product Carousel', 'essential-addons-for-elementor-lite'),
+                'demo_link' => 'https://essential-addons.com/elementor/woo-product-carousel/',
+                'doc_link' => 'https://essential-addons.com/elementor/docs/woo-product-carousel/'
+            ],
+            [
                 'key'   => 'woo-checkout',
                 'title' => __( 'Woo Checkout', 'essential-addons-for-elementor-lite'),
                 'demo_link' => 'https://essential-addons.com/elementor/woo-checkout/',
@@ -505,6 +524,12 @@ $elements = [
 		        'title' => __( 'Woo Product Compare', 'essential-addons-for-elementor-lite'),
 		        'demo_link' => 'https://essential-addons.com/elementor/woo-product-compare/',
 		        'doc_link' => 'https://essential-addons.com/elementor/docs/woo-product-compare/'
+	        ],
+            [
+		        'key'   => 'woo-product-gallery',
+		        'title' => __( 'Woo Product Gallery', 'essential-addons-for-elementor-lite'),
+		        'demo_link' => 'https://essential-addons.com/elementor/woo-product-gallery/',
+		        'doc_link' => 'https://essential-addons.com/elementor/docs/woo-product-gallery/'
 	        ],
         ]
     ]
@@ -559,12 +584,13 @@ $elements = apply_filters( 'add_eael_elementor_addons', $elements );
                                         } elseif ($item['key'] === 'login-register') {
                                             $eael_recaptcha_sitekey = get_option('eael_recaptcha_sitekey');
                                             $eael_recaptcha_secret = get_option('eael_recaptcha_secret');
+                                            $eael_recaptcha_language = get_option('eael_recaptcha_language');
                                             $eael_g_client_id = get_option('eael_g_client_id');
                                             $eael_fb_app_id = get_option('eael_fb_app_id');
                                             $eael_fb_app_secret = get_option('eael_fb_app_secret');
                                             echo '<span style="font-size: 12px; font-style:italic;"><a href="#" class="eael-admin-settings-popup-extended" id="eael-admin-settings-popup-extended" data-settings-id="lr_settings_data">'.__('Settings', 'essential-addons-for-elementor-lite').'</a></span>';
                                             ?>
-                                <span class="eael-lr-settings-data" id="lr_settings_data" style="display: none" data-pro-enabled="<?php echo $this->pro_enabled ?>" data-r-sitekey="<?php echo esc_attr($eael_recaptcha_sitekey);?>" data-r-secret="<?php echo esc_attr($eael_recaptcha_secret);?>"  data-g-client-id="<?php echo esc_attr($eael_g_client_id);?>" data-fb-app-id="<?php echo esc_attr($eael_fb_app_id);?>" data-fb-app-secret="<?php echo esc_attr($eael_fb_app_secret);?>" >
+                                <span class="eael-lr-settings-data" id="lr_settings_data" style="display: none" data-pro-enabled="<?php echo $this->pro_enabled ?>" data-r-sitekey="<?php echo esc_attr($eael_recaptcha_sitekey);?>" data-r-secret="<?php echo esc_attr($eael_recaptcha_secret);?>" data-r-language="<?php echo esc_attr($eael_recaptcha_language); ?>"  data-g-client-id="<?php echo esc_attr($eael_g_client_id);?>" data-fb-app-id="<?php echo esc_attr($eael_fb_app_id);?>" data-fb-app-secret="<?php echo esc_attr($eael_fb_app_secret);?>" >
                                 </span>
                                     <?php } ?>
                                 </p>
@@ -592,6 +618,9 @@ $elements = apply_filters( 'add_eael_elementor_addons', $elements );
             <input type="hidden" name="embedpress" value="on">
             <input type="hidden" name="woocommerce-review" value="on">
             <input type="hidden" name="career-page" value="on">
+            <input type="hidden" name="crowdfundly-single-campaign" value="on">
+            <input type="hidden" name="crowdfundly-organization" value="on">
+            <input type="hidden" name="crowdfundly-all-campaign" value="on">
 
             <div class="eael-save-btn-wrap">
                 <button type="submit" class="button eael-btn js-eael-settings-save"><?php esc_html_e('Save settings', 'essential-addons-for-elementor-lite'); ?></button>

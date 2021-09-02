@@ -6,6 +6,11 @@ use \Essential_Addons_Elementor\Classes\Helper as HelperClass;
 
 trait Instagram_Feed
 {
+
+    public function render_next_items($url, $instagram_data){
+        
+    }
+
     public function instafeed_render_items()
     {
         // check if ajax request
@@ -29,7 +34,7 @@ trait Instagram_Feed
             if (!empty($_POST['widget_id'])) {
                 $widget_id = sanitize_text_field($_POST['widget_id']);
             } else {
-                $err_msg = __('Widget ID is missing', 'essential-addons-for-elementor-lite');
+                $err_msg = __('Widget ID is missing', 'essential-addons-elementor');
                 if ($ajax) {
                     wp_send_json_error($err_msg);
                 }
@@ -37,31 +42,57 @@ trait Instagram_Feed
             }
             $settings = HelperClass::eael_get_widget_settings($post_id, $widget_id);
 
+	        if ( ! empty ( $_POST['settings'] ) ) {
+		        parse_str( $_POST['settings'], $new_settings );
+		        $settings = wp_parse_args( $new_settings, $settings );
+	        }
+
         } else {
             // init vars
             $page = 0;
             $settings = !empty($settings) ? $settings : $this->get_settings_for_display();
         }
 
-        $key = 'eael_instafeed_'.md5(str_replace('.', '_', $settings['eael_instafeed_access_token']));
+        $key = 'eael_instafeed_'.md5(str_replace('.', '_', $settings['eael_instafeed_access_token']).$settings['eael_instafeed_data_cache_limit']);
         $html = '';
+
+        if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'instafeed_load_more') {
+            if($instagram_data = get_transient($key)){
+                $instagram_data = json_decode($instagram_data, true);
+                if ( ($page * $settings['eael_instafeed_image_count']['size'] >= count($instagram_data['data'])) && !empty($instagram_data['paging']['next']) ) {
+                    $request_args = array(
+                        'timeout' => 60,
+                    );
+                    $instagram_data_new = wp_remote_retrieve_body(wp_remote_get($instagram_data['paging']['next'],
+                        $request_args));
+                    $instagram_data_new = json_decode($instagram_data_new, true);
+                    if (!empty($instagram_data_new['data'])) {
+                        $instagram_data['data'] = array_merge($instagram_data['data'], $instagram_data_new['data']);
+                        $new_paging['paging'] = !empty($instagram_data_new['paging']['next']) ? $instagram_data_new['paging']: '';
+                        $instagram_data = array_merge($instagram_data, $new_paging);
+                        $instagram_data = json_encode($instagram_data);
+                        set_transient($key, $instagram_data, 1800);
+                    }
+                }
+            }
+        }
 
         if (get_transient($key) === false) {
             $request_args = array(
-                'timeout' => 10,
+                'timeout' => 60,
             );
-            $instagram_data = wp_remote_retrieve_body(wp_remote_get('https://graph.instagram.com/me/media/?fields=username,id,caption,media_type,media_url,permalink,thumbnail_url,timestamp&limit=200&access_token=' . $settings['eael_instafeed_access_token'],
+            $instagram_data = wp_remote_retrieve_body(wp_remote_get('https://graph.instagram.com/me/media/?fields=username,id,caption,media_type,media_url,permalink,thumbnail_url,timestamp&limit=500&access_token=' . $settings['eael_instafeed_access_token'],
                 $request_args));
             $data_check = json_decode($instagram_data, true);
             if (!empty($data_check['data'])) {
-                set_transient($key, $instagram_data, 1800);
+                set_transient($key, $instagram_data, ($settings['eael_instafeed_data_cache_limit'] * MINUTE_IN_SECONDS));
             }
         } else {
             $instagram_data = get_transient($key);
         }
 
         $instagram_data = json_decode($instagram_data, true);
-        //$settings['eael_instafeed_layout'] = 'overlay';
+        
         if (empty($instagram_data['data'])) {
             return;
         }
@@ -73,7 +104,7 @@ trait Instagram_Feed
         switch ($settings['eael_instafeed_sort_by']) {
             case 'most-recent':
                 usort($instagram_data['data'], function ($a, $b) {
-                    return (int)(strtotime($a['timestamp']) > strtotime($b['timestamp']));
+                    return (int)(strtotime($a['timestamp']) < strtotime($b['timestamp']));
                 });
                 break;
 

@@ -6,7 +6,6 @@ if (!defined('ABSPATH')) {
     exit;
 } // Exit if accessed directly
 
-use Essential_Addons_Elementor\Classes\WPML\Eael_WPML;
 use Essential_Addons_Elementor\Traits\Admin;
 use Essential_Addons_Elementor\Traits\Core;
 use Essential_Addons_Elementor\Traits\Elements;
@@ -29,7 +28,6 @@ class Bootstrap
     use Enqueue;
     use Admin;
     use Elements;
-    use Eael_WPML;
     use Login_Registration;
     use Woo_Product_Comparable;
     use Controls;
@@ -131,7 +129,6 @@ class Bootstrap
         add_filter('eael/active_plugins', [$this, 'is_plugin_active'], 10, 1);
 
         add_filter('eael/is_plugin_active', [$this, 'is_plugin_active'], 10, 1);
-        add_filter('wpml_elementor_widgets_to_translate', [$this, 'translatable_widgets']);
         add_action('elementor/editor/after_save', array($this, 'save_global_values'), 10, 2);
 
         // Enqueue
@@ -169,6 +166,13 @@ class Bootstrap
         // Compare table
 	    add_action( 'wp_ajax_nopriv_eael_product_grid', [$this, 'get_compare_table']);
 	    add_action( 'wp_ajax_eael_product_grid', [$this, 'get_compare_table']);
+		//quick view popup
+	    add_action( 'wp_ajax_nopriv_eael_product_quickview_popup', [$this, 'eael_product_quickview_popup']);
+	    add_action( 'wp_ajax_eael_product_quickview_popup', [$this, 'eael_product_quickview_popup']);
+
+	    //product gallery
+	    add_action( 'wp_ajax_nopriv_eael_product_gallery', [$this, 'ajax_eael_product_gallery']);
+	    add_action( 'wp_ajax_eael_product_gallery', [$this, 'ajax_eael_product_gallery']);
 
 //        handle select2 ajax search
         add_action('wp_ajax_eael_select2_search_post', [$this, 'select2_ajax_posts_filter_autocomplete']);
@@ -192,6 +196,7 @@ class Bootstrap
         add_action('eael/controls/read_more_button_style', [$this, 'read_more_button_style'], 10, 1);
         add_action('eael/controls/load_more_button_style', [$this, 'load_more_button_style'], 10, 1);
         add_action('eael/controls/custom_positioning', [$this, 'custom_positioning'], 10, 5);
+	    add_action('eael/controls/nothing_found_style', [$this, 'nothing_found_style'], 10, 1);
 
         add_filter('eael/controls/event-calendar/source', [$this, 'event_calendar_source']);
         add_action('eael/controls/advanced-data-table/source', [$this, 'advanced_data_table_source']);

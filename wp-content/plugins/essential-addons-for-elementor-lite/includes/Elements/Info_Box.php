@@ -12,6 +12,7 @@ use \Elementor\Group_Control_Border;
 use \Elementor\Group_Control_Box_Shadow;
 use \Elementor\Group_Control_Image_Size;
 use \Elementor\Group_Control_Typography;
+use Elementor\Icons_Manager;
 use \Elementor\Plugin;
 use \Elementor\Utils;
 use \Elementor\Widget_Base;
@@ -505,7 +506,7 @@ class Info_Box extends Widget_Base
                         ],
                     ],
                     'default' => '1',
-                    'description' => '<span class="pro-feature"> Get the  <a href="https://wpdeveloper.net/in/upgrade-essential-addons-elementor" target="_blank">Pro version</a> for more stunning elements and customization options.</span>',
+                    'description' => '<span class="pro-feature"> Get the  <a href="https://wpdeveloper.net/upgrade/ea-pro" target="_blank">Pro version</a> for more stunning elements and customization options.</span>',
                 ]
             );
 
@@ -946,6 +947,7 @@ class Info_Box extends Widget_Base
                 ],
                 'selectors' => [
                     '{{WRAPPER}} .eael-infobox .infobox-icon i' => 'font-size: {{SIZE}}px;',
+                    '{{WRAPPER}} .eael-infobox .infobox-icon svg' => 'height: {{SIZE}}px; width: {{SIZE}}px;',
                     '{{WRAPPER}} .eael-infobox .infobox-icon .infobox-icon-wrap img' => 'height: {{SIZE}}px; width: {{SIZE}}px;',
                 ],
             ]
@@ -1004,6 +1006,7 @@ class Info_Box extends Widget_Base
                 'default' => '#4d4d4d',
                 'selectors' => [
                     '{{WRAPPER}} .eael-infobox .infobox-icon i' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .eael-infobox .infobox-icon svg' => 'fill: {{VALUE}};',
                     '{{WRAPPER}} .eael-infobox.icon-beside-title .infobox-content .title figure i' => 'color: {{VALUE}};',
                 ],
             ]
@@ -1083,6 +1086,7 @@ class Info_Box extends Widget_Base
                 'default' => '#4d4d4d',
                 'selectors' => [
                     '{{WRAPPER}} .eael-infobox:hover .infobox-icon i' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .eael-infobox:hover .infobox-icon svg' => 'fill: {{VALUE}};',
                     '{{WRAPPER}} .eael-infobox.icon-beside-title:hover .infobox-content .title figure i' => 'color: {{VALUE}};',
                 ],
             ]
@@ -1454,7 +1458,7 @@ class Info_Box extends Widget_Base
                 'type' => Controls_Manager::COLOR,
                 'default' => '',
                 'selectors' => [
-                    '{{WRAPPER}} .eael-infobox:hover .infobox-content h4' => 'color: {{VALUE}};',
+                    '{{WRAPPER}} .eael-infobox:hover .infobox-content .title' => 'color: {{VALUE}};',
                 ],
             ]
         );
@@ -1521,7 +1525,7 @@ class Info_Box extends Widget_Base
         <?php if ('yes' == $settings['eael_show_infobox_clickable']): ?><a href="<?php echo esc_url($settings['eael_show_infobox_clickable_link']['url']) ?>" <?php echo $target; ?> <?php echo $nofollow; ?>><?php endif;?>
             <div <?php echo $this->get_render_attribute_string('eael_infobox_inner'); ?>>
             <?php
-echo ob_get_clean();
+        echo ob_get_clean();
     }
 
 	/**
@@ -1581,13 +1585,10 @@ if ('yes' == $settings['eael_show_infobox_clickable']): ?></a><?php endif;
 
         if ($infobox_icon_is_new || $infobox_icon_migrated) {
             $icon = $this->get_settings('eael_infobox_icon_new')['value'];
-
             if (isset($icon['url'])) {
-                $this->add_render_attribute('icon_or_image', [
-                    'src' => $icon['url'],
-                    'alt' => esc_attr(get_post_meta($icon['id'], '_wp_attachment_image_alt', true)),
-                ]);
-                $icon_tag = '<img ' . $this->get_render_attribute_string('icon_or_image') . '/>';
+	            ob_start();
+	            Icons_Manager::render_icon( $settings['eael_infobox_icon_new'], [ 'aria-hidden' => 'true' ] );
+	            $icon_tag = ob_get_clean();
             } else {
                 $this->add_render_attribute('icon_or_image', 'class', $icon);
                 $icon_tag = '<i ' . $this->get_render_attribute_string('icon_or_image') . '></i>';
@@ -1618,7 +1619,7 @@ if ('yes' == $settings['eael_show_infobox_clickable']): ?></a><?php endif;
 
         </div>
     <?php
-echo ob_get_clean();
+        echo ob_get_clean();
     }
 
     protected function render_infobox_content()
@@ -1633,7 +1634,7 @@ echo ob_get_clean();
         ob_start();
         ?>
         <div <?php echo $this->get_render_attribute_string('infobox_content'); ?>>
-            <<?php echo Helper::eael_validate_html_tag($settings['eael_infobox_title_tag']); ?> class="title"><?php echo $settings['eael_infobox_title']; ?></<?php echo Helper::eael_validate_html_tag($settings['eael_infobox_title_tag']); ?>>
+            <<?php echo $settings['eael_infobox_title_tag']; ?> class="title"><?php echo $settings['eael_infobox_title']; ?></<?php echo $settings['eael_infobox_title_tag']; ?>>
             <?php if ('yes' == $settings['eael_show_infobox_content']): ?>
                 <?php if ('content' === $settings['eael_infobox_text_type']): ?>
                     <?php if (!empty($settings['eael_infobox_text'])): ?>

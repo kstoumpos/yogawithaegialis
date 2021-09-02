@@ -94,6 +94,11 @@ class WorkersFactory {
     return $this->container->get(SubscriberLinkTokens::class);
   }
 
+  /** @return SubscribersEngagementScore */
+  public function createSubscribersEngagementScoreWorker() {
+    return $this->container->get(SubscribersEngagementScore::class);
+  }
+
   /** @return AuthorizedSendingEmailsCheck */
   public function createAuthorizedSendingEmailsCheckWorker() {
     return $this->container->get(AuthorizedSendingEmailsCheck::class);
@@ -102,5 +107,10 @@ class WorkersFactory {
   /** @return WooCommercePastOrders */
   public function createWooCommercePastOrdersWorker() {
     return $this->container->get(WooCommercePastOrders::class);
+  }
+
+  /** @return SubscribersCountCacheRecalculation */
+  public function createSubscribersCountCacheRecalculationWorker() {
+    return $this->container->get(SubscribersCountCacheRecalculation::class);
   }
 }

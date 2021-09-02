@@ -315,7 +315,7 @@ body .gform_wrapper .top_label div.ginput_container {
 		margin-left: -14% !important;
 	}
 	.elementor-4703 .elementor-element.elementor-element-ccf595e > .elementor-widget-container {
-    padding: 0px 0px 0px 0px !important;
+    padding: 0 0 0 0 !important;
 	}
 }
 
@@ -384,15 +384,14 @@ body .gform_wrapper .top_label div.ginput_container {
 
 .mailpoet_paragraph.last {
 	width: 25%;
-	border-bottom: 0px !important;
-	border-left: 0px !important;
+	border-bottom: 0 !important;
+	border-left: 0 !important;
 }
 
 .mailpoet_submit {
 	min-height: 37px;
 	min-width: 100px;
 	border: solid 1px !important;
-	background-color: transparent !important;
 	border-color: white !important;
 }
 
@@ -418,7 +417,7 @@ body .gform_wrapper .top_label div.ginput_container {
 	}
 }
 
-@media (max-width: 415px) {
+@media (max-width: 429px) {
 	.mailpoet_form_shortcode {
 		display: block;
 	}
@@ -426,16 +425,16 @@ body .gform_wrapper .top_label div.ginput_container {
         margin-right: 0% !important;
 	}
 	#mailpoet_form_1 {
-		margin-left: 11%;
+		margin-left: 13%;
 		width: 70% !important;
 	}
 	#mailpoet_form_1 .mailpoet_paragraph {
-		margin-left: 0px;
-		margin-right: 0px;
+		margin-left: 0;
+		margin-right: 0;
 		width: 100%;
 	}
 	#mailpoet_form_1 form.mailpoet_form {
-		padding: 0px 0px 20px 0px !important;
+		padding: 0 0 20px 0 !important;
 		width: -webkit-fill-available;
 	}
 }
@@ -503,7 +502,7 @@ body .gform_wrapper .top_label div.ginput_container {
 
 @media (max-width: 769px) {
     #c27-single-listing > section {
-        padding-bottom: 100% !important;
+        /*padding-bottom: 100% !important;*/
     }
 }
 
@@ -515,4 +514,665 @@ body .gform_wrapper .top_label div.ginput_container {
 
 .title-style-1 h5 {
     padding-bottom: 15px;
+}
+
+/*yoga icons homepage*/
+@media (max-width: 429px) {
+    .yogaIcon > div > div > div > div > div > a > img {
+        width: 100px !important;
+    }
+}
+
+.cli-tab-footer .wt-cli-privacy-accept-btn {
+    background-color: #000000;
+}
+
+.i-nav>ul>li {
+     margin-left: 0;
+}
+
+.inbox-avatar > a > img {
+    height: 40px !important;
+    width: 40px !important;
+}
+
+.avatar-img > img {
+    height: 40px !important;
+    width: 40px !important;
+}
+
+@media (max-width: 391px) {
+    .role-tabs {
+        margin-bottom: 20px !important;
+    }
+}
+
+.woocommerce-Tabs-panel--description h2:nth-child(n+2) {
+    font-size: 14px !important;
+}
+
+.woocommerce div.product .in-stock {
+    color: #31661b !important;
+}
+
+#submit-job-form .round-icon .title-style-1 {
+	padding-bottom: 10px;
+}
+
+#submit-job-form .form-group {
+	border-top: 0 solid rgba(0,0,0,.1) !important;
+}
+
+#submit-job-form .field>input, #submit-job-form .field>textarea {
+	background-color: #f5f3f3;
+}
+
+#form-section-general > div > div.pf-body > div.fieldset-price.field-type-number.form-group > div.field.required-field, #form-section-general > div > div.pf-body > div.fieldset-availability.field-type-number.form-group > div.field.required-field, #form-section-general > div > div.pf-body > div.fieldset-availability_double.field-type-number.form-group > div.field, #form-section-nOaVp7s > div > div.pf-body > div.fieldset-job_video_url.field-type-url.form-group > div.field {
+	background-color: #f5f3f3;
+}
+
+#submit-job-form .field>input,
+#submit-job-form .field>textarea {
+	background-color: #f1f1f1;
+	border-radius: 4px;
+	border: 1px solid #d0d0d0;
+	padding: 10px 10px 10px 7px;
+	margin: 5px 0 0 0;
+}
+
+#tinymce {
+    background: #F1F1F0;
+}
+
+#job_description_ifr, #package-includes_ifr, #package-doesnt-include_ifr, #program_ifr, #included-excursions_ifr {
+    background-color: #f1f1f0;
+    border-radius: 4px;
+    border: 1px solid #d0d0d0;
+}
+
+.mce-edit-area {
+    background-color: #f1f1f0 !important;
+}
+
+.element {
+    border: 0 !important;
+}
+
+#submit-job-form .field>input:focus, #submit-job-form .field>textarea:focus {
+    padding-left: 10px;
+}
+
+.bookinbBtn {
+    background-color: #1EB500;
+    border-radius: 9px;
+    border: 1px solid #18ab29;
+    display: inline-block;
+    cursor: pointer;
+    color: #ffffff;
+    font-family: 'Open Sans';
+    font-size: 21px;
+    padding: 11px 21px;
+    text-decoration: none;
+    text-shadow: 0 1px 0 #2f6627;
+}
+.bookinbBtn:hover {
+    color: white;
+}
+.bookinbBtn:active {
+    position:relative;
+    top:1px;
+}
+
+.enquiryBtn {
+    background-color: #3F9FEA;
+    border: 1px solid #3F9FEA;
+    border-radius: 9px;
+    display: inline-block;
+    cursor: pointer;
+    color: #ffffff;
+    font-family: 'Open Sans';
+    font-size: 21px;
+    padding: 5px 11px;
+    text-decoration: none;
+}
+
+#productAvatar {
+    vertical-align: middle;
+    margin-right: 2%;
+    border-radius: 50%;
+}
+
+.woo-variation-swatches .variable-items-wrapper {
+    flex-wrap: wrap;
+    margin: 0!important;
+    padding: 0;
+    list-style: none;
+}
+
+.woo-variation-swatches .variable-items-wrapper .variable-item:not(.radio-variable-item) {
+    margin: 10px 8px 4px 0;
+    max-width: 200px;
+}
+
+.woo-variation-swatches .variable-items-wrapper .variable-item:not(.radio-variable-item):hover {
+    background-color: #61e561;
+}
+
+.woo-variation-swatches .variable-items-wrapper .variable-item:not(.radio-variable-item):active {
+    background-color: #61e561;
+}
+
+.woo-variation-swatches .variable-items-wrapper .variable-item:not(.radio-variable-item).selected, .woo-variation-swatches .variable-items-wrapper .variable-item:not(.radio-variable-item).selected:hover {
+    background-color: #61e561;
+}
+
+.woocommerce div.product form.cart .variations {
+    margin-bottom: -1.5em;
+}
+
+.woocommerce-shipping-totals {
+    display: none;
+}
+
+#c27-site-wrapper > div.woocommerce > section > div > div > div > div > div.pf-body > div > section.woocommerce-order-details > table > tfoot > tr:nth-child(2) {
+    display: none;
+}
+
+.woocommerce-thankyou-order-received {
+    font-size: 17px;
+    padding: 10px 0 15px 0;
+}
+
+body.single.single-listing .elementor-lightbox {
+    display: none !important;
+}
+
+#c27-site-wrapper > div.woocommerce > div.mlduo-account-menu > nav > ul > li {
+    position: relative;
+    -webkit-box-flex: 1;
+    flex: 1;
+}
+
+#c27-site-wrapper > div.woocommerce > div.mlduo-account-menu > nav > ul > li > a > i {
+    font-size: 20px;
+    display: inline-block;
+    position: relative;
+    padding-right: 10px;
+    color: #484848;
+    top: 0;
+}
+
+#c27-site-wrapper > div.woocommerce > div > section > div > div > div > div.row.my-listings-tab-con > div.col-md-9.mlduo-welcome-message > h1 {
+    font-size: 36px;
+    margin-top: 0;
+    margin-bottom: 50px;
+    color: #383838;
+}
+
+#job-manager-job-dashboard > table > tbody {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+#job-manager-job-dashboard > table > tbody > tr {
+    width: calc(33.3% - 15px);
+    margin-right: 23px;
+    background: #fff;
+    padding: 25px;
+    margin-bottom: 25px;
+    border: 1px solid #ebebeb;
+    border-radius: 5px;
+    vertical-align: top;
+}
+
+#job-manager-job-dashboard > table {
+    margin-top: 20px;
+    display: flex;
+}
+
+#job-manager-job-dashboard > table > tbody > tr.item-id-8196.item-product-na.item-type-event > td.l-type {
+    text-align: center;
+}
+
+#job-manager-job-dashboard > table > tbody > tr > td.l-type > div {
+    position: relative;
+}
+
+#job-manager-job-dashboard > table > tbody > tr > td.l-type > div > div {
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    border-radius: 20px;
+    padding: 6px 12px;
+    border: 1px solid rgba(0,0,0,.15);
+    color: #616568;
+    font-size: 13px;
+}
+
+.c27_listing_logo {
+    padding: 0;
+    margin-bottom: 15px;
+    display: block;
+    padding-right: 0 !important;
+}
+
+.job_title {
+    padding: 0!important;
+    display: block;
+}
+
+.job_title > a {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.listing-actions {
+    display: block;
+}
+
+#job-manager-job-dashboard > table > tbody > tr > td.c27_listing_logo {
+    padding: 0;
+    margin-bottom: 15px;
+    display: block;
+    padding-right: 0 !important;
+}
+
+.variationLabel {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.woocommerce div.product p.price, .woocommerce div.product span.price {
+    color: #0c0c0c;
+}
+
+.woocommerce-variation-price {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.woocommerce div.product p.price, .woocommerce div.product span.price {
+    font-size: inherit;
+}
+
+.productInfoTitle {
+    margin-top: 20px;
+}
+
+#billing_first_name, #billing_last_name, #billing_email, #billing_phone, #billing_country, #order_comments {
+    border: solid 1px;
+    padding-left: 3%;
+    margin-top: 8px;
+}
+
+#billing_country_field > span > span {
+    border: solid 1px;
+    padding-left: 3%;
+    margin-top: 8px;
+}
+
+#billing_country_field > label {
+    margin-bottom: 6px;
+}
+
+#order_review_heading {
+    display: none !important;
+}
+
+#customer_details > div.col-1 > div > h3 {
+    display: none !important;
+}
+
+#billing_country_field > span > span > span.selection > span > span.select2-selection__arrow {
+    padding-right: 6%;
+}
+
+#mailpoet_form_2 > form > div:nth-child(7) > input {
+    color: black !important;
+}
+
+#payment > ul > li.wc_payment_method.payment_method_stripe > label {
+    display: contents;
+}
+
+#order_review > table > thead > tr {
+    display: none;
+}
+
+#customer_details > div.col-2 > div.woocommerce-additional-fields > h3 {
+    display: none;
+}
+
+.select2-selection__arrow {
+    display: none;
+}
+
+#noptin_woocommerce_optin_checkbox label {
+    font-size: 14px;
+}
+
+.woocommerce form.checkout #order_review table.woocommerce-checkout-review-order-table tbody tr td, .woocommerce form.checkout #order_review table.woocommerce-checkout-review-order-table tfoot tr td, .woocommerce form.checkout #order_review table.woocommerce-checkout-review-order-table tfoot tr th {
+    border-top: 0;
+}
+
+#input_2_4 {
+    border: 1px solid #e3e3e3;
+}
+
+.woocommerce form.checkout #order_review table.woocommerce-checkout-review-order-table tbody tr td, .woocommerce form.checkout #order_review table.woocommerce-checkout-review-order-table tfoot tr td, .woocommerce form.checkout #order_review table.woocommerce-checkout-review-order-table tfoot tr th {
+    border-top: 0 !important;
+}
+
+.fieldset-custom-field-9065 {
+    padding-top: 0 !important;
+    padding-left: 20px !important;
+}
+
+.fieldset-custom-field-4985 {
+    padding-bottom: 0 !important;
+}
+
+#availability, #availability_double, #price, #form-section-pricing-availability > div > div.pf-body > div.fieldset-price-for-single-room-.field-type-number.form-group > div.field {
+    width: 15%;
+}
+
+#form-section-pricing-availability > div > div.pf-body > div.fieldset-availability_double.field-type-number.form-group {
+    margin-top: 40px;
+}
+
+@media screen and (max-width: 992px) {
+    #c27-single-listing > div.main-info-mobile > div > div:nth-child(2) > div {
+        display: none;
+    }
+
+    #listingButtons {
+        display: unset !important;
+        text-align: center;
+    }
+
+    #listingButtons > div {
+        margin-left: 30%;
+        margin-top: 3%;
+    }
+
+    #listingButtons > div > a {
+        min-width: 204px;
+        text-align: center;
+    }
+
+    #c27-single-listing > section.i-section.similar-listings.hide-until-load {
+        margin-top: 50px;
+    }
+}
+
+@media screen and (max-width: 429px) {
+    #listingButtons > div > a {
+        min-width: 88%;
+    }
+    #listingButtons > div {
+        margin-left: 0;
+    }
+}
+
+.listingButton {
+    margin-left: 3%;
+}
+
+.facility {
+    padding: 6px 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.facility .mi {
+    margin-right: 8px;
+}
+
+.foodincluded {
+    margin-top: -40px;
+}
+
+.introductionretreat .title-style-1 {
+    display:none;
+}
+
+.introduction {
+    margin: -40px 0 -25px 0;
+}
+
+.food {
+    margin: -25px 0 0 0;
+}
+
+.accommodation {
+    margin: -25px 0 0 0;
+}
+
+.title-style-1 > h5 {
+    font-size: 18px !important;
+}
+
+.event-host {
+    min-height: 80px;
+}
+
+#bookingInfo {
+    margin-top: 45px;
+}
+
+@media screen and (max-width: 769px) {
+    .listingButton {
+        margin-left: 0 !important;
+        margin-bottom: 4%;
+    }
+}
+
+@media screen and (max-width: 429px) {
+    .food {
+        padding-top: 15px;
+        margin: 0 0 0 0;
+    }
+    .foodincluded {
+        margin-top: 0;
+    }
+    .block-field-included-activities {
+        margin-top: 15px;
+    }
+    .accommodation {
+        margin-top: 0;
+    }
+    .author-bio-listing {
+        min-height: 110px;
+    }
+
+    #bookingInfo {
+        margin-top: 5px;
+    }
+	
+	#order_review {
+	margin-top: 35px!important;
+}
+}
+
+.woocommerce-product-gallery__wrapper {
+    max-width: 400px;
+    max-height: 400px;
+}
+
+.quantity {
+    display: none;
+}
+
+/*#c27-site-wrapper > section > div > div > div > div:nth-child(3) {*/
+/*    margin-top: 750px;*/
+/*}*/
+
+#whatsIncluded, #foodIncluded, #includedInPrice, #FoodIncludedInPrice, #CancellationPolicy {
+    padding: 0;
+    margin-top: 6%;
+}
+
+.variations > tbody > tr {
+    margin-bottom: 25px !important;
+}
+
+.woocommerce-variation-availability {
+    display: none;
+}
+
+.woocommerce-variation-price {
+    padding-top: 20px!important;
+}
+
+.single_add_to_cart_button:before {
+    content: "";
+    padding-right: 0;
+}
+
+.woo-selected-variation-item-name {
+    display: none;
+}
+
+#product-8444 > div.summary.entry-summary > form > div > div.woocommerce-variation-add-to-cart.variations_button.woocommerce-variation-add-to-cart-disabled > button {
+    font-size: 16px;
+}
+
+#product-8444 > div.summary.entry-summary > form > div > div.woocommerce-variation-add-to-cart.variations_button.woocommerce-variation-add-to-cart-enabled > button {
+    font-size: 16px;
+}
+
+@media (max-width: 680px) {
+    .profile-cover-image {
+        padding-bottom: 85%!important;
+    }
+}
+
+.inbox-contents .message h6 {
+    text-transform: initial;
+}
+
+@media (max-width: 991px) {
+    #whatsIncluded > div.pf-head > div > h5 {
+        display: none;
+    }
+}
+
+@media (max-width: 769px) {
+    #whatsIncluded > div.pf-head > div > h5 {
+        display: initial;
+    }
+}
+
+.woocommerce div.product div.images img {
+    max-width: 325px;
+}
+
+.woocommerce div.product div.images {
+    margin-bottom: 80px !important;
+}
+
+@media (max-width: 770px) {
+    .woocommerce div.product div.images {
+        margin-bottom: 50px !important;
+    }
+}
+
+
+@media (max-width: 1367px) {
+    .woocommerce div.product div.images img {
+        border-radius: 3px;
+        max-width: 320px;
+    }
+}
+
+#FoodIncludedInPrice > div.pf-head > div, #includedInPrice > div.pf-head > div {
+    margin-bottom: -10px;
+}
+
+@media (max-width: 450px) {
+    #whatsIncluded, #foodIncluded, #includedInPrice, #FoodIncludedInPrice, #CancellationPolicy {
+        margin-top: 12%;
+    }
+}
+
+#mailpoet_woocommerce_checkout_optin::after {
+    margin-left: 10px;
+}
+
+.woocommerce form .form-row .input-checkbox {
+    margin-right: 10px;
+}
+
+#woo-commerce-subscription-opt-in {
+    margin-left: 10px;
+}
+
+.woocommerce form.checkout #order_review table.woocommerce-checkout-review-order-table tbody tr td, .woocommerce form.checkout #order_review table.woocommerce-checkout-review-order-table tfoot tr td, .woocommerce form.checkout #order_review table.woocommerce-checkout-review-order-table tfoot tr th {
+    border-top:none!important;
+}
+
+/*.lf-head > .lf-head-btn {*/
+/*    text-overflow: ellipsis;*/
+/*    overflow: hidden;*/
+/*    height: 20px;*/
+/*    white-space: break-spaces;*/
+/*    align-items: flex-start;*/
+/*}*/
+
+/*!* An option to disable clickable links on elements simply add this class *!*/
+/*.disable-link {*/
+/*  pointer-events: none;*/
+/*  cursor: default;*/
+/*  text-decoration: none;*/
+/*  color: black;*/
+/*}*/
+
+/*!* Removes the opacity change from 0.5 to 1 when scrolling from a section to another section on the "list your retreat" form *!*/
+/*#submit-job-form .form-section {*/
+/*  opacity: 1!important;*/
+/*}*/
+
+.expires-at {
+    position:absolute;
+    visibility:hidden;
+    display:none;
+}
+
+/* Change in layout design in my account > my listings page */
+
+.listing-type {
+    display:none!important;
+}
+
+#job-manager-job-dashboard > table > tbody > tr {
+    padding: 25px 10px 25px 10px!important;
+    margin: 0 7px 0 7px!important;
+}
+
+.item-product-na {
+    margin-bottom: 20px!important;
+}
+
+#gform_next_button_16_29, #gform_next_button_17_29 {
+    background: black;
+    color: white;
+}
+
+#gform_submit_button_17, #gform_submit_button_16 {
+    background: black !important;
+    min-width: 140px;
+}
+
+#input_16_2, #input_16_4, #input_17_2, #input_17_4 {
+    border: solid 1px;
+    border-color: #E3E3E3;
+}
+
+#job_email {
+    display: none;
+}
+
+.woo-variation-swatches.wvs-show-label .variations td .woo-selected-variation-item-name, .woo-variation-swatches.wvs-show-label .variations td label {
+    display: none !important;
 }

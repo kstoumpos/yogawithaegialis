@@ -79,7 +79,7 @@ trait Core
             if (is_plugin_active($basename)) {
                 return delete_transient('eael_install_lite');
             } else {
-                activate_plugin($this->safe_path(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . $basename), '', false, true);
+                activate_plugin($this->safe_path(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . $basename), '', false, false);
                 return delete_transient('eael_install_lite');
             }
         } else {

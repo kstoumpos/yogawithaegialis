@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -58,7 +59,7 @@ class Request extends API\Request {
 	 */
 	public function get_params() {
 
-		return [ 'fields' => 'id,product_group{id}' ];
+		return array( 'fields' => 'id,product_group{id}' );
 	}
 
 

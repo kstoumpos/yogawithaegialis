@@ -5,6 +5,7 @@ use WpAssetCleanUp\CleanUp;
 use WpAssetCleanUp\Main;
 use WpAssetCleanUp\Menu;
 use WpAssetCleanUp\MetaBoxes;
+use WpAssetCleanUp\Misc;
 
 /**
  * Class MinifyCss
@@ -121,6 +122,8 @@ class MinifyCss
 			'#/wp-content/bs-booster-cache/#',
 
 			);
+
+		$regExps = Misc::replaceRelPluginPath($regExps);
 
 		if (Main::instance()->settings['minify_loaded_css_exceptions'] !== '') {
 			$loadedCssExceptionsPatterns = trim(Main::instance()->settings['minify_loaded_css_exceptions']);
@@ -295,12 +298,12 @@ class MinifyCss
 		// Request Minify On The Fly
 		// It will preview the page with CSS minified
 		// Only if the admin is logged-in as it uses more resources (CPU / Memory)
-		if (array_key_exists('wpacu_css_minify', $_GET) && Menu::userCanManageAssets()) {
+		if ( isset($_GET['wpacu_css_minify']) && Menu::userCanManageAssets() ) {
 			self::isMinifyCssEnabledChecked('true');
 			return true;
 		}
 
-		if ( array_key_exists('wpacu_no_css_minify', $_GET) || // not on query string request (debugging purposes)
+		if ( isset($_REQUEST['wpacu_no_css_minify']) || // not on query string request (debugging purposes)
 		     is_admin() || // not for Dashboard view
 		     (! Main::instance()->settings['minify_loaded_css']) || // Minify CSS has to be Enabled
 		     (Main::instance()->settings['test_mode'] && ! Menu::userCanManageAssets()) ) { // Does not trigger if "Test Mode" is Enabled
@@ -308,9 +311,15 @@ class MinifyCss
 			return false;
 		}
 
-		if (defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular()) {
+		$isSingularPage = defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular();
+
+		if ($isSingularPage || Misc::isHomePage()) {
 			// If "Do not minify CSS on this page" is checked in "Asset CleanUp: Options" side meta box
-			$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID );
+			if ($isSingularPage) {
+				$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID ); // Singular page
+			} else {
+				$pageOptions = MetaBoxes::getPageOptions(0, 'front_page'); // Home page
+			}
 
 			if ( isset( $pageOptions['no_css_minify'] ) && $pageOptions['no_css_minify'] ) {
 				self::isMinifyCssEnabledChecked('false');
@@ -323,6 +332,7 @@ class MinifyCss
 			return false;
 		}
 
+		self::isMinifyCssEnabledChecked('true');
 		return true;
 	}
 

@@ -121,8 +121,8 @@ class Event_Calendar extends Widget_Base
             $this->add_control(
                 'eael_event_calendar_pro_enable_warning',
                 [
-                    'label' => esc_html__('Only Available in Pro Version!', 'essential-addons-for-elementor-lite'),
-                    'type' => Controls_Manager::HEADING,
+	                'label' => sprintf( '<a target="_blank" href="https://wpdeveloper.net/upgrade/ea-pro">%s</a>', esc_html__('Only Available in Pro Version!', 'essential-addons-for-elementor-lite')),
+                    'type' => Controls_Manager::RAW_HTML,
                     'condition' => [
                         'eael_event_calendar_type' => ['eventon'],
                     ],
@@ -559,6 +559,18 @@ class Event_Calendar extends Widget_Base
             ]
         );
 
+	    $this->add_control(
+		    'eael_event_details_text',
+		    [
+			    'label' => __('Event Details Text', 'essential-addons-for-elementor-lite'),
+			    'type' => Controls_Manager::TEXT,
+			    'default' => __('Event Details','essential-addons-for-elementor-lite'),
+			    'condition' => [
+				    'eael_event_details_link_hide!' => 'yes',
+			    ],
+		    ]
+	    );
+
         if (apply_filters('eael/is_plugin_active', 'eventON/eventon.php') && apply_filters('eael/pro_enabled', false)) {
             $this->add_control(
                 'eael_event_on_featured_color',
@@ -607,6 +619,33 @@ class Event_Calendar extends Widget_Base
                 ],
             ]
         );
+
+        $this->end_controls_section();
+
+
+	    /**
+	     * Data cache setting
+	     */
+	    $this->start_controls_section(
+		    'eael_event_calendar_data_cache',
+		    [
+			    'label' => __('Data Cache Setting', 'essential-addons-for-elementor-lite'),
+			    'condition' => [
+				    'eael_event_calendar_type!' => 'manual',
+			    ],
+		    ]
+	    );
+
+	    $this->add_control(
+		    'eael_event_calendar_data_cache_limit',
+		    [
+			    'label' => __('Data Cache Time', 'essential-addons-for-elementor-lite'),
+			    'type' => Controls_Manager::NUMBER,
+			    'min' => 1,
+			    'default' => 60,
+				'description' => __('Cache expiration time (Minutes)', 'essential-addons-for-elementor-lite')
+		    ]
+	    );
 
         $this->end_controls_section();
 
@@ -1713,6 +1752,7 @@ class Event_Calendar extends Widget_Base
 
     protected function eaelec_load_event_details()
     {
+    	$event_details_text = $this->get_settings('eael_event_details_text');
         return '<div id="eaelecModal" class="eaelec-modal eael-zoom-in">
             <div class="eael-ec-modal-bg"></div>
             <div class="eaelec-modal-content">
@@ -1726,7 +1766,7 @@ class Event_Calendar extends Widget_Base
                     <p></p>
                 </div>
                 <div class="eaelec-modal-footer">
-                    <a class="eaelec-event-details-link">' . __("Event Details", "essential-addons-for-elementor-lite") . '</a>
+                    <a class="eaelec-event-details-link">' . esc_html($event_details_text) . '</a>
                 </div>
             </div>
         </div>';
@@ -1804,6 +1844,7 @@ class Event_Calendar extends Widget_Base
             'timeMin' => urlencode(date('Y-m-d H', $start_date)),
             'singleEvents' => 'true',
             'calendar_id' => urlencode($settings['eael_event_calendar_id']),
+            'cache_time' => $settings['eael_event_calendar_data_cache_limit']
         ];
 
         if (!empty($end_date) && $end_date > $start_date) {
@@ -1820,12 +1861,14 @@ class Event_Calendar extends Widget_Base
 
         if (empty($data)) {
             $data = wp_remote_retrieve_body(wp_remote_get(add_query_arg($arg, $base_url)));
-            set_transient($transient_key, $data, 1 * HOUR_IN_SECONDS);
+            $check_error = json_decode($data);
+
+	        if(!empty($check_error->error)){
+	        	return [];
+	        }
+            set_transient($transient_key, $data, $settings['eael_event_calendar_data_cache_limit'] * MINUTE_IN_SECONDS);
         }
 
-        if (is_wp_error($data)) {
-            return [];
-        }
 
         $data = json_decode($data);
         if (isset($data->items)) {

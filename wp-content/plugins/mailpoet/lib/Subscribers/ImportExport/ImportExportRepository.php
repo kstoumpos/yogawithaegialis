@@ -57,6 +57,9 @@ class ImportExportRepository {
     $this->filterHandler = $filterHandler;
   }
 
+  /**
+   * @return ClassMetadata<object>
+   */
   protected function getClassMetadata(string $className): ClassMetadata {
     return $this->entityManager->getClassMetadata($className);
   }
@@ -232,7 +235,7 @@ class ImportExportRepository {
       ->from($customFieldsTable)
       ->execute();
 
-    $customFields = $customFields instanceof Statement ? $customFields->fetchAll() : [];
+    $customFields = $customFields->fetchAll();
 
     foreach ($customFields as $customField) {
       $customFieldId = "customFieldId{$customField['id']}";

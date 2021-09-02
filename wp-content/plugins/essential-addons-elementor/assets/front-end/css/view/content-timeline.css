@@ -376,6 +376,10 @@
   border-right: 7px solid white;
 }
 
+.eael-content-timeline-content p:empty::before {
+  content: unset;
+}
+
 @media only screen and (min-width: 992px) {
   .eael-content-timeline-content {
     margin-left: 0;

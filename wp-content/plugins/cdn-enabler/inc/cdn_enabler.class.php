@@ -14,7 +14,7 @@ final class CDN_Enabler {
     /**
      * initialize plugin
      *
-     * @since   0.0.1
+     * @since   2.0.0
      * @change  2.0.0
      */
 
@@ -66,7 +66,7 @@ final class CDN_Enabler {
     /**
      * activation hook
      *
-     * @since   0.0.1
+     * @since   2.0.0
      * @change  2.0.0
      *
      * @param   boolean  $network_wide  network activated
@@ -124,7 +124,7 @@ final class CDN_Enabler {
      * add or update backend requirements
      *
      * @since   2.0.0
-     * @change  2.0.0
+     * @change  2.0.4
      *
      * @return  array  $new_option_value  new or current database option value
      */
@@ -135,13 +135,13 @@ final class CDN_Enabler {
         $old_option_value = get_option( 'cdn_enabler', array() );
 
         // maybe convert old settings to new settings
-        $old_option_value = self::convert_settings( $old_option_value );
+        $new_option_value = self::convert_settings( $old_option_value );
 
         // update default system settings
-        $old_option_value = wp_parse_args( self::get_default_settings( 'system' ), $old_option_value );
+        $new_option_value = wp_parse_args( self::get_default_settings( 'system' ), $new_option_value );
 
         // merge defined settings into default settings
-        $new_option_value = wp_parse_args( $old_option_value, self::get_default_settings() );
+        $new_option_value = wp_parse_args( $new_option_value, self::get_default_settings() );
 
         // validate settings
         $new_option_value = self::validate_settings( $new_option_value );
@@ -171,7 +171,7 @@ final class CDN_Enabler {
      * enter each site
      *
      * @since   2.0.0
-     * @change  2.0.0
+     * @change  2.0.4
      *
      * @param   boolean  $network          whether or not each site in network
      * @param   string   $callback         callback function
@@ -185,14 +185,16 @@ final class CDN_Enabler {
 
         if ( $network ) {
             $blog_ids = self::get_blog_ids();
+
             // switch to each site in network
             foreach ( $blog_ids as $blog_id ) {
                 switch_to_blog( $blog_id );
-                $callback_return[] = (int) call_user_func_array( $callback, $callback_params );
+                $callback_return[ $blog_id ] = call_user_func_array( $callback, $callback_params );
                 restore_current_blog();
             }
         } else {
-            $callback_return[] = (int) call_user_func_array( $callback, $callback_params );
+            $blog_id = 1;
+            $callback_return[ $blog_id ] = call_user_func_array( $callback, $callback_params );
         }
 
         return $callback_return;
@@ -239,18 +241,19 @@ final class CDN_Enabler {
      * get blog IDs
      *
      * @since   2.0.0
-     * @change  2.0.0
+     * @change  2.0.4
      *
      * @return  array  $blog_ids  blog IDs
      */
 
     private static function get_blog_ids() {
 
-        $blog_ids = array( '1' );
+        $blog_ids = array( 1 );
 
         if ( is_multisite() ) {
             global $wpdb;
-            $blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
+
+            $blog_ids = array_map( 'absint', $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" ) );
         }
 
         return $blog_ids;
@@ -451,7 +454,7 @@ final class CDN_Enabler {
     /**
      * add admin bar items
      *
-     * @since   1.0.5
+     * @since   2.0.0
      * @change  2.0.0
      *
      * @param   object  $wp_admin_bar  menu properties
@@ -553,7 +556,7 @@ final class CDN_Enabler {
     /**
      * process purge cache request
      *
-     * @since   1.0.5
+     * @since   2.0.0
      * @change  2.0.3
      */
 
@@ -729,7 +732,7 @@ final class CDN_Enabler {
     /**
      * check plugin requirements
      *
-     * @since   0.0.1
+     * @since   2.0.0
      * @change  2.0.0
      */
 
@@ -799,7 +802,7 @@ final class CDN_Enabler {
      * validate CDN hostname
      *
      * @since   2.0.0
-     * @change  2.0.0
+     * @change  2.0.4
      *
      * @param   string  $cdn_hostname            CDN hostname
      * @return  string  $validated_cdn_hostname  validated CDN hostname
@@ -807,7 +810,7 @@ final class CDN_Enabler {
 
     private static function validate_cdn_hostname( $cdn_hostname ) {
 
-        $cdn_url = esc_url_raw( $cdn_hostname, array( 'http', 'https' ) );
+        $cdn_url = esc_url_raw( trim( $cdn_hostname ), array( 'http', 'https' ) );
         $validated_cdn_hostname = strtolower( (string) parse_url( $cdn_url, PHP_URL_HOST ) );
 
         return $validated_cdn_hostname;
@@ -850,19 +853,19 @@ final class CDN_Enabler {
 
 
     /**
-     * validate Zone ID
+     * validate KeyCDN Zone ID
      *
      * @since   2.0.0
-     * @change  2.0.0
+     * @change  2.0.4
      *
-     * @param   string   $zone_id            Zone ID
-     * @return  integer  $validated_zone_id  validated Zone ID
+     * @param   string   $zone_id            KeyCDN Zone ID
+     * @return  integer  $validated_zone_id  validated KeyCDN Zone ID
      */
 
     private static function validate_zone_id( $zone_id ) {
 
         $zone_id = sanitize_text_field( $zone_id );
-        $zone_id = abs( (int) $zone_id );
+        $zone_id = absint( $zone_id );
         $validated_zone_id = ( $zone_id === 0 ) ? '' : $zone_id;
 
         return $validated_zone_id;
@@ -873,7 +876,7 @@ final class CDN_Enabler {
      * validate configuration
      *
      * @since   2.0.0
-     * @change  2.0.1
+     * @change  2.0.4
      *
      * @param   array  $validated_settings  validated settings
      * @return  array  $validated_settings  validated settings
@@ -897,6 +900,7 @@ final class CDN_Enabler {
                 'method'      => 'HEAD',
                 'timeout'     => 15,
                 'httpversion' => '1.1',
+                'headers'     => array( 'Referer' => home_url() ),
             )
         );
 
@@ -951,7 +955,7 @@ final class CDN_Enabler {
     /**
      * validate settings
      *
-     * @since   0.0.1
+     * @since   2.0.0
      * @change  2.0.0
      *
      * @param   array  $settings            user defined settings
@@ -983,7 +987,7 @@ final class CDN_Enabler {
     /**
      * settings page
      *
-     * @since   0.0.1
+     * @since   2.0.0
      * @change  2.0.0
      */
 

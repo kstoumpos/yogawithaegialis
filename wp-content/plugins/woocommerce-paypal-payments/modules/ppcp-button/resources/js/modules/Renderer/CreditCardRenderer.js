@@ -7,6 +7,7 @@ class CreditCardRenderer {
         this.errorHandler = errorHandler;
         this.spinner = spinner;
         this.cardValid = false;
+        this.formValid = false;
     }
 
     render(wrapper, contextConfig) {
@@ -87,7 +88,7 @@ class CreditCardRenderer {
                 },
                 expirationDate: {
                     selector: '#ppcp-credit-card-gateway-card-expiry',
-                    placeholder: this.defaultConfig.hosted_fields.labels.mm_yyyy,
+                    placeholder: this.defaultConfig.hosted_fields.labels.mm_yy,
                 }
             }
         }).then(hostedFields => {
@@ -97,27 +98,21 @@ class CreditCardRenderer {
                     event.preventDefault();
                 }
                 this.errorHandler.clear();
-                const state = hostedFields.getState();
-                const formValid = Object.keys(state.fields).every(function (key) {
-                    return state.fields[key].isValid;
-                });
 
-                if (formValid && this.cardValid) {
-
-                    let vault = document.querySelector(wrapper + ' .ppcp-credit-card-vault') ?
-                        document.querySelector(wrapper + ' .ppcp-credit-card-vault').checked : false;
-                    vault = this.defaultConfig.enforce_vault || vault;
-
+                if (this.formValid && this.cardValid) {
+                    const save_card = this.defaultConfig.save_card ? true : false;
+                    const vault = document.getElementById('ppcp-credit-card-vault') ?
+                      document.getElementById('ppcp-credit-card-vault').checked : save_card;
                     hostedFields.submit({
-                        contingencies: ['3D_SECURE'],
-                        vault
+                        contingencies: ['SCA_WHEN_REQUIRED'],
+                        vault: vault
                     }).then((payload) => {
                         payload.orderID = payload.orderId;
                         this.spinner.unblock();
                         return contextConfig.onApprove(payload);
                     }).catch(() => {
+                        this.errorHandler.genericError();
                         this.spinner.unblock();
-                        this.errorHandler.genericError()
                     });
                 } else {
                     this.spinner.unblock();
@@ -135,6 +130,13 @@ class CreditCardRenderer {
                 }
                 const validCards = this.defaultConfig.hosted_fields.valid_cards;
                 this.cardValid = validCards.indexOf(event.cards[0].type) !== -1;
+            })
+            hostedFields.on('validityChange', (event) => {
+                const formValid = Object.keys(event.fields).every(function (key) {
+                    return event.fields[key].isValid;
+                });
+               this.formValid = formValid;
+
             })
             document.querySelector(wrapper + ' button').addEventListener(
                 'click',

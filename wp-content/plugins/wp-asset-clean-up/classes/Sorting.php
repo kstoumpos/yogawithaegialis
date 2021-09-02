@@ -93,7 +93,7 @@ class Sorting
 	            str_replace(
 	                '//',
 		            '/',
-		            str_replace(ABSPATH, '', $themeDirArray['theme_root']) . '/'. $themeDir . '/'
+		            str_replace(Misc::getWpRootDirPath(), '', $themeDirArray['theme_root']) . '/'. $themeDir . '/'
 	            );
 
 			$urlsToThemeDirs[] = $themeUrl;
@@ -125,8 +125,8 @@ class Sorting
 				} elseif ($pluginDir = self::matchesPluginCriteria($asset)) {
 					// From plugins directory (usually /wp-content/plugins/)
 					if ($pluginDir === 'n/a' && $src) {
-						if (strpos($src, '/wp-content/plugins/') !== false) {
-							$srcParts = explode('/wp-content/plugins/', $src);
+						if (strpos($src, '/'.Misc::getPluginsDir().'/') !== false) {
+							$srcParts = explode('/'.Misc::getPluginsDir().'/', $src);
 							list ($pluginDir) = explode('/', $srcParts[1]);
 						} else {
 							$relSrc = str_replace($pluginsUrl, '', $src);
@@ -224,7 +224,7 @@ class Sorting
 		            $isElementorPlugin     ||
 		            $isWooCommerceInline   ||
 		            strpos( $src, plugins_url() ) !== false ||
-		            ((! empty($miscLocalSrc) && strpos($src, '/wp-content/plugins/') !== false) || strpos($src, '/wp-content/plugins/') === 0);
+		            ((! empty($miscLocalSrc) && strpos($src, '/'.Misc::getPluginsDir().'/') !== false) || strpos($src, '/'.Misc::getPluginsDir().'/') === 0);
 
 		if (! $isPlugin) {
 			return false;

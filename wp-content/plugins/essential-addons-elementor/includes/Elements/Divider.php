@@ -4,7 +4,7 @@ namespace Essential_Addons_Elementor\Pro\Elements;
 
 use \Elementor\Controls_Manager;
 use \Elementor\Group_Control_Background;
-use \Elementor\Scheme_Typography;
+use \Elementor\Core\Schemes\Typography;
 use \Elementor\Group_Control_Border;
 use \Elementor\Group_Control_Box_Shadow;
 use \Elementor\Group_Control_Typography;
@@ -660,7 +660,7 @@ class Divider extends Widget_Base
 			[
 				'name'                  => 'typography',
 				'label'                 => __('Typography', 'essential-addons-elementor'),
-				'scheme'                => Scheme_Typography::TYPOGRAPHY_4,
+				'scheme'                => Typography::TYPOGRAPHY_4,
 				'selector'              => '{{WRAPPER}} .eael-divider-text',
 				'condition'             => [
 					'divider_type'    => 'text',
@@ -1042,7 +1042,7 @@ class Divider extends Widget_Base
 	/**
 	 * Render divider widget output in the editor.
 	 */
-	protected function _content_template()
+	protected function content_template()
 	{
 	}
 }

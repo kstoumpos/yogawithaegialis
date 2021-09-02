@@ -6,6 +6,8 @@ if (! isset($data, $selectedTabArea)) {
 	exit;
 }
 
+use WpAssetCleanUp\Misc;
+
 $tabIdArea = 'wpacu-setting-plugin-usage-settings';
 $styleTabContent = ($selectedTabArea === $tabIdArea) ? 'style="display: table-cell;"' : '';
 
@@ -108,14 +110,16 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                 </div>
 
                 <div id="wpacu-settings-hide-meta-boxes">
-                    <p><?php _e('If you wish to hide the meta boxes completely for any reason (e.g. you rarely manage the assets and you want to reduce cluttering in the edit post/page/taxonomy area, especially if you do lots of edits), you can do so using the options below (<em>don\'t forget to uncheck them whenever you wish to manage the CSS/JS assets again</em>)', 'wp-asset-clean-up'); ?>:</p>
+                    <p><?php _e('If you wish to hide the assets management area for any reason (e.g. you rarely manage the assets and you want to reduce cluttering in the edit post/page/taxonomy area, especially if you do lots of edits), you can do so using the option below (<em>don\'t forget to uncheck them whenever you wish to manage the CSS/JS assets again</em>)', 'wp-asset-clean-up'); ?>:</p>
                     <ul>
-                        <li><label for="wpacu-hide-assets-meta-box-checkbox"><input <?php echo (($data['hide_assets_meta_box'] == 1) ? 'checked="checked"' : ''); ?> id="wpacu-hide-assets-meta-box-checkbox" type="checkbox" name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[hide_assets_meta_box]" value="1" /> Hide "<?php echo WPACU_PLUGIN_TITLE; ?>: CSS &amp; JavaScript Manager" meta box</label></li>
-                        <li><label for="wpacu-hide-options-meta-box-checkbox"><input <?php echo (($data['hide_options_meta_box'] == 1) ? 'checked="checked"' : ''); ?> id="wpacu-hide-options-meta-box-checkbox" type="checkbox" name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[hide_options_meta_box]" value="1" /> Hide "<?php echo WPACU_PLUGIN_TITLE; ?>: Options" meta box</label></li>
+                        <li><label for="wpacu-hide-assets-meta-box-checkbox"><input <?php echo (($data['hide_assets_meta_box'] == 1) ? 'checked="checked"' : ''); ?> id="wpacu-hide-assets-meta-box-checkbox" type="checkbox" name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[hide_assets_meta_box]" value="1" /> Hide "<?php echo WPACU_PLUGIN_TITLE; ?>: CSS &amp; JavaScript Manager / Page Options" meta box</label></li>
+
+                        <?php
+                        ?>
                     </ul>
                     <hr />
 
-                    <label for="wpacu-hide-meta-boxes-for-post-types">Hide all meta boxes for the following public post types (multiple selection drop-down):</label><br />
+                    <label for="wpacu-hide-meta-boxes-for-post-types">Hide the meta box for the following public post types (multiple selection drop-down):</label><br />
                 </div>
 
                 <select style="margin-top: 4px; min-width: 340px;"
@@ -471,7 +475,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
     </table>
 </div>
 
-<style type="text/css">
+<style <?php echo Misc::getStyleTypeAttribute(); ?>>
     #wpacu-show-tracked-data-list-modal {
         margin: 14px 0 0;
     }

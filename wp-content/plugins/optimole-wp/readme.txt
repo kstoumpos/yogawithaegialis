@@ -2,7 +2,7 @@
 Contributors: optimole
 Tags: image optimization, convert webp, responsive images, lazy load, images, optimization, performance, photos, free cdn
 Requires at least: 4.7
-Tested up to: 5.7
+Tested up to: 5.8
 Requires PHP: 5.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -92,6 +92,43 @@ Premium users will be able to optimize images for more than 25k monthly active u
 4. Plugin settings
 
 == Changelog ==
+
+##### [Version 3.1.3](https://github.com/Codeinwp/optimole-wp/compare/v3.1.2...v3.1.3) (2021-08-06)
+
+* Preserve selected custom domain on stats refresh when multiple custom domains are used.
+
+
+
+
+##### [Version 3.1.2](https://github.com/Codeinwp/optimole-wp/compare/v3.1.1...v3.1.2) (2021-08-04)
+
+* Adds a filter to force replacements as optml_force_replacement
+* Fix content path being root directory
+
+
+
+
+##### [Version 3.1.1](https://github.com/Codeinwp/optimole-wp/compare/v3.1.0...v3.1.1) (2021-05-31)
+
+* Adds option to setup API key via wp-config variables fix [#314](https://github.com/Codeinwp/optimole-wp/issues/314) as OPTIML_API_KEY
+* Fix lazyload on video tag working improperly [#368](https://github.com/Codeinwp/optimole-wp/issues/368)
+* Adds filter for Optimole processed URLs  as optml_processed_url 
+* Fix error message when a user is already registered with the same email
+
+
+
+
+#### [Version 3.1.0](https://github.com/Codeinwp/optimole-wp/compare/v3.0.1...v3.1.0) (2021-05-13)
+
+* Adds support for multiple custom domains
+* Adds option to skip first X images from lazyloading
+* Adds support for async decoding for image tags
+* Adds support for video lazyload
+* Improve media offloading and rollback mechanism 
+* Adds support for the new watermark feature
+
+
+
 
 ##### [Version 3.0.1](https://github.com/Codeinwp/optimole-wp/compare/v3.0.0...v3.0.1) (2021-03-16)
 

@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [[*next-version*]] - YYYY-MM-DD
 
+## [0.3.0-alpha4] - 2021-03-09
+### Fixed
+- Order of `extends` use to cause problems with newer versions
+of `psr/container` (#28).
+
+### Changed
+- QoL improvements (#28).
+
 ## [0.3.0-alpha3] - 2021-01-14
 ### Changed
 - Supports PHP 8, and newer tools.

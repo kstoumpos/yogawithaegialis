@@ -12,6 +12,7 @@ use \Elementor\Group_Control_Box_Shadow;
 use \Elementor\Group_Control_Typography;
 use \Elementor\Plugin;
 use \Elementor\Widget_Base;
+use Essential_Addons_Elementor\Classes\Helper;
 
 class Advanced_Data_Table extends Widget_Base
 {
@@ -81,26 +82,39 @@ class Advanced_Data_Table extends Widget_Base
                 'options' => call_user_func(function () {
                     $source = [];
                     $source['static'] = __('Static Data', 'essential-addons-for-elementor-lite');
-
+	                $source['ninja'] = __('Ninja Tables', 'essential-addons-for-elementor-lite');
                     if (apply_filters('eael/pro_enabled', false)) {
                         $source['database'] = __('Database', 'essential-addons-for-elementor-lite');
                         $source['remote'] = __('Remote Database', 'essential-addons-for-elementor-lite');
                         $source['google'] = __('Google Sheets', 'essential-addons-for-elementor-lite');
                         $source['tablepress'] = __('TablePress', 'essential-addons-for-elementor-lite');
                     } else {
-                        $source['database'] = __('Database(PRO)', 'essential-addons-for-elementor-lite');
-                        $source['remote'] = __('Remote Database(PRO)', 'essential-addons-for-elementor-lite');
-                        $source['google'] = __('Google Sheets(PRO)', 'essential-addons-for-elementor-lite');
-                        $source['tablepress'] = __('TablePress(PRO)', 'essential-addons-for-elementor-lite');
+                        $source['database'] = __('Database (Pro)', 'essential-addons-for-elementor-lite');
+                        $source['remote'] = __('Remote Database (Pro)', 'essential-addons-for-elementor-lite');
+                        $source['google'] = __('Google Sheets (Pro)', 'essential-addons-for-elementor-lite');
+                        $source['tablepress'] = __('TablePress (Pro)', 'essential-addons-for-elementor-lite');
                     }
 
-                    $source['ninja'] = __('Ninja Tables', 'essential-addons-for-elementor-lite');
+
 
                     return $source;
                 }),
                 'default' => 'static',
             ]
         );
+
+	    if (!apply_filters('eael/pro_enabled', false)) {
+		    $this->add_control(
+			    'eael_adv_data_table_pro_enable_warning',
+			    [
+				    'label' => sprintf( '<a target="_blank" href="https://wpdeveloper.net/upgrade/ea-pro">%s</a>', esc_html__('Only Available in Pro Version!', 'essential-addons-for-elementor-lite')),
+				    'type' => Controls_Manager::RAW_HTML,
+				    'condition' => [
+					    'ea_adv_data_table_source' => ['database','remote','google','tablepress'],
+				    ],
+			    ]
+		    );
+	    }
 
         // TODO: RM
         do_action('eael/advanced-data-table/source/control', $this);
@@ -268,6 +282,32 @@ class Advanced_Data_Table extends Widget_Base
         );
 
         $this->end_controls_section();
+
+	    /**
+	     * Data cache setting
+	     */
+	    $this->start_controls_section(
+		    'ea_adv_data_table_data_cache',
+		    [
+			    'label' => __('Data Cache Setting', 'essential-addons-for-elementor-lite'),
+			    'condition' => [
+				    'ea_adv_data_table_source' => 'google',
+			    ],
+		    ]
+	    );
+
+	    $this->add_control(
+		    'ea_adv_data_table_data_cache_limit',
+		    [
+			    'label' => __('Data Cache Time', 'essential-addons-for-elementor-lite'),
+			    'type' => Controls_Manager::NUMBER,
+			    'min' => 1,
+			    'default' => 60,
+			    'description' => __('Cache expiration time (Minutes)', 'essential-addons-for-elementor-lite')
+		    ]
+	    );
+
+	    $this->end_controls_section();
 
         // style
         $this->start_controls_section(
@@ -1506,7 +1546,7 @@ class Advanced_Data_Table extends Widget_Base
 
         if ($content = $this->get_table_content()) {
             if ($settings['ea_adv_data_table_search'] == 'yes') {
-                echo '<div ' . $this->get_render_attribute_string('ea-adv-data-table-search-wrap') . '><input type="search" placeholder="' . $settings['ea_adv_data_table_search_placeholder'] . '" class="ea-advanced-data-table-search"></div>';
+                echo '<div ' . $this->get_render_attribute_string('ea-adv-data-table-search-wrap') . '><input type="search" placeholder="' . Helper::eael_wp_kses($settings['ea_adv_data_table_search_placeholder'] ). '" class="ea-advanced-data-table-search"></div>';
             }
 
             echo '<div class="ea-advanced-data-table-wrap-inner">

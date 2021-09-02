@@ -318,9 +318,7 @@ endforeach;
     public function progressbar_general_style_condition($conditions)
     {
         return array_merge($conditions, [
-            'circle_fill',
-            'half_circle_fill',
-            'box',
+            'line_rainbow',
         ]);
     }
 
@@ -513,7 +511,7 @@ endforeach;
             ],
             'selectors' => [
                 '{{WRAPPER}} .eael-creative-button i' => 'font-size: {{SIZE}}{{UNIT}};',
-                '{{WRAPPER}} .eael-creative-button img' => 'height: {{SIZE}}{{UNIT}};width: {{SIZE}}{{UNIT}};',
+                '{{WRAPPER}} .eael-creative-button svg' => 'height: {{SIZE}}{{UNIT}};width: {{SIZE}}{{UNIT}};',
             ],
         ]);
 
@@ -591,10 +589,10 @@ endforeach;
             'selectors' => [
                 '{{WRAPPER}} .eael-creative-button' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
                 '{{WRAPPER}} .eael-creative-button.eael-creative-button--winona::after' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
-                '{{WRAPPER}} .eael-creative-button.eael-creative-button--winona > span' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                '{{WRAPPER}} .eael-creative-button.eael-creative-button--winona > .creative-button-inner' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
                 '{{WRAPPER}} .eael-creative-button.eael-creative-button--tamaya::before' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
                 '{{WRAPPER}} .eael-creative-button.eael-creative-button--rayen::before' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
-                '{{WRAPPER}} .eael-creative-button.eael-creative-button--rayen > span' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                '{{WRAPPER}} .eael-creative-button.eael-creative-button--rayen > .creative-button-inner' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
                 '{{WRAPPER}} .eael-creative-button.eael-creative-button--saqui::after' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
             ],
         ]);
@@ -618,7 +616,7 @@ endforeach;
             'default' => '#ffffff',
             'selectors' => [
                 '{{WRAPPER}} .eael-creative-button i' => 'color: {{VALUE}};',
-                '{{WRAPPER}} .eael-creative-button svg' => 'fill: {{VALUE}};',
+                '{{WRAPPER}} .eael-creative-button .creative-button-inner svg' => 'fill: {{VALUE}};',
             ],
         ]);
 
@@ -628,6 +626,7 @@ endforeach;
             'default' => '#ffffff',
             'selectors' => [
                 '{{WRAPPER}} .eael-creative-button' => 'color: {{VALUE}};',
+                '{{WRAPPER}} .eael-creative-button svg' => 'fill: {{VALUE}};',
                 '{{WRAPPER}} .eael-creative-button.eael-creative-button--tamaya::before' => 'color: {{VALUE}};',
                 '{{WRAPPER}} .eael-creative-button.eael-creative-button--tamaya::after' => 'color: {{VALUE}};',
             ],
@@ -677,11 +676,17 @@ endforeach;
                 '{{WRAPPER}} .eael-creative-button.eael-creative-button--antiman::after' => 'background-color: {{VALUE}};',
                 '{{WRAPPER}} .eael-creative-button.eael-creative-button--quidel::after' => 'background-color: {{VALUE}};',
             ],
+            'condition' => [
+                'use_gradient_background' => '',
+            ],
         ]);
 
         $obj->add_group_control(Group_Control_Border::get_type(), [
             'name' => 'eael_creative_button_border',
             'selector' => '{{WRAPPER}} .eael-creative-button',
+            'condition' => [
+                    'creative_button_effect!' => 'eael-creative-button--nuka'
+            ]
         ]);
 
         $obj->add_control('eael_creative_button_border_radius', [
@@ -709,7 +714,7 @@ endforeach;
 		    'default' => '#ffffff',
 		    'selectors' => [
 			    '{{WRAPPER}} .eael-creative-button:hover i' => 'color: {{VALUE}};',
-			    '{{WRAPPER}} .eael-creative-button:hover svg' => 'fill: {{VALUE}};',
+			    '{{WRAPPER}} .eael-creative-button:hover .creative-button-inner svg' => 'fill: {{VALUE}};',
 		    ],
 	    ]);
 
@@ -719,6 +724,7 @@ endforeach;
             'default' => '#ffffff',
             'selectors' => [
                 '{{WRAPPER}} .eael-creative-button:hover' => 'color: {{VALUE}};',
+                '{{WRAPPER}} .eael-creative-button:hover svg' => 'fill: {{VALUE}};',
                 '{{WRAPPER}} .eael-creative-button.eael-creative-button--winona::after' => 'color: {{VALUE}};',
                 '{{WRAPPER}} .eael-creative-button.eael-creative-button--saqui::after' => 'color: {{VALUE}};',
             ],
@@ -1754,6 +1760,7 @@ endif;
           'google_sheet_api_key' => $settings['ea_adv_data_table_source_google_api_key'],
           'google_sheet_id' => $settings['ea_adv_data_table_source_google_sheet_id'],
           'calendar_id' => $settings['ea_adv_data_table_source_google_table_range'],
+          'cache_time' => $settings['ea_adv_data_table_data_cache_limit'],
         ];
 
         $thead = '';
@@ -1763,20 +1770,59 @@ endif;
 
         $results = get_transient( $transient_key );
 
-        if ( empty( $results ) ) {
-            $connection = wp_remote_get( "https://sheets.googleapis.com/v4/spreadsheets/{$settings['ea_adv_data_table_source_google_sheet_id']}/?key={$settings['ea_adv_data_table_source_google_api_key']}&ranges={$settings['ea_adv_data_table_source_google_table_range']}&includeGridData=true", ['timeout' => 70] );
+	    if ( empty( $results ) || empty( $results['rowData'] ) ) {
+		    $connection = wp_remote_get( "https://sheets.googleapis.com/v4/spreadsheets/{$settings['ea_adv_data_table_source_google_sheet_id']}/?key={$settings['ea_adv_data_table_source_google_api_key']}&ranges={$settings['ea_adv_data_table_source_google_table_range']}&includeGridData=true", [ 'timeout' => 70 ] );
 
-            if ( !is_wp_error( $connection ) ) {
-                $connection = json_decode( wp_remote_retrieve_body( $connection ), true );
-                if ( isset( $connection['sheets'][0]['data'][0]['rowData'] ) ) {
-                    $results = $connection['sheets'][0]['data'][0]['rowData'];
-                    set_transient( $transient_key, $results, 1 * HOUR_IN_SECONDS );
-                }
-            }
-        }
+		    if ( ! is_wp_error( $connection ) ) {
+			    $connection = json_decode( wp_remote_retrieve_body( $connection ), true );
+			    if ( isset( $connection['sheets'][0]['data'][0]['rowData'] ) ) {
+				    $results = [];
+				    $results['rowData'] = $connection['sheets'][0]['data'][0]['rowData'];
 
-        if (!empty($results)) {
-            foreach ($results as $tr_key => $tr) {
+				    if ( isset( $connection['sheets'][0]['merges'] ) && is_array( $connection['sheets'][0]['merges'] ) ) {
+					    $results['mergeData'] = $connection['sheets'][0]['merges'];
+				    }
+
+				    set_transient( $transient_key, $results, $settings['ea_adv_data_table_data_cache_limit'] * MINUTE_IN_SECONDS );
+			    }
+		    }
+	    }
+
+	    if ( ! empty( $results['rowData'] ) ) {
+		    if ( ! empty( $results['mergeData'] ) && is_array( $results['mergeData'] ) ) {
+			    $merge_data_cell = [];
+			    foreach ( $results['mergeData'] as $merge_data ) {
+				    $attrs = [
+					    'rowSpan' => '',
+					    'colSpan' => '',
+				    ];
+
+				    if ( ( $row_span = $merge_data['endRowIndex'] - $merge_data['startRowIndex'] ) !== 1 ) {
+					    $attrs['rowSpan'] = "rowspan='{$row_span}'";
+				    }
+
+				    if ( ( $col_span = $merge_data['endColumnIndex'] - $merge_data['startColumnIndex'] ) !== 1 ) {
+					    $attrs['colSpan'] = "colspan='{$col_span}'";
+				    }
+
+				    $cell                     = "{$merge_data['startRowIndex']}-{$merge_data['startColumnIndex']}";
+				    $merge_data_cell[ $cell ] = $attrs;
+
+				    for ( $row = 0; $row < $row_span; $row ++ ) {
+					    for ( $col = 0; $col < $col_span; $col ++ ) {
+						    if ( $row == 0 && $col == 0 ) {
+							    continue;
+						    }
+						    $rowindex = $merge_data['startRowIndex'] + $row;
+						    $colindex = $merge_data['startColumnIndex'] + $col;
+
+						    $merge_data_cell["{$rowindex}-{$colindex}"] = true;
+					    }
+				    }
+			    }
+		    }
+
+		    foreach ( $results['rowData'] as $tr_key => $tr ) {
 
                 if (isset($tr['values'])) {
                     $tr = $tr['values'];
@@ -1787,19 +1833,35 @@ endif;
                 if ($tr_key == 0) {
                     $thead .= '<tr>';
                     foreach ($tr as $key => $th) {
-                        $style = isset($settings['ea_adv_data_table_dynamic_th_width']) && isset($settings['ea_adv_data_table_dynamic_th_width'][$key]) ? ' style="width:' . $settings['ea_adv_data_table_dynamic_th_width'][$key] . '"' : '';
-                        $th = isset($th['hyperlink']) ? '<a href="' . $th['hyperlink'] . '" target="_blank">' . $th['formattedValue'] . '</a>' : $th['formattedValue'];
+	                    $cell = "{$tr_key}-{$key}";
+	                    if ( ! empty( $merge_data_cell[ $cell ] ) && $merge_data_cell[ $cell ] === true ) {
+		                    continue;
+	                    }
 
-                        $thead .= '<th' . $style . '>' . $th . '</th>';
+	                    $style      = isset( $settings['ea_adv_data_table_dynamic_th_width'] ) && isset( $settings['ea_adv_data_table_dynamic_th_width'][ $key ] ) ? ' style="width:' . $settings['ea_adv_data_table_dynamic_th_width'][ $key ] . '"' : '';
+	                    $th         = isset( $th['hyperlink'] ) ? '<a href="' . $th['hyperlink'] . '" target="_blank">' . $th['formattedValue'] . '</a>' : $th['formattedValue'];
+	                    $row_span   = empty( $merge_data_cell[ $cell ]['rowSpan'] ) ? '' : $merge_data_cell[ $cell ]['rowSpan'];
+	                    $col_span   = empty( $merge_data_cell[ $cell ]['colSpan'] ) ? '' : $merge_data_cell[ $cell ]['colSpan'];
+	                    $merge_attr = " {$row_span} {$col_span}";
+
+	                    $thead .= '<th' . $style . $merge_attr . '>' . $th . '</th>';
                     }
                     $thead .= '</tr>';
                 } else {
                     $tbody .= '<tr>';
 
                     foreach ($tr as $key => $td) {
-                        $td = isset($td['hyperlink']) ? '<a href="' . $td['hyperlink'] . '" target="_blank">' . $td['formattedValue'] . '</a>' : $td['formattedValue'];
+	                    $cell = "{$tr_key}-{$key}";
+	                    if ( ! empty( $merge_data_cell[ $cell ] ) && $merge_data_cell[ $cell ] === true ) {
+		                    continue;
+	                    }
 
-                        $tbody .= '<td>' . $td . '</td>';
+	                    $row_span   = empty( $merge_data_cell[ $cell ]['rowSpan'] ) ? '' : $merge_data_cell[ $cell ]['rowSpan'];
+	                    $col_span   = empty( $merge_data_cell[ $cell ]['colSpan'] ) ? '' : $merge_data_cell[ $cell ]['colSpan'];
+	                    $merge_attr = " {$row_span} {$col_span}";
+	                    $td         = isset( $td['hyperlink'] ) ? '<a href="' . $td['hyperlink'] . '" target="_blank">' . $td['formattedValue'] . '</a>' : $td['formattedValue'];
+
+	                    $tbody .= '<td' . $merge_attr . '>' . $td . '</td>';
                     }
 
                     $tbody .= '</tr>';
@@ -2426,7 +2488,8 @@ endif;
             'type' => Controls_Manager::COLOR,
             'default' => '#7866ff',
             'selectors' => [
-                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button' => 'background-color: {{VALUE}};',
+                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button,
+                {{WRAPPER}} .ea-woo-checkout .steps-buttons button#ea_place_order' => 'background-color: {{VALUE}};',
             ],
         ]);
 
@@ -2435,13 +2498,15 @@ endif;
             'type' => Controls_Manager::COLOR,
             'default' => '#ffffff',
             'selectors' => [
-                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button' => 'color: {{VALUE}};',
+                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button,
+                {{WRAPPER}} .ea-woo-checkout .steps-buttons button#ea_place_order' => 'color: {{VALUE}};',
             ],
         ]);
 
         $obj->add_group_control(Group_Control_Border::get_type(), [
             'name' => 'ea_woo_checkout_steps_btn_border',
-            'selector' => '{{WRAPPER}} .ea-woo-checkout .steps-buttons button',
+            'selector' => '{{WRAPPER}} .ea-woo-checkout .steps-buttons button,
+            {{WRAPPER}} .ea-woo-checkout .steps-buttons button#ea_place_order',
         ]);
 
         $obj->end_controls_tab();
@@ -2453,7 +2518,8 @@ endif;
             'type' => Controls_Manager::COLOR,
             'default' => '#7866ff',
             'selectors' => [
-                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button:hover' => 'background-color: {{VALUE}};',
+                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button:hover,
+                {{WRAPPER}} .ea-woo-checkout .steps-buttons button#ea_place_order:hover' => 'background-color: {{VALUE}};',
             ],
         ]);
 
@@ -2462,7 +2528,8 @@ endif;
             'type' => Controls_Manager::COLOR,
             'default' => '#ffffff',
             'selectors' => [
-                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button:hover' => 'color: {{VALUE}};',
+                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button:hover,
+                {{WRAPPER}} .ea-woo-checkout .steps-buttons button#ea_place_order:hover' => 'color: {{VALUE}};',
             ],
         ]);
 
@@ -2470,7 +2537,8 @@ endif;
             'label' => __('Border Color', 'essential-addons-for-elementor'),
             'type' => Controls_Manager::COLOR,
             'selectors' => [
-                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button:hover' => 'border-color: {{VALUE}};',
+                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button:hover,
+                {{WRAPPER}} .ea-woo-checkout .steps-buttons button#ea_place_order:hover' => 'border-color: {{VALUE}};',
             ],
             'condition' => [
                 'ea_section_woo_checkout_steps_btn_border_border!' => '',
@@ -2496,7 +2564,8 @@ endif;
                 'isLinked' => true,
             ],
             'selectors' => [
-                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                '{{WRAPPER}} .ea-woo-checkout .steps-buttons button,
+                {{WRAPPER}} .ea-woo-checkout .steps-buttons button#ea_place_order' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
             ],
         ]);
         $obj->add_group_control(Group_Control_Box_Shadow::get_type(), [

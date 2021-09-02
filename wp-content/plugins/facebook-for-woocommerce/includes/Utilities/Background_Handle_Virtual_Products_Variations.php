@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -46,7 +47,7 @@ class Background_Handle_Virtual_Products_Variations extends Framework\SV_WP_Back
 	 * @since 2.0.0
 	 *
 	 * @param object $job
-	 * @param int $items_per_batch number of items to process in a single request. Defaults to unlimited.
+	 * @param int    $items_per_batch number of items to process in a single request. Defaults to unlimited.
 	 * @return object
 	 */
 	public function process_job( $job, $items_per_batch = null ) {
@@ -140,7 +141,7 @@ class Background_Handle_Virtual_Products_Variations extends Framework\SV_WP_Back
 			return 0;
 		}
 
-		$insert = $update = [];
+		$insert = $update = array();
 
 		foreach ( $results as $result ) {
 
@@ -202,7 +203,7 @@ class Background_Handle_Virtual_Products_Variations extends Framework\SV_WP_Back
 			return 0;
 		}
 
-		$values = [];
+		$values = array();
 
 		foreach ( $post_ids as $post_id ) {
 			$values[] = "('{$post_id}', 'fb_visibility', 'no')";

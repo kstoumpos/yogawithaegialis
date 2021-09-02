@@ -151,6 +151,8 @@ class OptimizeCss
 		$cssOptimizeList = array();
 
 		if (! empty($wpStylesDone) && ! empty($wpStylesRegistered)) {
+			$isMinifyCssFilesEnabled = MinifyCss::isMinifyCssEnabled() && in_array(Main::instance()->settings['minify_loaded_css_for'], array('href', 'all', ''));
+
 			foreach ( $wpStylesDone as $handle ) {
 				if ( ! isset( $wpStylesRegistered[ $handle ]->src ) ) {
 					continue;
@@ -163,7 +165,11 @@ class OptimizeCss
 					continue; // not a local file
 				}
 
-				$optimizeValues = self::maybeOptimizeIt( $value );
+				$optimizeValues = self::maybeOptimizeIt(
+					$value,
+					array( 'local_asset_path' => $localAssetPath, 'is_minify_css_enabled' => $isMinifyCssFilesEnabled )
+				);
+
 				ObjectCache::wpacu_cache_set( 'wpacu_maybe_optimize_it_css_' . $handle, $optimizeValues );
 
 				if ( ! empty( $optimizeValues ) ) {
@@ -183,10 +189,11 @@ class OptimizeCss
 
 	/**
 	 * @param $value
+	 * @param array $fileAlreadyChecked
 	 *
 	 * @return mixed
 	 */
-	public static function maybeOptimizeIt($value)
+	public static function maybeOptimizeIt($value, $fileAlreadyChecked = array())
 	{
 		if ($optimizeValues = ObjectCache::wpacu_cache_get('wpacu_maybe_optimize_it_css_'.$value->handle)) {
 			return $optimizeValues;
@@ -202,7 +209,11 @@ class OptimizeCss
 
 		$doFileMinify = true;
 
-		if (! MinifyCss::isMinifyCssEnabled()) {
+		$isMinifyCssFilesEnabled = (isset($fileAlreadyChecked['is_minify_css_enabled']) && $fileAlreadyChecked['is_minify_css_enabled'])
+			? $fileAlreadyChecked['is_minify_css_enabled']
+			: MinifyCss::isMinifyCssEnabled() && in_array(Main::instance()->settings['minify_loaded_css_for'], array('href', 'all', ''));
+
+		if (! $isMinifyCssFilesEnabled) {
 			$doFileMinify = false;
 		} elseif (MinifyCss::skipMinify($src, $value->handle)) {
 			$doFileMinify = false;
@@ -213,8 +224,16 @@ class OptimizeCss
 
 		$isCssFile = false;
 
-		$localAssetPath = OptimizeCommon::getLocalAssetPath($src, 'css');
-		if ($localAssetPath && is_file($localAssetPath)) {
+		// Already checked? Do not reuse OptimizeCommon::getLocalAssetPath() and is_file()
+		if (isset($fileAlreadyChecked['local_asset_path']) && $fileAlreadyChecked['local_asset_path']) {
+			$localAssetPath = $fileAlreadyChecked['local_asset_path'];
+			$checkCond = $localAssetPath;
+		} else {
+			$localAssetPath = OptimizeCommon::getLocalAssetPath( $src, 'css' );
+			$checkCond = $localAssetPath && is_file($localAssetPath);
+		}
+
+		if ($checkCond) {
 			if ($fileMTime = @filemtime($localAssetPath)) {
 				$dbVer = $fileMTime;
 			}
@@ -250,7 +269,7 @@ class OptimizeCss
 					// New File Version? Delete transient as it will be re-created with the new version
 					OptimizeCommon::deleteTransient($transientName);
 				} else {
-					$localPathToCssOptimized = str_replace( '//', '/', ABSPATH . $savedValuesArray['optimize_uri'] );
+					$localPathToCssOptimized = str_replace( '//', '/', Misc::getWpRootDirPath() . $savedValuesArray['optimize_uri'] );
 
 					// Read the file from its caching (that makes the processing faster)
 					if ( isset( $savedValuesArray['source_uri'] ) && is_file( $localPathToCssOptimized ) ) {
@@ -287,7 +306,7 @@ class OptimizeCss
 
 		if (Main::instance()->settings['cache_dynamic_loaded_css'] &&
 		    $value->handle === 'sccss_style' &&
-		    in_array('simple-custom-css/simple-custom-css.php', apply_filters('active_plugins', get_option('active_plugins', array())))
+		    in_array('simple-custom-css/simple-custom-css.php', Misc::getActivePlugins())
 		) {
 			$pathToAssetDir = '';
 			$sourceBeforeOptimization = $value->src;
@@ -317,7 +336,7 @@ class OptimizeCss
 
 			$cssContent = FileSystem::file_get_contents($localAssetPath, 'combine_css_imports');
 
-			$sourceBeforeOptimization = str_replace(ABSPATH, '/', $localAssetPath);
+			$sourceBeforeOptimization = str_replace(Misc::getWpRootDirPath(), '/', $localAssetPath);
 		}
 
 		$cssContent = trim($cssContent);
@@ -444,7 +463,7 @@ class OptimizeCss
 	public static function alterHtmlSource($htmlSource)
 	{
 		// There has to be at least one "<link" or "<style", otherwise, it could be a feed request or something similar (not page, post, homepage etc.)
-		if ( (stripos($htmlSource, '<link') === false && stripos($htmlSource, '<style') === false) || array_key_exists('wpacu_no_optimize_css', $_GET) ) {
+		if ( (stripos($htmlSource, '<link') === false && stripos($htmlSource, '<style') === false) || isset($_GET['wpacu_no_optimize_css']) ) {
 			return $htmlSource;
 		}
 
@@ -479,13 +498,20 @@ class OptimizeCss
 
 		$proceedWithCombineOnThisPage = true;
 
+		$isSingularPage = defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular();
+
 		// If "Do not combine CSS on this page" is checked in "Asset CleanUp: Options" side meta box
 		// Works for posts, pages and custom post types
-		if (defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0) {
-			$pageOptions = MetaBoxes::getPageOptions(WPACU_CURRENT_PAGE_ID);
+		if ($isSingularPage || Misc::isHomePage()) {
+			if ($isSingularPage) {
+				$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID ); // Singular page
+			} else {
+				$pageOptions = MetaBoxes::getPageOptions(0, 'front_page'); // Home page
+			}
 
 			// 'no_css_optimize' refers to avoid the combination of CSS files
-			if ( isset( $pageOptions['no_css_optimize'] ) && $pageOptions['no_css_optimize'] ) {
+			if ( (isset( $pageOptions['no_css_optimize'] )    && $pageOptions['no_css_optimize'])
+			  || (isset( $pageOptions['no_assets_settings'] ) && $pageOptions['no_assets_settings']) ) {
 				$proceedWithCombineOnThisPage = false;
 			}
 		}
@@ -496,7 +522,7 @@ class OptimizeCss
 			/* [wpacu_timing] */ Misc::scriptExecTimer($wpacuTimingName, 'end'); /* [/wpacu_timing] */
 		}
 
-		if (! Main::instance()->preventAssetsSettings() && Main::instance()->settings['minify_loaded_css'] && Main::instance()->settings['minify_loaded_css_inline']) {
+		if (self::isWorthCheckingForOptimization() && ! Main::instance()->preventAssetsSettings() && (MinifyCss::isMinifyCssEnabled() && in_array(Main::instance()->settings['minify_loaded_css_for'], array('inline', 'all')))) {
 			/* [wpacu_timing] */ $wpacuTimingName = 'alter_html_source_for_minify_inline_style_tags'; Misc::scriptExecTimer($wpacuTimingName); /* [/wpacu_timing] */
 			$htmlSource = MinifyCss::minifyInlineStyleTags($htmlSource);
 			/* [wpacu_timing] */ Misc::scriptExecTimer($wpacuTimingName, 'end'); /* [/wpacu_timing] */
@@ -715,7 +741,7 @@ class OptimizeCss
 
 				// If the minified files are deleted (e.g. /wp-content/cache/ is cleared)
 				// do not replace the CSS file path to avoid breaking the website
-				$localPathOptimizedFile = rtrim(ABSPATH, '/') . $listValues[1];
+				$localPathOptimizedFile = rtrim(Misc::getWpRootDirPath(), '/') . $listValues[1];
 
 				if (! is_file($localPathOptimizedFile)) {
 					continue;
@@ -772,9 +798,7 @@ class OptimizeCss
 			}
 		}
 
-		$htmlSource = strtr($htmlSource, $linkTagsToUpdate);
-
-		return $htmlSource;
+		return strtr($htmlSource, $linkTagsToUpdate);
 	}
 
 	/**
@@ -834,7 +858,7 @@ class OptimizeCss
 		}
 
 		// Deactivate it for debugging purposes via query string /?wpacu_no_inline_js
-		if (array_key_exists('wpacu_no_inline_css', $_GET)) {
+		if ( isset($_GET['wpacu_no_inline_css']) ) {
 			return false;
 		}
 
@@ -947,7 +971,7 @@ class OptimizeCss
 				if ($cssContent && $cssContent !== '/**/') {
 					$htmlSource = str_replace(
 						$matchedTag,
-						'<style type=\'text/css\' '.$mediaAttr.' data-wpacu-inline-css-file=\'1\'>'."\n".$cssContent."\n".'</style>',
+						'<style '.Misc::getStyleTypeAttribute().' '.$mediaAttr.' data-wpacu-inline-css-file=\'1\'>'."\n".$cssContent."\n".'</style>',
 						$htmlSource
 					);
 				} else {
@@ -1310,7 +1334,7 @@ class OptimizeCss
 					$listWithMatches[] = 'data-wpacu-style-handle=[\'"]'.$styleHandle.'[\'"]';
 
 					if ($styleSrc = Main::instance()->wpAllStyles['registered'][$styleHandle]->src) {
-						$listWithMatches[] = preg_quote(OptimizeCommon::getSourceRelPath($styleSrc), '/');
+						$listWithMatches[] = OptimizeCommon::getSourceRelPath($styleSrc);
 					}
 
 					$htmlSource = CleanUp::cleanLinkTagFromHtmlSource($listWithMatches, $htmlSource);
@@ -1344,7 +1368,7 @@ class OptimizeCss
 			$styleExtraArray = $wpacuRegisteredStyles[$styleHandle]->extra;
 
 			if (isset($styleExtraArray['after']) && ! empty($styleExtraArray['after'])) {
-				$styleExtraAfter .= "<style id='".$styleHandle."-inline-css' type='text/css'>\n";
+				$styleExtraAfter .= "<style id='".$styleHandle."-inline-css' ".Misc::getStyleTypeAttribute().">\n";
 
 				foreach ($styleExtraArray['after'] as $afterData) {
 					if (! is_bool($afterData)) {
@@ -1376,14 +1400,7 @@ class OptimizeCss
 	{
 		global $wp_styles;
 
-		$typeAttr = '';
-
-		if ( function_exists( 'is_admin' ) && ! is_admin()
-			&&
-			function_exists( 'current_theme_supports' ) && ! current_theme_supports( 'html5', 'style' )
-		) {
-			$typeAttr = " type='text/css'";
-		}
+		$typeAttr = Misc::getStyleTypeAttribute();
 
 		$output = '';
 

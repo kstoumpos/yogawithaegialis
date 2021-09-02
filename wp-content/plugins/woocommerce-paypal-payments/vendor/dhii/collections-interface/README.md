@@ -1,9 +1,7 @@
 # Dhii - Collections Interface
-
-[![Build Status](https://travis-ci.org/Dhii/collections-interface.svg?branch=develop)](https://travis-ci.org/Dhii/collections-interface)
-[![Code Climate](https://codeclimate.com/github/Dhii/collections-interface/badges/gpa.svg)](https://codeclimate.com/github/Dhii/collections-interface)
-[![Test Coverage](https://codeclimate.com/github/Dhii/collections-interface/badges/coverage.svg)](https://codeclimate.com/github/Dhii/collections-interface/coverage)
-[![Latest Stable Version](https://poser.pugx.org/dhii/collections-interface/version)](https://packagist.org/packages/dhii/collections-interface)
+[![Continuous Integration](https://github.com/Dhii/collections-interface/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/Dhii/collections-interface/actions/workflows/continuous-integration.yml)
+[![Latest Stable Version](https://poser.pugx.org/dhii/collections-interface/v)](//packagist.org/packages/dhii/collections-interface)
+[![Latest Unstable Version](https://poser.pugx.org/dhii/collections-interface/v/unstable)](//packagist.org/packages/dhii/collections-interface)
 
 A highly [ISP][ISP]-compliant collection of interfaces that represent collections.
 

@@ -17,8 +17,8 @@ if ( apply_filters( 'mylisting/hide-footer', false ) === true ) {
 	 * An "Header, Footer & Blocks for Elementor" footer is available.
 	 *
 	 * @link  https://github.com/Nikschavan/header-footer-elementor/wiki/Adding-Header-Footer-Elementor-support-for-your-theme
-	 * @since 2.1
-	 */
+	 * @since 2.
+1	 */
 	hfe_render_footer();
 } else {
 	/**

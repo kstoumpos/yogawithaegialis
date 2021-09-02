@@ -21,6 +21,8 @@ class CheckoutActionHandler {
             const formSelector = this.config.context === 'checkout' ? 'form.checkout' : 'form#order_review';
             const formValues = jQuery(formSelector).serialize();
 
+            const createaccount = jQuery('#createaccount').is(":checked") ? true : false;
+
             return fetch(this.config.ajax.create_order.endpoint, {
                 method: 'POST',
                 body: JSON.stringify({
@@ -29,14 +31,26 @@ class CheckoutActionHandler {
                     bn_code:bnCode,
                     context:this.config.context,
                     order_id:this.config.order_id,
-                    form:formValues
+                    form:formValues,
+                    createaccount: createaccount
                 })
             }).then(function (res) {
                 return res.json();
             }).then(function (data) {
                 if (!data.success) {
                     spinner.unblock();
-                    errorHandler.message(data.data.message, true);
+                    //handle both messages sent from Woocommerce (data.messages) and this plugin (data.data.message)
+                    if (typeof(data.messages) !== 'undefined' )
+                    {
+                        const domParser = new DOMParser();
+                        errorHandler.appendPreparedErrorMessageElement(
+                            domParser.parseFromString(data.messages, 'text/html')
+                                .querySelector('ul')
+                        );
+                    } else {
+                        errorHandler.message(data.data.message, true);
+                    }
+
                     return;
                 }
                 const input = document.createElement('input');

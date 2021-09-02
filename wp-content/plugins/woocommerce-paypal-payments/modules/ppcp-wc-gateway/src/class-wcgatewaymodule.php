@@ -17,6 +17,7 @@ use WooCommerce\PayPalCommerce\ApiClient\Repository\PayPalRequestIdRepository;
 use WooCommerce\PayPalCommerce\WcGateway\Admin\OrderTablePaymentStatusColumn;
 use WooCommerce\PayPalCommerce\WcGateway\Admin\PaymentStatusOrderDetail;
 use WooCommerce\PayPalCommerce\WcGateway\Admin\RenderAuthorizeAction;
+use WooCommerce\PayPalCommerce\WcGateway\Assets\SettingsPageAssets;
 use WooCommerce\PayPalCommerce\WcGateway\Checkout\CheckoutPayPalAddressPreset;
 use WooCommerce\PayPalCommerce\WcGateway\Checkout\DisableGateways;
 use WooCommerce\PayPalCommerce\WcGateway\Endpoint\ReturnUrlEndpoint;
@@ -52,7 +53,7 @@ class WcGatewayModule implements ModuleInterface {
 	 *
 	 * @param ContainerInterface|null $container The container.
 	 */
-	public function run( ContainerInterface $container = null ) {
+	public function run( ContainerInterface $container ): void {
 		$this->register_payment_gateways( $container );
 		$this->register_order_functionality( $container );
 		$this->register_columns( $container );
@@ -71,6 +72,15 @@ class WcGatewayModule implements ModuleInterface {
 				$section_renderer->render();
 			}
 		);
+
+		if ( $container->has( 'wcgateway.url' ) ) {
+			$assets = new SettingsPageAssets(
+				$container->get( 'wcgateway.url' ),
+				$container->get( 'wcgateway.absolute-path' ),
+				$container->get( 'api.bearer' )
+			);
+			$assets->register_assets();
+		}
 
 		add_filter(
 			Repository::NOTICES_FILTER,
@@ -124,6 +134,18 @@ class WcGatewayModule implements ModuleInterface {
 				 */
 				$endpoint->handle_request();
 			}
+		);
+
+		add_filter(
+			'woocommerce_email_recipient_customer_on_hold_order',
+			function( $recipient, $order ) {
+				if ( $order->get_payment_method() === PayPalGateway::ID || $order->get_payment_method() === CreditCardGateway::ID ) {
+					$recipient = '';
+				}
+				return $recipient;
+			},
+			10,
+			2
 		);
 	}
 
@@ -223,6 +245,7 @@ class WcGatewayModule implements ModuleInterface {
 				 * @var SettingsListener $listener
 				 */
 				$listener->listen_for_merchant_id();
+				$listener->listen_for_vaulting_enabled();
 			}
 		);
 

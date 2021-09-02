@@ -70,6 +70,7 @@ class Optml_Settings {
 		'native_lazyload'      => 'disabled',
 		'offload_media'        => 'disabled',
 		'cloud_images'         => 'disabled',
+		'skip_lazyload_images' => 3,
 
 	];
 	/**
@@ -84,6 +85,12 @@ class Optml_Settings {
 	 * @var array All options.
 	 */
 	private $options;
+	/**
+	 * Holds the status of the auto connect hook.
+	 *
+	 * @var boolean Whether or not the auto connect action is hooked.
+	 */
+	private static $auto_connect_hooked = false;
 
 	/**
 	 * Optml_Settings constructor.
@@ -100,6 +107,19 @@ class Optml_Settings {
 		}
 
 		if ( defined( 'OPTIML_USE_ENV' ) && constant( 'OPTIML_USE_ENV' ) && $this->to_boolean( constant( 'OPTIML_USE_ENV' ) ) ) {
+
+			if ( defined( 'OPTIML_API_KEY' )
+				&& constant( 'OPTIML_API_KEY' ) !== ''
+			) {
+				if ( ! $this->is_connected() && ! self::$auto_connect_hooked ) {
+					self::$auto_connect_hooked = true;
+					add_action(
+						'plugins_loaded',
+						[$this, 'auto_connect']
+					);
+				}
+			}
+
 			foreach ( self::$whitelisted_settings as $key => $type ) {
 				$env_key = 'OPTIML_' . strtoupper( $key );
 				if ( defined( $env_key ) && constant( $env_key ) ) {
@@ -124,7 +144,17 @@ class Optml_Settings {
 			}
 		}
 	}
+	/**
+	 * Auto connect action.
+	 */
+	public function auto_connect() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'api_key', constant( 'OPTIML_API_KEY' ) );
+		Optml_Main::instance()->rest->connect( $request );
 
+		remove_action( 'plugins_loaded', [ $this, 'auto_connect' ] );
+		self::$auto_connect_hooked = false;
+	}
 	/**
 	 * Return filter definitions.
 	 *
@@ -236,6 +266,9 @@ class Optml_Settings {
 					break;
 				case 'watchers':
 					$sanitized_value = $value;
+					break;
+				case 'skip_lazyload_images':
+					$sanitized_value = $this->to_bound_integer( $value, 0, 100 );
 					break;
 				case 'wm_opacity':
 				case 'wm_scale':
@@ -362,6 +395,7 @@ class Optml_Settings {
 			'network_optimization' => $this->get( 'network_optimization' ),
 			'retina_images'        => $this->get( 'retina_images' ),
 			'lazyload_placeholder' => $this->get( 'lazyload_placeholder' ),
+			'skip_lazyload_images' => $this->get( 'skip_lazyload_images' ),
 			'bg_replacer'          => $this->get( 'bg_replacer' ),
 			'video_lazyload'       => $this->get( 'video_lazyload' ),
 			'resize_smart'         => $this->get( 'resize_smart' ),
@@ -492,6 +526,11 @@ class Optml_Settings {
 		if ( ! isset( $service_data['cdn_key'] ) ) {
 			return '';
 		}
+
+		if ( isset( $service_data['is_cname_assigned'] ) && $service_data['is_cname_assigned'] === 'yes' && ! empty( $service_data['domain'] ) ) {
+			return strtolower( $service_data['domain'] );
+		}
+
 		if ( defined( 'OPTML_CUSTOM_DOMAIN' ) && constant( 'OPTML_CUSTOM_DOMAIN' ) ) {
 			return parse_url( strtolower( OPTML_CUSTOM_DOMAIN ), PHP_URL_HOST );
 		}

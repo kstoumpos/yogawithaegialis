@@ -5,6 +5,7 @@ use WpAssetCleanUp\CleanUp;
 use WpAssetCleanUp\Main;
 use WpAssetCleanUp\Menu;
 use WpAssetCleanUp\MetaBoxes;
+use WpAssetCleanUp\Misc;
 
 /**
  * Class MinifyJs
@@ -94,6 +95,8 @@ class MinifyJs
             '#/translatepress-multilingual/assets/js/trp-editor.js#',
 
 			);
+
+		$regExps = Misc::replaceRelPluginPath($regExps);
 
 		if (Main::instance()->settings['minify_loaded_js_exceptions'] !== '') {
 			$loadedJsExceptionsPatterns = trim(Main::instance()->settings['minify_loaded_js_exceptions']);
@@ -259,12 +262,12 @@ class MinifyJs
 		// Request Minify On The Fly
 		// It will preview the page with JS minified
 		// Only if the admin is logged-in as it uses more resources (CPU / Memory)
-		if (array_key_exists('wpacu_js_minify', $_GET) && Menu::userCanManageAssets()) {
+		if ( isset($_GET['wpacu_js_minify']) && Menu::userCanManageAssets()) {
 			self::isMinifyJsEnabledChecked('true');
 			return true;
 		}
 
-		if ( array_key_exists('wpacu_no_js_minify', $_GET) || // not on query string request (debugging purposes)
+		if ( isset($_REQUEST['wpacu_no_js_minify']) || // not on query string request (debugging purposes)
 		     is_admin() || // not for Dashboard view
 		     (! Main::instance()->settings['minify_loaded_js']) || // Minify JS has to be Enabled
 		     (Main::instance()->settings['test_mode'] && ! Menu::userCanManageAssets()) ) { // Does not trigger if "Test Mode" is Enabled
@@ -272,9 +275,15 @@ class MinifyJs
 			return false;
 		}
 
-		if (defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular()) {
+		$isSingularPage = defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular();
+
+		if ($isSingularPage || Misc::isHomePage()) {
 			// If "Do not minify JS on this page" is checked in "Asset CleanUp: Options" side meta box
-			$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID );
+			if ($isSingularPage) {
+				$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID ); // Singular page
+			} else {
+				$pageOptions = MetaBoxes::getPageOptions(0, 'front_page'); // Home page
+			}
 
 			if ( isset( $pageOptions['no_js_minify'] ) && $pageOptions['no_js_minify'] ) {
 				self::isMinifyJsEnabledChecked('false');
@@ -287,6 +296,7 @@ class MinifyJs
 			return false;
 		}
 
+		self::isMinifyJsEnabledChecked('true');
 		return true;
 	}
 

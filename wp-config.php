@@ -45,13 +45,13 @@
 
 define('DB_NAME', 'yogawje8_WPEJ5');
 
-/** MySQL database username */
+/** MySQL database username yogawje8_WPEJ5 */
 
-define('DB_USER', 'yogawje8_WPEJ5');
+define('DB_USER',       'yogawje8_WPEJ5');
 
 /** MySQL database password */
 
-define('DB_PASSWORD', 'ClGn(WIxe<%tJ*[A-');
+define('DB_PASSWORD',       'Tzj3&8w9');
 
 /** MySQL hostname */
 
@@ -83,21 +83,21 @@ define( 'DB_COLLATE', '' );
 
  */
 
-define('AUTH_KEY', 'b09437e0dfde4f39cb12e2041b589b01226083ffd36425027c1e7f3f959d9991');
+define('AUTH_KEY',       'HVSzMYMMg*OX4f6pg42Q9Kj%#Nx7F^G03U6wk%rNJmNIX(zuplLbqyYBQCgr(mJK');
 
-define('SECURE_AUTH_KEY', 'df48eb14abc5c2d9adad65686fef50546b8f5f98fe24741309b7035d96193e43');
+define('SECURE_AUTH_KEY',       'FCVIdPsT%t6Xu2x1Kkb8KzbePo!zBl4MX%79ehrDA&!q4y)SlW*@n0BKTGnSdCEk');
 
-define('LOGGED_IN_KEY', 'b6fb7e81e83a98e3365198b583e9839b0ed6df44b79e269b64e49b6be8c58863');
+define('LOGGED_IN_KEY',       'k@^#(I%2c7W2VLNrzTNHfH#eZsBs3n84zvrzuyCRbkFC3A0iOhj%!pON6LXdQkKD');
 
-define('NONCE_KEY', '435ea578f56f80b430c6489e7b2996c26396eb6f004cdecb6bc5c0e5825c380f');
+define('NONCE_KEY',       'BE1&dlxDzNhQpMi(WpyWuF5VIR99onV@QBo8B5CUYY^)cQ(&%O)eK)602(OTHe0k');
 
-define('AUTH_SALT', '2ed4222f730c4c85acf9e2fb80d0aa9754db4c5790baf401a3312020aa1bee1d');
+define('AUTH_SALT',       '#ZZi5ga)z*&osxcUADJc%5djkLaTIM4qzmCyLpu)LO1oK^eq0H9XaappUxrKyUR&');
 
-define('SECURE_AUTH_SALT', '63b061df3715dd72442408b71329dbe34be958da242cf18643903ab232f96ddd');
+define('SECURE_AUTH_SALT',       '4xPb&!YMvY#0qAakaCh96B9MpciiSHkQ4KyZoD!V9SnCJS1bsn6Hm22jC#Hj1@7z');
 
-define('LOGGED_IN_SALT', '12075eb571832e9a65e05c1f015930c995e5696ad014638fc320668e7861fc91');
+define('LOGGED_IN_SALT',       '2waM7AJ6frdZThoN7QLUCu1rTrN^cRIDn1Y3AhVVdvjV^QSduA&@VtsgCQtUk6TK');
 
-define('NONCE_SALT', '0ac3bf239fe04a8cecf9da3783219aa3a1c63032c9f7390eacc473dd6e324fbb');
+define('NONCE_SALT',       'h*YC%IfpR!eU9qXbAmKN*ujyOwOZ0GHVG*&8kEqcM%kIYRcLHAmgL8WXnAFtDw7@');
 
 /**#@-*/
 
@@ -115,15 +115,15 @@ define('NONCE_SALT', '0ac3bf239fe04a8cecf9da3783219aa3a1c63032c9f7390eacc473dd6e
 
 $table_prefix = 'gzq_';
 
-define('WP_CRON_LOCK_TIMEOUT', 120);
+// define('WP_CRON_LOCK_TIMEOUT', 120);
 
-define('AUTOSAVE_INTERVAL', 300);
+// define('AUTOSAVE_INTERVAL', 300);
 
-define('WP_POST_REVISIONS', 5);
+// define('WP_POST_REVISIONS', 5);
 
-define('EMPTY_TRASH_DAYS', 7);
+// define('EMPTY_TRASH_DAYS', 7);
 
-define('WP_AUTO_UPDATE_CORE', true);
+// define('WP_AUTO_UPDATE_CORE', true);
 
 /**
 
@@ -151,7 +151,10 @@ define('WP_AUTO_UPDATE_CORE', true);
 
 define( 'WP_DEBUG', false );
 
-define( 'WP_DEBUG_DISPLAY', false );
+// Enable Debug logging to the /wp-content/debug.log file
+define( 'WP_DEBUG_LOG', true );
+
+define( 'WP_DEBUG_DISPLAY', true );
 /* That's all, stop editing! Happy publishing. */
 
 /** Absolute path to the WordPress directory. */
@@ -163,13 +166,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-define('ADMIN_COOKIE_PATH', '/');
+// define('ADMIN_COOKIE_PATH', '/');
 
-define('COOKIE_DOMAIN', '');
+// define('COOKIE_DOMAIN', '');
 
-define('COOKIEPATH', '');
+// define('COOKIEPATH', '');
 
-define('SITECOOKIEPATH', '');
+// define('SITECOOKIEPATH', '');
 
 
 /** Sets up WordPress vars and included files. */

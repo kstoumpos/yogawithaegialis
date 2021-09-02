@@ -2,18 +2,41 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, paypal, payments, ecommerce, e-commerce, store, sales, sell, shop, shopping, cart, checkout
 Requires at least: 5.3
-Tested up to: 5.6
-Requires PHP: 7.0
-Stable tag: 1.2.1
+Tested up to: 5.8
+Requires PHP: 7.1
+Stable tag: 1.5.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-PayPal's latest payments processing solution. Accept PayPal, PayPal Credit, credit/debit cards, alternative digital wallets and bank accounts.
+PayPal's latest payments processing solution. Accept PayPal, Pay Later, credit/debit cards, alternative digital wallets and bank accounts.
 
 == Description ==
 
 PayPal's latest, most complete payment processing solution. Accept PayPal exclusives, credit/debit cards and local payment methods. Turn on only PayPal options or process a full suite of payment methods. Enable global transactions with extensive currency and country coverage.
 Built and supported by [WooCommerce](https://woocommerce.com) and [PayPal](https://paypal.com).
+
+= Give your customers their preferred ways to pay with one checkout solution =
+
+Streamline your business with one simple, powerful solution.
+
+With the latest PayPal extension, your customers can pay with PayPal, Pay Later options, credit & debit cards, and country-specific, local payment methods on any device — all with one seamless checkout experience.
+
+= Reach more customers in 200+ markets worldwide =
+
+Expand your business by connecting with over 370+ million active PayPal accounts around the globe. With PayPal, you can:
+
+- Sell in 200+ markets and accept 100+ currencies
+- Identify customer locations and offer country-specific, local payment methods
+
+= Offer subscription payments to help drive repeat business =
+
+Create stable, predictable income by offering subscription plans.
+
+With the vaulting feature on PayPal, you can offer flexible plans with fixed or quantity pricing, set billing cycles for the time period you want, and offer subscriptions with discounted trial periods.
+
+It’s easy for shoppers, simple for you, and great for your business–with no monthly or setup fees.
+
+PayPal is also compatible with [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/).
 
 == Installation ==
 
@@ -23,7 +46,7 @@ To install WooCommerce PayPal Payments, you need:
 
 * WordPress Version 5.3 or newer (installed)
 * WooCommerce Version 3.9 or newer (installed and activated)
-* PHP Version 7.0 or newer
+* PHP Version 7.1 or newer
 * PayPal business account
 
 = Instructions =
@@ -57,6 +80,62 @@ Follow the steps below to connect the plugin to your PayPal account:
 6. Main settings screen.
 
 == Changelog ==
+
+= 1.5.1 =
+* Fix - Set 3DS contingencies to "SCA_WHEN_REQUIRED". #178
+* Fix - Plugin conflict blocking line item details. #221
+* Fix - WooCommerce orders left in "Pending Payment" after a decline. #222
+* Fix - Do not send decimals when currency does not support them. #202
+* Fix - Gateway can be activated without a connected PayPal account. #205
+
+= 1.5.0 =
+* Add - Filter to modify plugin modules list. #203
+* Add - Filters to move PayPal buttons and Pay Later messages. #203
+* Fix - Remove redirection when enabling payment gateway with setup already done. #206
+* Add - PayPal Express Checkout compatibility layer. #207
+* Fix - Use correct API to obtain credit card icons. #210
+* Fix - Hide mini cart height field when mini cart is disabled. #213
+* Fix - Address possible error on frontend pages due to an empty gateway description. #214
+
+= 1.4.0 =
+* Add - Venmo update #169
+* Add - Pay Later Button –Global Expansion #182
+* Add - Add Canada to advanced credit and debit card #180
+* Add - Add button height setting for mini cart #181
+* Add - Add BN Code to Pay Later Messaging #183
+* Add - Add 30 seconds timeout by default to all API requests #184
+* Fix - ACDC checkout error: "Card Details not valid"; but payment completes #193
+* Fix - Incorrect API credentials cause fatal error #187
+* Fix - PayPal payment fails if a new user account is created during the checkout process #177
+* Fix - Disabled PayPal button appears when another button is loaded on the same page #192
+* Fix - [UNPROCESSABLE_ENTITY] error during checkout #172
+* Fix - Do not send customer email when order status is on hold #173
+* Fix - Remove merchant-id query parameter in JSSDK #179
+* Fix - Error on Plugin activation with Zettle POS Integration for WooCommerce #195
+
+= 1.3.2 =
+* Fix - Improve Subscription plugin support. #161
+* Fix - Disable vault setting if vaulting feature is not available. #150
+* Fix - Cast item get_quantity into int. #168
+* Fix - Fix Credit Card form fields placeholder and label. #146
+* Fix - Filter PayPal-supported language codes. #154
+* Fix - Wrong order status for orders with contain only products which are both virtual and downloadable. #145
+* Fix - Use order_number instead of internal id when creating invoice Id. #163
+* Fix - Fix pay later messaging options. #141
+* Fix - UI/UX for vaulting settings. #166
+
+= 1.3.1 =
+* Fix - Fix Credit Card fields for non logged-in users. #152
+
+= 1.3.0 =
+* Add - Client-side vaulting and allow WooCommerce Subscriptions product renewals through payment tokens. #134
+* Add - Send transaction ids to woocommerce. #125
+* Fix - Validate checkout form before sending request to PayPal #137
+* Fix - Duplicate Invoice Id error. #143
+* Fix - Unblock UI if Credit Card payment failed. #122
+* Fix - Detected container element removed from DOM. #123
+* Fix - Remove disabling credit for UK. #127
+* Fix - Show WC message on account creating error. #136
 
 = 1.2.1 =
 * Fix - Address compatibility issue with Jetpack.

@@ -97,12 +97,14 @@ class Settings
 
 		// Minify each loaded CSS (remaining ones after unloading the useless ones)
 		'minify_loaded_css',
-		'minify_loaded_css_inline',
+		'minify_loaded_css_for',
+		'minify_loaded_css_inline', // deprecated ("minify_loaded_css_for" is used instead)
 		'minify_loaded_css_exceptions',
 
 		// Minify each loaded JS (remaining ones after unloading the useless ones)
 		'minify_loaded_js',
-		'minify_loaded_js_inline',
+		'minify_loaded_js_for',
+		'minify_loaded_js_inline', // deprecated ("minify_loaded_js_for" is used instead)
 		'minify_loaded_js_exceptions',
 
         'cdn_rewrite_enable',
@@ -226,8 +228,11 @@ class Settings
 	        // "contracted" since 1.1.0.8 (Pro)
 	        'assets_list_inline_code_status' => 'contracted', // takes less space overall
 
-	        'minify_loaded_css_exceptions' => '(.*?)\.min.css'. "\n". '/plugins/wd-instagram-feed/(.*?).css',
-	        'minify_loaded_js_exceptions'  => '(.*?)\.min.js' . "\n". '/plugins/wd-instagram-feed/(.*?).js',
+	        'minify_loaded_css_for' => 'href',
+            'minify_loaded_js_for'  => 'src',
+
+	        'minify_loaded_css_exceptions' => '(.*?)\.min.css'. "\n". '/wd-instagram-feed/(.*?).css',
+	        'minify_loaded_js_exceptions'  => '(.*?)\.min.js' . "\n". '/wd-instagram-feed/(.*?).js',
 
 	        'inline_css_files_below_size' => '1', // Enabled by default
 	        'inline_css_files_below_size_input' => '3', // Size in KB
@@ -243,8 +248,8 @@ class Settings
             'combine_loaded_css_for' => 'guests',
 	        'combine_loaded_js_for'  => 'guests',
 
-	        'combine_loaded_css_exceptions' => '/plugins/wd-instagram-feed/(.*?).css',
-	        'combine_loaded_js_exceptions'  => '/plugins/wd-instagram-feed/(.*?).js',
+	        'combine_loaded_css_exceptions' => '/wd-instagram-feed/(.*?).css',
+	        'combine_loaded_js_exceptions'  => '/wd-instagram-feed/(.*?).js',
 
 	        // [wpacu_pro]
             'defer_css_loaded_body' => 'moved',
@@ -288,6 +293,10 @@ class Settings
         }
 
 	    add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_do_verifications',  array( $this, 'ajaxDoVerifications' ) );
+
+        // e.g. when "Contract All Groups" is used, the state is kept (the setting is updated in the background)
+        add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_update_settings', array($this, 'ajaxUpdateSpecificSettings') );
+	    add_action( 'wp_ajax_nopriv_' . WPACU_PLUGIN_ID . '_update_settings', array($this, 'ajaxUpdateSpecificSettings') );
     }
 
 	/**
@@ -450,16 +459,16 @@ class Settings
 	    // No record in the database? Set the default values
 	    // That could be because no changes were done on the "Settings" page
 	    // OR a full reset of the plugin (via "Tools") was performed
-        $defaultSettings = $this->defaultSettings;
+        $finalDefaultSettings = $this->defaultSettings;
 
         foreach ($this->settingsKeys as $settingsKey) {
-	        if (! array_key_exists($settingsKey, $defaultSettings)) {
+	        if (! array_key_exists($settingsKey, $finalDefaultSettings)) {
 		        // Keep the keys with empty values to avoid notice errors
-		        $defaultSettings[$settingsKey] = '';
+		        $finalDefaultSettings[$settingsKey] = '';
 	        }
         }
 
-	    return $this->filterSettings($defaultSettings);
+	    return $this->filterSettings($finalDefaultSettings);
     }
 
 	/**
@@ -511,11 +520,11 @@ class Settings
 	{
 		// /?wpacu_test_mode (will load the page with "Test Mode" enabled disregarding the value from the plugin's "Settings")
 		// For debugging purposes (e.g. to make sure the HTML source is the same when a guest user accesses it as the one that is generated when the plugin is deactivated)
-		if (array_key_exists('wpacu_test_mode', $_GET)) {
+		if ( isset($_GET['wpacu_test_mode']) ) {
 			$settings['test_mode'] = true;
 		}
 
-		if (array_key_exists('wpacu_skip_test_mode', $_GET)) {
+		if ( isset($_GET['wpacu_skip_test_mode']) ) {
 		    $settings['test_mode'] = false;
         }
 
@@ -533,26 +542,33 @@ class Settings
                 = false;
 		}
 
+		if ($settings['minify_loaded_css_inline']) {
+			$settings['minify_loaded_css_for'] = 'all';
+		}
+
+		if ($settings['minify_loaded_js_inline']) {
+		    $settings['minify_loaded_js_for'] = 'all';
+		}
 
 		// /?wpacu_skip_inline_css
-        if (array_key_exists('wpacu_skip_inline_css_files', $_GET)) {
+        if (isset($_GET['wpacu_skip_inline_css_files'])) {
 	        $settings['inline_css_files'] = false;
         }
 
 		// /?wpacu_skip_inline_js
-		if (array_key_exists('wpacu_skip_inline_js_files', $_GET)) {
+		if (isset($_GET['wpacu_skip_inline_js_files'])) {
 			$settings['inline_js_files'] = false;
 		}
 
 		// /?wpacu_manage_front -> "Manage in the Front-end" via query string request
         // Useful when working for a client and you prefer him to view the pages (while logged-in) without the CSS/JS list at the bottom
-		if (array_key_exists('wpacu_manage_front', $_GET)) {
+		if (isset($_GET['wpacu_manage_front'])) {
 			$settings['frontend_show'] = true;
 		}
 
 		// /?wpacu_manage_dash -> "Manage in the Dashboard" via query string request
 		// For debugging purposes
-		if (is_admin() && (array_key_exists('wpacu_manage_dash', $_REQUEST) || array_key_exists('force_manage_dash', $_REQUEST))) {
+		if (is_admin() && (isset($_REQUEST['wpacu_manage_dash']) || isset($_REQUEST['force_manage_dash']))) {
 			$settings['dashboard_show'] = true;
 		}
 
@@ -671,11 +687,12 @@ class Settings
 
 	/**
 	 * @param $settings
-	 * @param false $doSettingUpdate (e.g. if called from a WP Cron)
-	 *
+	 * @param false $doSettingUpdate (e.g. 'true' if called from a WP Cron)
+	 * @param false $isDebug (e.g. 'true' if requested via a query string such as 'wpacu_toggle_inline_code_to_combine_js' for debugging purposes)
+     *
 	 * @return mixed
 	 */
-	public static function toggleAppendInlineAssocCodeHiddenSettings($settings, $doSettingUpdate = false)
+	public static function toggleAppendInlineAssocCodeHiddenSettings($settings, $doSettingUpdate = false, $isDebug = false)
     {
 	    // Are there too many files in WP_CONTENT_DIR . WpAssetCleanUp\OptimiseAssets\OptimizeCommon::getRelPathPluginCacheDir() . '(css|js)/' directory?
 	    // Deactivate the appending of the inline CSS/JS code (extra, before or after)
@@ -693,6 +710,9 @@ class Settings
 	        $isCombineAssetsEnabled = isset($settings[$combineSettingsKey]) && $settings[$combineSettingsKey];
 
 		    if ( ! $isCombineAssetsEnabled ) {
+		        if ($isDebug) {
+			        echo 'Combine '.strtoupper($assetType).' is not enabled.<br />';
+		        }
 			    continue; // Only do the checking if combine CSS/JS is enabled
 		    }
 
@@ -704,10 +724,20 @@ class Settings
 			    '.' . $assetType
 		    );
 
-		    if ( isset( $wpacuPathToCombineDirSize['total_size_mb'] ) && $wpacuPathToCombineDirSize['total_size_mb'] > $mbLimit ) {
+		    $preventAddingInlineCodeToCombinedAssets = isset( $wpacuPathToCombineDirSize['total_size_mb'] ) && $wpacuPathToCombineDirSize['total_size_mb'] > $mbLimit;
+
+		    if ( $preventAddingInlineCodeToCombinedAssets ) {
 			    $settings['_combine_loaded_'.$assetType.'_append_handle_extra'] = '';
 		    } else {
 			    $settings['_combine_loaded_'.$assetType.'_append_handle_extra'] = 1;
+		    }
+
+		    if ($isDebug) {
+		        if ($preventAddingInlineCodeToCombinedAssets) {
+		            echo 'Adding inline code to combined '.strtoupper($assetType).' has been deactivated as the total size of combined assets is '.$wpacuPathToCombineDirSize['total_size_mb'].' MB.<br />';
+		        } else {
+			        echo 'Adding inline code to combined '.strtoupper($assetType).' has been (re)activated as the total size of combined assets is '.$wpacuPathToCombineDirSize['total_size_mb'].' MB.<br />';
+		        }
 		    }
 
 		    if ($doSettingUpdate) {
@@ -872,6 +902,31 @@ class Settings
 	    curl_close($ch);
 
 	    echo json_encode($result);
+
+	    exit();
+    }
+
+	/**
+	 *
+	 */
+	public function ajaxUpdateSpecificSettings()
+    {
+        // Option: "On Assets List Layout Load, keep the groups:"
+        if (isset($_POST['wpacu_update_keep_the_groups'])) {
+	        if ( ! isset( $_POST['action'], $_POST['wpacu_keep_the_groups_state'] ) || ! Menu::userCanManageAssets() ) {
+		        return;
+	        }
+
+	        if ( $_POST['wpacu_update_keep_the_groups'] !== 'yes' ) {
+		        return;
+	        }
+
+	        $newKeepTheGroupsState = $_POST['wpacu_keep_the_groups_state'];
+
+	        $this->updateOption( 'assets_list_layout_areas_status', $newKeepTheGroupsState );
+
+	        echo 'done';
+        }
 
 	    exit();
     }

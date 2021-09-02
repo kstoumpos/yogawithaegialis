@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -65,7 +66,7 @@ trait Paginated_Response {
 	 */
 	public function get_data() {
 
-		return ! empty( $this->response_data->data ) ? $this->response_data->data : [];
+		return ! empty( $this->response_data->data ) ? $this->response_data->data : array();
 	}
 
 

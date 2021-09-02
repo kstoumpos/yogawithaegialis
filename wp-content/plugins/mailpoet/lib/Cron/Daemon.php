@@ -76,5 +76,7 @@ class Daemon {
     yield $this->workersFactory->createWooCommercePastOrdersWorker();
     yield $this->workersFactory->createStatsNotificationsWorkerForAutomatedEmails();
     yield $this->workersFactory->createSubscriberLinkTokensWorker();
+    yield $this->workersFactory->createSubscribersEngagementScoreWorker();
+    yield $this->workersFactory->createSubscribersCountCacheRecalculationWorker();
   }
 }

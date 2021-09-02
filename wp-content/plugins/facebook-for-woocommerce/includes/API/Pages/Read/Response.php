@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
  *
@@ -19,7 +20,7 @@ use SkyVerge\WooCommerce\Facebook\API;
  *
  * @since 2.0.0
  */
-class Response extends API\Response  {
+class Response extends API\Response {
 
 
 	/**
