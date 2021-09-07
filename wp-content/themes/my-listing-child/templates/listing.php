@@ -336,24 +336,23 @@ $listing_logo = $listing->get_logo( 'medium' );
                                 'author'=> $listing->get_author_id()
                             ] );
 
-                            if ($prodId[0]) {
-                                $permalink = $product->get_permalink(); ?>
-                                <div class="col-md-12 block-type-categories" id="listingButtons" style="display: flex; flex-direction: row;">
-                                    <div class="listingButton">
-                                        <a href="<?php echo 'https://yogawithaegialis.com/?post_type=product&p='.$prodId[0] ?>" class="bookinbBtn">Book now</a>
-                                    </div>
-                                    <div class="listingButton enquiryBtn" >
-                                        <a href="#" class="enquiryBtn cts-open-chat" data-post-data="<?php echo esc_attr( $post_data ) ?>" data-user-id="<?php echo absint( $listing->get_author_id() ) ?>">Send Inquiry</a>
-                                    </div>
-                                </div>
-                            <?php } ?>
+//                            if ($prodId[0]) {
+//                                $permalink = $product->get_permalink(); ?>
+<!--                                <div class="col-md-12 block-type-categories" id="listingButtons" style="display: flex; flex-direction: row;">-->
+<!--                                    <div class="listingButton">-->
+<!--                                        <a href="--><?php //echo 'https://yogawithaegialis.com/?post_type=product&p='.$prodId[0] ?><!--" class="bookinbBtn">Book now</a>-->
+<!--                                    </div>-->
+<!--                                    <div class="listingButton enquiryBtn" >-->
+<!--                                        <a href="#" class="enquiryBtn cts-open-chat" data-post-data="--><?php //echo esc_attr( $post_data ) ?><!--" data-user-id="--><?php //echo absint( $listing->get_author_id() ) ?><!--">Send Inquiry</a>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            --><?php //} ?>
 
                             <?php $ListingId = $listing->get_id();
                             $PriceRange = get_post_meta( $ListingId, '_price_range', true );
                             $PricePercentage = get_post_meta( $ListingId, '_remaining-amount', true ); ?>
 
-                            <?php if ($PriceRange > 0) { ?>
-                            <div class="col-md-12 block-type-text">
+                            <div class="col-md-12 block-type-categories">
                                 <div class="element content-block plain-text-content" id="bookingInfo">
                                     <div class="pf-head">
                                         <div class="title-style-1">
@@ -362,6 +361,7 @@ $listing_logo = $listing->get_logo( 'medium' );
                                         </div>
                                     </div>
                                     <div class="pf-body">
+                                        <?php if ($PriceRange > 0) { ?>
                                         <?php
                                             echo "<p>A reservation requires a deposit of ".$PriceRange." of the total price.</p>";
                                             } ?>
